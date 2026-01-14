@@ -35,4 +35,4 @@ export interface UberDangerZone {
   recommendation: string;
 }
 
-export type TabId = 'overview' | 'routes' | 'trains' | 'uber';
+export type TabId = 'overview' | 'routes' | 'trains' | 'uber' | 'map' | 'analytics';

@@ -1,4 +1,4 @@
-import { Activity, Camera, Train, Car, LucideIcon } from 'lucide-react';
+import { Activity, Camera, Train, Car, Map, BarChart3, LucideIcon } from 'lucide-react';
 import { TabId } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 
@@ -10,9 +10,11 @@ interface Tab {
 
 const tabs: Tab[] = [
   { id: 'overview', label: 'Dashboard', icon: Activity },
+  { id: 'map', label: 'Live Map', icon: Map },
   { id: 'routes', label: 'Highway Cameras', icon: Camera },
   { id: 'trains', label: 'Train Safety', icon: Train },
   { id: 'uber', label: 'Uber/Taxi Zones', icon: Car },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 interface TabNavigationProps {

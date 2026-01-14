@@ -10,6 +10,12 @@ import EmptyState from '@/components/dashboard/EmptyState';
 import EmergencyPanel from '@/components/dashboard/EmergencyPanel';
 import AreaSearch from '@/components/dashboard/AreaSearch';
 import InfrastructureGrid from '@/components/dashboard/InfrastructureGrid';
+import PremiumPanel from '@/components/dashboard/PremiumPanel';
+import RoadsStatusPanel from '@/components/dashboard/RoadsStatusPanel';
+import InteractiveMap from '@/components/dashboard/InteractiveMap';
+import ComparisonView from '@/components/dashboard/ComparisonView';
+import ExportPanel from '@/components/dashboard/ExportPanel';
+import AdditionalEmergencyContacts from '@/components/dashboard/AdditionalEmergencyContacts';
 import { majorRoutes, trainRoutes, uberDangerZones } from '@/data/dashboardData';
 import { MajorRoute, TabId } from '@/types/dashboard';
 
@@ -37,22 +43,41 @@ const Index = () => {
 
       <main className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
-            {/* Main Content - Route Cards */}
-            <div className="xl:col-span-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-                {majorRoutes.map((route, index) => (
-                  <div key={route.id} style={{ animationDelay: `${index * 50}ms` }}>
-                    <RouteCard 
-                      route={route} 
-                      onClick={() => handleRouteClick(route)} 
-                    />
-                  </div>
-                ))}
+          <div className="space-y-6">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
+              {/* Route Cards */}
+              <div className="xl:col-span-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+                  {majorRoutes.map((route, index) => (
+                    <div key={route.id} style={{ animationDelay: `${index * 50}ms` }}>
+                      <RouteCard route={route} onClick={() => handleRouteClick(route)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sidebar */}
+              <div className="xl:col-span-1 space-y-4 lg:space-y-5">
+                <PremiumPanel />
+                <AreaSearch />
+                <EmergencyPanel />
               </div>
             </div>
 
-            {/* Sidebar - Emergency & Search */}
+            {/* Roads Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <RoadsStatusPanel />
+              <ExportPanel />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'map' && (
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:gap-6">
+            <div className="xl:col-span-3">
+              <InteractiveMap />
+            </div>
             <div className="xl:col-span-1 space-y-4 lg:space-y-5">
               <AreaSearch />
               <EmergencyPanel />
@@ -66,7 +91,7 @@ const Index = () => {
               <RouteDetail route={selectedRoute} />
             </div>
             <div className="xl:col-span-1 space-y-4 lg:space-y-5">
-              <AreaSearch />
+              <RoadsStatusPanel />
               <EmergencyPanel />
             </div>
           </div>
@@ -78,7 +103,7 @@ const Index = () => {
               <EmptyState />
             </div>
             <div className="xl:col-span-1 space-y-4 lg:space-y-5">
-              <AreaSearch />
+              <RoadsStatusPanel />
               <EmergencyPanel />
             </div>
           </div>
@@ -119,10 +144,25 @@ const Index = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            <ComparisonView />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <RoadsStatusPanel />
+              <ExportPanel />
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* Infrastructure Status Grid */}
+      {/* Infrastructure Grid */}
       <InfrastructureGrid />
+
+      {/* Additional Emergency Contacts */}
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <AdditionalEmergencyContacts />
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/50">
