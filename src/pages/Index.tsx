@@ -9,6 +9,7 @@ import UberZoneCard from '@/components/dashboard/UberZoneCard';
 import EmptyState from '@/components/dashboard/EmptyState';
 import EmergencyPanel from '@/components/dashboard/EmergencyPanel';
 import AreaSearch from '@/components/dashboard/AreaSearch';
+import InfrastructureGrid from '@/components/dashboard/InfrastructureGrid';
 import { majorRoutes, trainRoutes, uberDangerZones } from '@/data/dashboardData';
 import { MajorRoute, TabId } from '@/types/dashboard';
 
@@ -120,15 +121,25 @@ const Index = () => {
         )}
       </main>
 
+      {/* Infrastructure Status Grid */}
+      <InfrastructureGrid />
+
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50 mt-8">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <footer className="border-t border-border bg-card/50">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-            <div>© 2024 BlueWhale Intelligence. Real-time safety monitoring for Cape Town.</div>
-            <div className="flex items-center gap-4">
-              <span>Emergency: <span className="font-mono font-bold text-foreground">10111</span></span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-primary">BLUEWHALE</span>
+              <span>© 2024 Real-time safety monitoring for Western Cape</span>
+            </div>
+            <div className="flex items-center gap-4 font-mono text-[10px]">
+              <span>SAPS: <span className="font-bold text-red-400">10111</span></span>
               <span>•</span>
-              <span>Ambulance: <span className="font-mono font-bold text-foreground">10177</span></span>
+              <span>AMBULANCE: <span className="font-bold text-blue-400">10177</span></span>
+              <span>•</span>
+              <span>FIRE: <span className="font-bold text-orange-400">021 480 7700</span></span>
+              <span>•</span>
+              <span>CITY: <span className="font-bold text-emerald-400">0860 103 089</span></span>
             </div>
           </div>
         </div>
