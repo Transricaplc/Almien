@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning } from 'lucide-react';
+import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
@@ -7,6 +7,7 @@ import WaterUtilityPanel from './WaterUtilityPanel';
 import WeatherPanel from './WeatherPanel';
 import HikingTrailsPanel from './HikingTrailsPanel';
 import CitizenReportModal from './CitizenReportModal';
+import LiveReportFeed from './LiveReportFeed';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -191,9 +192,12 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         {/* Water Utility Panel */}
         <WaterUtilityPanel />
 
-        {/* Tourism Tabs */}
-        <Tabs defaultValue="trails" className="w-full">
+        {/* Tourism & Reports Tabs */}
+        <Tabs defaultValue="reports" className="w-full">
           <TabsList className="w-full bg-card/50 border border-border/50">
+            <TabsTrigger value="reports" className="flex-1 text-xs data-[state=active]:bg-primary/20">
+              <Radio className="w-3 h-3 mr-1" /> Live Feed
+            </TabsTrigger>
             <TabsTrigger value="trails" className="flex-1 text-xs data-[state=active]:bg-primary/20">
               <Mountain className="w-3 h-3 mr-1" /> Trails
             </TabsTrigger>
@@ -201,6 +205,9 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
               <Waves className="w-3 h-3 mr-1" /> Safety
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="reports" className="mt-2">
+            <LiveReportFeed />
+          </TabsContent>
           <TabsContent value="trails" className="mt-2">
             <HikingTrailsPanel />
           </TabsContent>
