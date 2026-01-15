@@ -1,13 +1,16 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Loader2, Droplet, Zap, Cloud, Plane, Waves } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Loader2, Droplet, Zap, Cloud, Plane, Waves, FileWarning } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
 import WaterUtilityPanel from './WaterUtilityPanel';
 import WeatherPanel from './WeatherPanel';
 import HikingTrailsPanel from './HikingTrailsPanel';
+import CitizenReportModal from './CitizenReportModal';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+
 interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
@@ -18,6 +21,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
   const [selectedSuburb, setSelectedSuburb] = useState<SuburbIntelligence | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const filteredSuburbs = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -60,6 +64,16 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
   return (
     <div className="h-full flex flex-col space-y-4 overflow-hidden">
+      {/* Report Button */}
+      <Button
+        onClick={() => setReportModalOpen(true)}
+        className="flex-shrink-0 w-full bg-amber-500/20 border-2 border-amber-500/50 text-amber-400 hover:bg-amber-500/30 hover:border-amber-400"
+        variant="outline"
+      >
+        <FileWarning className="w-4 h-4 mr-2" />
+        <span className="font-bold">REPORT AN INCIDENT</span>
+      </Button>
+
       {/* Search Section */}
       <div className="flex-shrink-0 relative">
         <div className={cn(
@@ -196,6 +210,9 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Citizen Report Modal */}
+      <CitizenReportModal open={reportModalOpen} onOpenChange={setReportModalOpen} />
     </div>
   );
 };

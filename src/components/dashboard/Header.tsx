@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { 
   Shield, Bell, Settings, ToggleLeft, ToggleRight, AlertTriangle, Plane,
-  Camera, CameraOff, Route, Train, Car, Activity, Phone, Clock
+  Camera, CameraOff, Route, Train, Car, Activity, Phone, Clock, FileWarning
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import CitizenReportModal from './CitizenReportModal';
 
 interface HeaderProps {
   isTravelerMode: boolean;
@@ -24,6 +25,7 @@ const dashboardStats = {
 const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [alertCount] = useState(3);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -109,6 +111,20 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
           
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
+            {/* Report Button */}
+            <button
+              onClick={() => setReportModalOpen(true)}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-lg transition-all border-2',
+                'bg-amber-500/20 border-amber-500/50 text-amber-400 hover:bg-amber-500/30 hover:border-amber-400'
+              )}
+            >
+              <FileWarning className="w-3.5 h-3.5" />
+              <span className="text-[10px] lg:text-xs font-bold hidden sm:inline">
+                REPORT
+              </span>
+            </button>
+
             {/* Traveler Mode Toggle */}
             <button
               onClick={onToggleTravelerMode}
@@ -195,6 +211,9 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
           </div>
         )}
       </div>
+
+      {/* Citizen Report Modal */}
+      <CitizenReportModal open={reportModalOpen} onOpenChange={setReportModalOpen} />
     </header>
   );
 };

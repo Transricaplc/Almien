@@ -98,6 +98,42 @@ export type Database = {
         }
         Relationships: []
       }
+      citizen_reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          infrastructure_type: string | null
+          latitude: number | null
+          longitude: number | null
+          report_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          infrastructure_type?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          report_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          infrastructure_type?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          report_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       flight_status: {
         Row: {
           actual_time: string | null
