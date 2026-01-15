@@ -47,6 +47,192 @@ export type Database = {
         }
         Relationships: []
       }
+      beaches: {
+        Row: {
+          coordinates_lat: number | null
+          coordinates_lng: number | null
+          created_at: string
+          current_conditions: string | null
+          id: string
+          is_open: boolean
+          last_updated: string
+          lifeguard_on_duty: boolean
+          location: string
+          name: string
+          shark_flag_status: string
+          water_quality: string
+          water_temp_celsius: number | null
+          wind_speed_kmh: number | null
+        }
+        Insert: {
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          current_conditions?: string | null
+          id?: string
+          is_open?: boolean
+          last_updated?: string
+          lifeguard_on_duty?: boolean
+          location: string
+          name: string
+          shark_flag_status?: string
+          water_quality?: string
+          water_temp_celsius?: number | null
+          wind_speed_kmh?: number | null
+        }
+        Update: {
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          current_conditions?: string | null
+          id?: string
+          is_open?: boolean
+          last_updated?: string
+          lifeguard_on_duty?: boolean
+          location?: string
+          name?: string
+          shark_flag_status?: string
+          water_quality?: string
+          water_temp_celsius?: number | null
+          wind_speed_kmh?: number | null
+        }
+        Relationships: []
+      }
+      flight_status: {
+        Row: {
+          actual_time: string | null
+          airline: string
+          created_at: string
+          flight_number: string
+          flight_type: string
+          gate: string | null
+          id: string
+          last_updated: string
+          origin_destination: string
+          scheduled_time: string
+          status: string
+          terminal: string | null
+        }
+        Insert: {
+          actual_time?: string | null
+          airline: string
+          created_at?: string
+          flight_number: string
+          flight_type: string
+          gate?: string | null
+          id?: string
+          last_updated?: string
+          origin_destination: string
+          scheduled_time: string
+          status?: string
+          terminal?: string | null
+        }
+        Update: {
+          actual_time?: string | null
+          airline?: string
+          created_at?: string
+          flight_number?: string
+          flight_type?: string
+          gate?: string | null
+          id?: string
+          last_updated?: string
+          origin_destination?: string
+          scheduled_time?: string
+          status?: string
+          terminal?: string | null
+        }
+        Relationships: []
+      }
+      hiking_trails: {
+        Row: {
+          coordinates_lat: number | null
+          coordinates_lng: number | null
+          created_at: string
+          difficulty: string
+          distance_km: number
+          elevation_gain_m: number
+          estimated_hours: number
+          id: string
+          is_open: boolean
+          location: string
+          name: string
+          safety_notes: string | null
+          sunrise_time: string | null
+          sunset_time: string | null
+        }
+        Insert: {
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          difficulty: string
+          distance_km: number
+          elevation_gain_m?: number
+          estimated_hours: number
+          id?: string
+          is_open?: boolean
+          location: string
+          name: string
+          safety_notes?: string | null
+          sunrise_time?: string | null
+          sunset_time?: string | null
+        }
+        Update: {
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          difficulty?: string
+          distance_km?: number
+          elevation_gain_m?: number
+          estimated_hours?: number
+          id?: string
+          is_open?: boolean
+          location?: string
+          name?: string
+          safety_notes?: string | null
+          sunrise_time?: string | null
+          sunset_time?: string | null
+        }
+        Relationships: []
+      }
+      loadshedding_status: {
+        Row: {
+          area_code: string | null
+          created_at: string
+          end_time: string | null
+          id: string
+          is_active: boolean
+          last_updated: string
+          source: string
+          stage: number
+          start_time: string | null
+          suburb: string | null
+        }
+        Insert: {
+          area_code?: string | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          last_updated?: string
+          source?: string
+          stage?: number
+          start_time?: string | null
+          suburb?: string | null
+        }
+        Update: {
+          area_code?: string | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          last_updated?: string
+          source?: string
+          stage?: number
+          start_time?: string | null
+          suburb?: string | null
+        }
+        Relationships: []
+      }
       suburb_intelligence: {
         Row: {
           area_code: string
@@ -101,6 +287,123 @@ export type Database = {
           suburb_name?: string
           updated_at?: string
           ward_id?: number
+        }
+        Relationships: []
+      }
+      water_outages: {
+        Row: {
+          area_description: string
+          created_at: string
+          estimated_end_time: string | null
+          id: string
+          is_active: boolean
+          outage_type: string
+          start_time: string
+          suburb: string
+          updated_at: string
+        }
+        Insert: {
+          area_description: string
+          created_at?: string
+          estimated_end_time?: string | null
+          id?: string
+          is_active?: boolean
+          outage_type?: string
+          start_time?: string
+          suburb: string
+          updated_at?: string
+        }
+        Update: {
+          area_description?: string
+          created_at?: string
+          estimated_end_time?: string | null
+          id?: string
+          is_active?: boolean
+          outage_type?: string
+          start_time?: string
+          suburb?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      water_status: {
+        Row: {
+          capacity_ml: number
+          created_at: string
+          current_level: number
+          dam_code: string
+          dam_name: string
+          id: string
+          last_updated: string
+          status: string
+        }
+        Insert: {
+          capacity_ml: number
+          created_at?: string
+          current_level?: number
+          dam_code: string
+          dam_name: string
+          id?: string
+          last_updated?: string
+          status?: string
+        }
+        Update: {
+          capacity_ml?: number
+          created_at?: string
+          current_level?: number
+          dam_code?: string
+          dam_name?: string
+          id?: string
+          last_updated?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      weather_data: {
+        Row: {
+          created_at: string
+          description: string | null
+          feels_like_celsius: number | null
+          humidity_percent: number | null
+          icon_code: string | null
+          id: string
+          last_updated: string
+          location: string
+          temperature_celsius: number | null
+          uv_index: number | null
+          visibility_km: number | null
+          wind_direction: string | null
+          wind_speed_kmh: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          feels_like_celsius?: number | null
+          humidity_percent?: number | null
+          icon_code?: string | null
+          id?: string
+          last_updated?: string
+          location?: string
+          temperature_celsius?: number | null
+          uv_index?: number | null
+          visibility_km?: number | null
+          wind_direction?: string | null
+          wind_speed_kmh?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          feels_like_celsius?: number | null
+          humidity_percent?: number | null
+          icon_code?: string | null
+          id?: string
+          last_updated?: string
+          location?: string
+          temperature_celsius?: number | null
+          uv_index?: number | null
+          visibility_km?: number | null
+          wind_direction?: string | null
+          wind_speed_kmh?: number | null
         }
         Relationships: []
       }

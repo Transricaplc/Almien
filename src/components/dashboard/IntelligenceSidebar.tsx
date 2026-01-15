@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Loader2 } from 'lucide-react';
+import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Loader2, Droplet, Zap, Cloud, Plane, Waves } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
+import WaterUtilityPanel from './WaterUtilityPanel';
+import WeatherPanel from './WeatherPanel';
+import HikingTrailsPanel from './HikingTrailsPanel';
 import { cn } from '@/lib/utils';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
@@ -169,31 +172,29 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           loading={loading && !!searchQuery}
         />
 
-        {/* Tourist Guidelines Accordion */}
-        <div className="bg-card/50 backdrop-blur-md rounded-xl border border-border/50 overflow-hidden">
-          <button
-            onClick={() => setShowGuidelines(!showGuidelines)}
-            className="w-full flex items-center justify-between p-4 hover:bg-primary/5 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <Mountain className="w-4 h-4 text-amber-400" />
-              </div>
-              <span className="font-semibold text-foreground text-sm">Tourist Safety Guidelines</span>
-            </div>
-            {showGuidelines ? (
-              <ChevronUp className="w-5 h-5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            )}
-          </button>
-          
-          {showGuidelines && (
-            <div className="border-t border-border/50">
-              <TouristProtocolsPanel />
-            </div>
-          )}
-        </div>
+        {/* Weather Panel */}
+        <WeatherPanel />
+
+        {/* Water Utility Panel */}
+        <WaterUtilityPanel />
+
+        {/* Tourism Tabs */}
+        <Tabs defaultValue="trails" className="w-full">
+          <TabsList className="w-full bg-card/50 border border-border/50">
+            <TabsTrigger value="trails" className="flex-1 text-xs data-[state=active]:bg-primary/20">
+              <Mountain className="w-3 h-3 mr-1" /> Trails
+            </TabsTrigger>
+            <TabsTrigger value="guidelines" className="flex-1 text-xs data-[state=active]:bg-primary/20">
+              <Waves className="w-3 h-3 mr-1" /> Safety
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="trails" className="mt-2">
+            <HikingTrailsPanel />
+          </TabsContent>
+          <TabsContent value="guidelines" className="mt-2">
+            <TouristProtocolsPanel />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
