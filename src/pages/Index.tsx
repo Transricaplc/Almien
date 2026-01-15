@@ -15,7 +15,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header 
         isTravelerMode={isTravelerMode} 
         onToggleTravelerMode={handleToggleTravelerMode} 
@@ -26,35 +26,39 @@ const Index = () => {
         <TravelerModeView />
       ) : (
         /* Command Center Mode - Full Dashboard */
-        <main className="max-w-[2000px] mx-auto px-3 py-3 pb-28">
-          {/* 12-Column Grid Layout - Tighter gaps for density */}
-          <div className="grid grid-cols-12 gap-3 lg:gap-4" style={{ height: 'calc(100vh - 180px)' }}>
-            {/* Map - Cols 1-8 */}
-            <div className="col-span-12 xl:col-span-8">
-              <div className="h-full flex flex-col gap-4">
-                <div className="flex-1 min-h-0">
-                  <InteractiveMap fullHeight />
-                </div>
-                {/* Mobility Tray below map */}
-                <div className="flex-shrink-0">
-                  <MobilityTray />
+        <>
+          <main className="flex-1 max-w-[2000px] w-full mx-auto px-3 py-3">
+            {/* 12-Column Grid Layout */}
+            <div className="grid grid-cols-12 gap-3 lg:gap-4 h-[calc(100vh-200px)]">
+              {/* Map - Cols 1-8 */}
+              <div className="col-span-12 xl:col-span-8">
+                <div className="h-full flex flex-col gap-3">
+                  <div className="flex-1 min-h-0">
+                    <InteractiveMap fullHeight />
+                  </div>
+                  {/* Mobility Tray below map */}
+                  <div className="flex-shrink-0">
+                    <MobilityTray />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Intelligence Sidebar - Cols 9-12 */}
-            <div className="col-span-12 xl:col-span-4 h-full">
-              <IntelligenceSidebar />
+              {/* Intelligence Sidebar - Cols 9-12 */}
+              <div className="col-span-12 xl:col-span-4 h-full overflow-hidden">
+                <IntelligenceSidebar />
+              </div>
             </div>
+          </main>
+
+          {/* Legal Footer - Fixed at bottom, no overlap */}
+          <div className="flex-shrink-0 mt-auto">
+            <LegalComplianceFooter />
           </div>
-        </main>
+        </>
       )}
 
       {/* SOS Action Dock - Always visible */}
       <SOSActionDock isTravelerMode={isTravelerMode} />
-
-      {/* Legal Footer (Command Center only) */}
-      {!isTravelerMode && <LegalComplianceFooter />}
     </div>
   );
 };
