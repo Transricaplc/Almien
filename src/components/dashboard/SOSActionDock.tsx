@@ -76,24 +76,21 @@ const SOSActionDock = ({ isTravelerMode = false }: SOSActionDockProps) => {
   return (
     <div className={cn(
       'fixed bottom-0 left-0 right-0 z-50',
-      'bg-black/95 backdrop-blur-xl border-t-2 border-primary/30',
-      'px-4 py-3 safe-area-bottom'
+      'bg-black/95 backdrop-blur-xl border-t border-primary/20',
+      'px-2 py-1.5 safe-area-bottom'
     )}>
       <div className="max-w-[1400px] mx-auto">
         {/* SOS Label */}
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        <div className="flex items-center justify-center gap-1.5 mb-1.5">
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground">
             Emergency SOS • One-Tap Dial
           </span>
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
         </div>
 
-        {/* SOS Buttons Grid */}
-        <div className={cn(
-          'grid gap-2',
-          isTravelerMode ? 'grid-cols-5' : 'grid-cols-5'
-        )}>
+        {/* SOS Buttons Grid - Compact */}
+        <div className="grid grid-cols-5 gap-1">
           {displayButtons.map((button) => {
             const Icon = button.icon;
             return (
@@ -101,32 +98,32 @@ const SOSActionDock = ({ isTravelerMode = false }: SOSActionDockProps) => {
                 key={button.id}
                 href={`tel:${button.number.replace(/\s/g, '')}`}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200',
-                  'border-2 border-white/30',
+                  'flex flex-col items-center justify-center gap-0.5 rounded-lg transition-all duration-200',
+                  'border border-white/20',
                   button.bgColor,
                   button.hoverColor,
                   'hover:scale-[1.02] active:scale-[0.98]',
-                  'shadow-lg hover:shadow-xl',
+                  'shadow-sm hover:shadow-md',
                   button.glowColor,
-                  isTravelerMode ? 'py-4' : 'py-3'
+                  'py-1.5'
                 )}
               >
                 <Icon className={cn(
                   'transition-transform',
                   button.color,
-                  isTravelerMode ? 'w-8 h-8' : 'w-6 h-6'
+                  isTravelerMode ? 'w-4 h-4' : 'w-3 h-3'
                 )} strokeWidth={2.5} />
                 <span className={cn(
                   'font-bold tracking-wide',
                   button.color,
-                  isTravelerMode ? 'text-sm' : 'text-xs'
+                  'text-[8px]'
                 )}>
                   {button.label}
                 </span>
                 <span className={cn(
                   'font-mono opacity-80',
                   button.color,
-                  'text-[10px]'
+                  'text-[7px]'
                 )}>
                   {button.number}
                 </span>

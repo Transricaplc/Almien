@@ -185,27 +185,27 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
 
   return (
     <div className={cn(
-      "bg-card/50 backdrop-blur-sm rounded-xl border-2 border-primary/30 overflow-hidden shadow-xl shadow-primary/10",
+      "bg-card/50 backdrop-blur-sm rounded-lg border border-primary/20 overflow-hidden shadow-lg",
       fullHeight && "h-full"
     )}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary/20 to-transparent px-4 py-2.5 border-b border-primary/20">
+      {/* Header - Compact */}
+      <div className="bg-gradient-to-r from-primary/15 to-transparent px-2 py-1.5 border-b border-primary/10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-foreground text-sm">Situational Map</h3>
-            <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 bg-background/50 rounded">
-              {filteredMarkers.length} markers
+          <div className="flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-primary" />
+            <h3 className="font-semibold text-foreground text-xs">Map</h3>
+            <span className="text-[8px] font-mono text-muted-foreground px-1.5 py-0.5 bg-background/50 rounded">
+              {filteredMarkers.length}
             </span>
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              'p-2 rounded-lg transition-colors',
+              'p-1 rounded transition-colors',
               showFilters ? 'bg-primary text-primary-foreground' : 'bg-background/50 hover:bg-background'
             )}
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -271,7 +271,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
       {/* Map Container */}
       <div className={cn(
         "relative",
-        fullHeight ? "h-[calc(100%-52px)]" : "h-[500px]"
+        fullHeight ? "h-[calc(100%-40px)]" : "h-[350px]"
       )}>
         <MapContainer
           center={MAP_CENTER}
@@ -404,16 +404,16 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
         </MapContainer>
       </div>
 
-      {/* Legend */}
-      <div className="px-4 py-2 bg-black/50 border-t border-border/50 flex items-center justify-between text-[10px]">
-        <div className="flex items-center gap-3">
-          {layers.filter(l => l.enabled).map(layer => (
-            <span key={layer.id} className="flex items-center gap-1">
+      {/* Legend - Compact */}
+      <div className="px-2 py-1 bg-black/50 border-t border-border/30 flex items-center text-[8px]">
+        <div className="flex items-center gap-2 flex-wrap">
+          {layers.filter(l => l.enabled).slice(0, 4).map(layer => (
+            <span key={layer.id} className="flex items-center gap-0.5">
               <div 
-                className="w-2 h-2 rounded-full" 
-                style={{ backgroundColor: layer.color, boxShadow: `0 0 6px ${layer.color}` }} 
+                className="w-1.5 h-1.5 rounded-full" 
+                style={{ backgroundColor: layer.color }} 
               />
-              <span className="text-muted-foreground font-mono">{layer.name}</span>
+              <span className="text-muted-foreground font-mono">{layer.name.split(' ')[0]}</span>
             </span>
           ))}
         </div>
