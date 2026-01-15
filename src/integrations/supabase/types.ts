@@ -377,6 +377,51 @@ export type Database = {
         }
         Relationships: []
       }
+      train_routes: {
+        Row: {
+          created_at: string
+          id: string
+          incidents_24h: number
+          is_operational: boolean
+          last_updated: string
+          name: string
+          operating_cameras: number
+          route_code: string
+          safety_score: number
+          stations: number
+          status: string
+          total_cameras: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incidents_24h?: number
+          is_operational?: boolean
+          last_updated?: string
+          name: string
+          operating_cameras?: number
+          route_code: string
+          safety_score?: number
+          stations?: number
+          status?: string
+          total_cameras?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incidents_24h?: number
+          is_operational?: boolean
+          last_updated?: string
+          name?: string
+          operating_cameras?: number
+          route_code?: string
+          safety_score?: number
+          stations?: number
+          status?: string
+          total_cameras?: number
+        }
+        Relationships: []
+      }
       water_outages: {
         Row: {
           area_description: string
@@ -491,6 +536,57 @@ export type Database = {
           visibility_km?: number | null
           wind_direction?: string | null
           wind_speed_kmh?: number | null
+        }
+        Relationships: []
+      }
+      wind_reports: {
+        Row: {
+          advisory: string | null
+          affects_beach_goers: boolean
+          affects_drivers: boolean
+          affects_hikers: boolean
+          affects_surfers: boolean
+          created_at: string
+          description: string | null
+          id: string
+          last_updated: string
+          location: string
+          severity: string
+          wind_direction: string
+          wind_gust_kmh: number | null
+          wind_speed_kmh: number
+        }
+        Insert: {
+          advisory?: string | null
+          affects_beach_goers?: boolean
+          affects_drivers?: boolean
+          affects_hikers?: boolean
+          affects_surfers?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_updated?: string
+          location: string
+          severity?: string
+          wind_direction: string
+          wind_gust_kmh?: number | null
+          wind_speed_kmh: number
+        }
+        Update: {
+          advisory?: string | null
+          affects_beach_goers?: boolean
+          affects_drivers?: boolean
+          affects_hikers?: boolean
+          affects_surfers?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_updated?: string
+          location?: string
+          severity?: string
+          wind_direction?: string
+          wind_gust_kmh?: number | null
+          wind_speed_kmh?: number
         }
         Relationships: []
       }

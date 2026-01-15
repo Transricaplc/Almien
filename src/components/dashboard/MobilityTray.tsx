@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, Car, Train, Route, Mountain, Bike, Dog, Plane, PersonStanding } from 'lucide-react';
+import { ChevronUp, ChevronDown, Car, Train, Route, Mountain, Bike, Dog, Plane, PersonStanding, Wind } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RoadsStatusPanel from './RoadsStatusPanel';
-import TrainCard from './TrainCard';
+import TrainRoutesPanel from './TrainRoutesPanel';
 import UberZoneCard from './UberZoneCard';
 import HikingTrailsPanel from './HikingTrailsPanel';
 import CyclingRoutesPanel from './CyclingRoutesPanel';
 import PetFriendlyZonesPanel from './PetFriendlyZonesPanel';
 import FlightStatusPanel from './FlightStatusPanel';
 import RunningRoutesPanel from './RunningRoutesPanel';
-import { trainRoutes, uberDangerZones } from '@/data/dashboardData';
+import WindReportPanel from './WindReportPanel';
+import { uberDangerZones } from '@/data/dashboardData';
 
-type TabId = 'roads' | 'trains' | 'rideshare' | 'flights' | 'hiking' | 'running' | 'cycling' | 'pets';
+type TabId = 'roads' | 'trains' | 'rideshare' | 'flights' | 'hiking' | 'running' | 'cycling' | 'pets' | 'wind';
 
 interface TabConfig {
   id: TabId;
@@ -28,6 +29,7 @@ const tabs: TabConfig[] = [
   { id: 'running', label: 'Running', icon: PersonStanding },
   { id: 'cycling', label: 'Cycling', icon: Bike },
   { id: 'pets', label: 'Canine', icon: Dog },
+  { id: 'wind', label: 'Wind', icon: Wind },
 ];
 
 const MobilityTray = () => {
@@ -39,13 +41,7 @@ const MobilityTray = () => {
       case 'roads':
         return <RoadsStatusPanel />;
       case 'trains':
-        return (
-          <div className="space-y-2">
-            {trainRoutes.map(train => (
-              <TrainCard key={train.id} train={train} />
-            ))}
-          </div>
-        );
+        return <TrainRoutesPanel />;
       case 'rideshare':
         return (
           <div className="space-y-2">
@@ -64,6 +60,8 @@ const MobilityTray = () => {
         return <CyclingRoutesPanel />;
       case 'pets':
         return <PetFriendlyZonesPanel />;
+      case 'wind':
+        return <WindReportPanel />;
       default:
         return null;
     }
