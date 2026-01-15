@@ -67,10 +67,25 @@ const pickpocketZones = [
   { center: [-33.9205, 18.4180] as [number, number], radius: 180, name: 'Station Area' },
 ];
 
-// Cycle lanes
+// Cycle lanes (Green)
 const cycleLanes = [
   { positions: [[-33.9285, 18.4120], [-33.9350, 18.4150], [-33.9420, 18.4200]] as [number, number][], name: 'Sea Point Promenade' },
   { positions: [[-33.9050, 18.4180], [-33.9100, 18.4200], [-33.9150, 18.4210]] as [number, number][], name: 'Green Point Cycle Path' },
+  { positions: [[-33.9600, 18.4700], [-33.9550, 18.4750], [-33.9500, 18.4800]] as [number, number][], name: 'Rondebosch Common' },
+];
+
+// Hiking trails (Brown)
+const hikingTrails = [
+  { positions: [[-33.9380, 18.4030], [-33.9350, 18.4000], [-33.9320, 18.3970], [-33.9280, 18.3950]] as [number, number][], name: "Lion's Head Summit" },
+  { positions: [[-33.9550, 18.4100], [-33.9520, 18.4050], [-33.9500, 18.4020]] as [number, number][], name: 'Table Mountain Platteklip' },
+  { positions: [[-33.9850, 18.4200], [-33.9880, 18.4180], [-33.9900, 18.4150]] as [number, number][], name: 'Constantia Nek Trail' },
+];
+
+// Safe pedestrian zones (Blue)
+const safePedestrianZones = [
+  { positions: [[-33.9080, 18.4200], [-33.9100, 18.4230], [-33.9120, 18.4250]] as [number, number][], name: 'V&A Waterfront Promenade' },
+  { positions: [[-33.9200, 18.4300], [-33.9180, 18.4320], [-33.9160, 18.4350]] as [number, number][], name: 'Sea Point Beach Walk' },
+  { positions: [[-33.9400, 18.4660], [-33.9380, 18.4680], [-33.9360, 18.4700]] as [number, number][], name: 'Rondebosch Fountain Walk' },
 ];
 
 // Map Controls Component
@@ -117,9 +132,11 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   const [layers, setLayers] = useState<LayerToggle[]>([
     { id: 'cctv', name: 'CCTV Cameras', icon: Camera, color: '#3b82f6', enabled: true },
     { id: 'traffic', name: 'Traffic Lights', icon: TrafficCone, color: '#22c55e', enabled: true },
-    { id: 'risk', name: 'Pickpocket Zones', icon: AlertTriangle, color: '#ef4444', enabled: true },
-    { id: 'hotspots', name: 'Accident Hotspots', icon: MapPin, color: '#f97316', enabled: false },
+    { id: 'risk', name: 'Pickpocket Zones', icon: AlertTriangle, color: '#f97316', enabled: true },
+    { id: 'hotspots', name: 'Accident Hotspots', icon: MapPin, color: '#ef4444', enabled: false },
     { id: 'cycling', name: 'Cycle Lanes', icon: Bike, color: '#10b981', enabled: true },
+    { id: 'hiking', name: 'Hiking Trails', icon: MapPin, color: '#92400e', enabled: true },
+    { id: 'pedestrian', name: 'Safe Pedestrian', icon: MapPin, color: '#3b82f6', enabled: true },
   ]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -151,7 +168,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   };
 
   const allMarkers = layers
-    .filter(l => l.enabled && l.id !== 'cycling')
+    .filter(l => l.enabled && !['cycling', 'hiking', 'pedestrian'].includes(l.id))
     .flatMap(l => getMarkersByType(l.id));
 
   const filteredMarkers = searchQuery 
@@ -163,6 +180,8 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
 
   const showPickpocketZones = layers.find(l => l.id === 'risk')?.enabled;
   const showCycleLanes = layers.find(l => l.id === 'cycling')?.enabled;
+  const showHikingTrails = layers.find(l => l.id === 'hiking')?.enabled;
+  const showPedestrianZones = layers.find(l => l.id === 'pedestrian')?.enabled;
 
   return (
     <div className={cn(
@@ -304,6 +323,47 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
                 <div className="p-2">
                   <div className="font-bold text-sm text-emerald-600">🚴 {lane.name}</div>
                   <div className="text-xs text-gray-600">Safe cycling corridor</div>
+                </div>
+              </Popup>
+            </Polyline>
+          ))}
+
+          {/* Hiking Trails - Brown Lines */}
+          {showHikingTrails && hikingTrails.map((trail, idx) => (
+            <Polyline
+              key={`hiking-${idx}`}
+              positions={trail.positions}
+              pathOptions={{
+                color: '#92400e',
+                weight: 5,
+                opacity: 0.9,
+                dashArray: '5, 8'
+              }}
+            >
+              <Popup>
+                <div className="p-2">
+                  <div className="font-bold text-sm text-amber-700">🥾 {trail.name}</div>
+                  <div className="text-xs text-gray-600">Hiking trail - Stay alert</div>
+                </div>
+              </Popup>
+            </Polyline>
+          ))}
+
+          {/* Safe Pedestrian Zones - Blue Lines */}
+          {showPedestrianZones && safePedestrianZones.map((zone, idx) => (
+            <Polyline
+              key={`pedestrian-${idx}`}
+              positions={zone.positions}
+              pathOptions={{
+                color: '#3b82f6',
+                weight: 6,
+                opacity: 0.7,
+              }}
+            >
+              <Popup>
+                <div className="p-2">
+                  <div className="font-bold text-sm text-blue-600">🚶 {zone.name}</div>
+                  <div className="text-xs text-gray-600">Safe pedestrian walkway</div>
                 </div>
               </Popup>
             </Polyline>

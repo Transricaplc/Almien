@@ -1,36 +1,27 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Umbrella } from 'lucide-react';
-import { suburbIntelligence, SuburbData, touristSites } from '@/data/suburbIntelligence';
-import SectorIntelligenceCard from './SectorIntelligenceCard';
+import { Search, MapPin, X, ChevronDown, ChevronUp, Mountain, Loader2 } from 'lucide-react';
+import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
+import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
 import { cn } from '@/lib/utils';
 
-const getSafetyColor = (score: number) => {
-  if (score >= 80) return 'hsl(160 84% 39%)';
-  if (score >= 60) return 'hsl(38 92% 50%)';
-  if (score >= 40) return 'hsl(25 95% 53%)';
-  return 'hsl(0 84% 60%)';
-};
-
 interface IntelligenceSidebarProps {
-  onSuburbSelect?: (suburb: SuburbData | null) => void;
+  onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
 
 const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
+  const { suburbs, loading, error, searchSuburbs } = useSuburbIntelligence();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSuburb, setSelectedSuburb] = useState<SuburbData | null>(null);
+  const [selectedSuburb, setSelectedSuburb] = useState<SuburbIntelligence | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(false);
 
   const filteredSuburbs = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase();
-    return suburbIntelligence.filter(suburb => 
-      suburb.suburb_name.toLowerCase().includes(query)
-    ).slice(0, 8);
-  }, [searchQuery]);
+    return searchSuburbs(searchQuery);
+  }, [searchQuery, searchSuburbs]);
 
-  const handleSelectSuburb = (suburb: SuburbData) => {
+  const handleSelectSuburb = (suburb: SuburbIntelligence) => {
     setSelectedSuburb(suburb);
     setSearchQuery('');
     setIsFocused(false);
@@ -45,13 +36,24 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
   // Quick access suburbs - mix of high and low safety areas
   const quickAccessSuburbs = useMemo(() => {
     return [
-      suburbIntelligence.find(s => s.id === 'ottery'),
-      suburbIntelligence.find(s => s.id === 'sea-point'),
-      suburbIntelligence.find(s => s.id === 'claremont'),
-      suburbIntelligence.find(s => s.id === 'khayelitsha'),
-      suburbIntelligence.find(s => s.id === 'camps-bay'),
-    ].filter(Boolean) as SuburbData[];
-  }, []);
+      suburbs.find(s => s.id === 'ottery'),
+      suburbs.find(s => s.id === 'sea-point'),
+      suburbs.find(s => s.id === 'claremont'),
+      suburbs.find(s => s.id === 'khayelitsha'),
+      suburbs.find(s => s.id === 'camps-bay'),
+    ].filter(Boolean) as SuburbIntelligence[];
+  }, [suburbs]);
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="text-destructive text-sm font-mono mb-2">DATABASE ERROR</div>
+          <p className="text-muted-foreground text-xs">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col space-y-4 overflow-hidden">
@@ -62,10 +64,14 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           isFocused ? 'border-primary shadow-lg shadow-primary/20' : 'border-border/50'
         )}>
           <div className="flex items-center px-4 py-3">
-            <Search className={cn(
-              'w-5 h-5 mr-3 transition-colors',
-              isFocused ? 'text-primary' : 'text-muted-foreground'
-            )} />
+            {loading ? (
+              <Loader2 className="w-5 h-5 mr-3 text-primary animate-spin" />
+            ) : (
+              <Search className={cn(
+                'w-5 h-5 mr-3 transition-colors',
+                isFocused ? 'text-primary' : 'text-muted-foreground'
+              )} />
+            )}
             <input
               type="text"
               value={searchQuery}
@@ -74,6 +80,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               placeholder="Search suburb (e.g., Ottery, Claremont...)"
               className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm font-mono"
+              disabled={loading}
             />
             {searchQuery && (
               <button
@@ -103,7 +110,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
                   </div>
                 </div>
                 <div 
-                  className="text-xl font-black font-mono"
+                  className="text-xl font-black font-mono tabular-nums"
                   style={{ color: getSafetyColor(suburb.safety_score) }}
                 >
                   {suburb.safety_score}
@@ -114,7 +121,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         )}
 
         {/* No Results */}
-        {isFocused && searchQuery && filteredSuburbs.length === 0 && (
+        {isFocused && searchQuery && filteredSuburbs.length === 0 && !loading && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl rounded-xl border-2 border-border shadow-2xl p-4 text-center z-50 animate-fade-in">
             <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <div className="text-sm text-muted-foreground">No suburbs found for "{searchQuery}"</div>
@@ -123,7 +130,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
       </div>
 
       {/* Quick Access Pills */}
-      {!selectedSuburb && (
+      {!selectedSuburb && !loading && (
         <div className="flex-shrink-0 flex flex-wrap gap-2">
           {quickAccessSuburbs.map(suburb => (
             <button
@@ -141,12 +148,25 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         </div>
       )}
 
+      {/* Loading State for Pills */}
+      {!selectedSuburb && loading && (
+        <div className="flex-shrink-0 flex flex-wrap gap-2">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div
+              key={i}
+              className="px-3 py-1.5 rounded-lg bg-card/30 border border-border/30 animate-pulse w-20 h-7"
+            />
+          ))}
+        </div>
+      )}
+
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto space-y-4 scrollbar-hide pb-4">
-        {/* Sector Intelligence Card */}
-        <SectorIntelligenceCard 
-          selectedSuburb={selectedSuburb} 
-          onClose={handleCloseSuburb} 
+        {/* Sector Report Card (connected to Supabase) */}
+        <SectorReport 
+          suburb={selectedSuburb} 
+          onClose={handleCloseSuburb}
+          loading={loading && !!searchQuery}
         />
 
         {/* Tourist Guidelines Accordion */}

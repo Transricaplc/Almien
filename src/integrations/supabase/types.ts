@@ -47,6 +47,63 @@ export type Database = {
         }
         Relationships: []
       }
+      suburb_intelligence: {
+        Row: {
+          area_code: string
+          cctv_coverage: number
+          created_at: string
+          fire_contact: string
+          fire_station: string
+          hospital_contact: string
+          hospital_name: string
+          id: string
+          incidents_24h: number
+          risk_type: string | null
+          safety_score: number
+          saps_contact: string
+          saps_station: string
+          suburb_name: string
+          updated_at: string
+          ward_id: number
+        }
+        Insert: {
+          area_code: string
+          cctv_coverage?: number
+          created_at?: string
+          fire_contact: string
+          fire_station: string
+          hospital_contact: string
+          hospital_name: string
+          id: string
+          incidents_24h?: number
+          risk_type?: string | null
+          safety_score: number
+          saps_contact: string
+          saps_station: string
+          suburb_name: string
+          updated_at?: string
+          ward_id: number
+        }
+        Update: {
+          area_code?: string
+          cctv_coverage?: number
+          created_at?: string
+          fire_contact?: string
+          fire_station?: string
+          hospital_contact?: string
+          hospital_name?: string
+          id?: string
+          incidents_24h?: number
+          risk_type?: string | null
+          safety_score?: number
+          saps_contact?: string
+          saps_station?: string
+          suburb_name?: string
+          updated_at?: string
+          ward_id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
