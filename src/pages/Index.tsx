@@ -16,6 +16,9 @@ import InteractiveMap from '@/components/dashboard/InteractiveMap';
 import ComparisonView from '@/components/dashboard/ComparisonView';
 import ExportPanel from '@/components/dashboard/ExportPanel';
 import AdditionalEmergencyContacts from '@/components/dashboard/AdditionalEmergencyContacts';
+import BeachSafetyPanel from '@/components/dashboard/BeachSafetyPanel';
+import TouristProtocolsPanel from '@/components/dashboard/TouristProtocolsPanel';
+import LegalComplianceFooter from '@/components/dashboard/LegalComplianceFooter';
 import { majorRoutes, trainRoutes, uberDangerZones } from '@/data/dashboardData';
 import { MajorRoute, TabId } from '@/types/dashboard';
 
@@ -159,18 +162,25 @@ const Index = () => {
       {/* Infrastructure Grid */}
       <InfrastructureGrid />
 
-      {/* Additional Emergency Contacts */}
+      {/* Beach & Tourist Safety */}
       <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <AdditionalEmergencyContacts />
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          <BeachSafetyPanel />
+          <TouristProtocolsPanel />
+          <AdditionalEmergencyContacts />
+        </div>
       </div>
+
+      {/* Legal Compliance Footer */}
+      <LegalComplianceFooter />
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/50">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-primary">BLUEWHALE</span>
-              <span>© 2024 Real-time safety monitoring for Western Cape</span>
+              <span className="font-mono text-primary">SAFESYNC</span>
+              <span>© 2024 Real-time urban intelligence for Western Cape</span>
             </div>
             <div className="flex items-center gap-4 font-mono text-[10px]">
               <span>SAPS: <span className="font-bold text-red-400">10111</span></span>
@@ -179,7 +189,7 @@ const Index = () => {
               <span>•</span>
               <span>FIRE: <span className="font-bold text-orange-400">021 480 7700</span></span>
               <span>•</span>
-              <span>CITY: <span className="font-bold text-emerald-400">0860 103 089</span></span>
+              <span>NSRI: <span className="font-bold text-cyan-400">087 094 9774</span></span>
             </div>
           </div>
         </div>

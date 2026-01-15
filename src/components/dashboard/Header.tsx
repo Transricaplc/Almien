@@ -24,11 +24,11 @@ const Header = () => {
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-safety-good rounded-full border-2 border-background animate-pulse" />
             </div>
             <div>
-              <h1 className="text-xl lg:text-3xl font-black text-foreground tracking-tight">
-                BlueWhale<span className="text-primary">Intelligence</span>
+            <h1 className="text-xl lg:text-3xl font-black text-foreground tracking-tight">
+                Safe<span className="text-primary">Sync</span>
               </h1>
               <p className="text-primary/70 text-[10px] lg:text-xs font-medium tracking-wide uppercase">
-                Cape Town Safety Command Center
+                Cape Town Urban Intelligence Dashboard
               </p>
             </div>
           </div>
