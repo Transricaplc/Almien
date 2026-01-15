@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Shield, Bell, Settings, ToggleLeft, ToggleRight, AlertTriangle, Plane } from 'lucide-react';
+import { 
+  Shield, Bell, Settings, ToggleLeft, ToggleRight, AlertTriangle, Plane,
+  Camera, CameraOff, Route, Train, Car, Activity, Phone, Clock
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   isTravelerMode: boolean;
   onToggleTravelerMode: () => void;
 }
+
+// Mock stats data - would come from API in production
+const dashboardStats = {
+  functioning_cameras: 228,
+  offline_cameras: 25,
+  major_routes: 6,
+  train_lines: 4,
+  uber_zones: 6,
+  incidents_24h: 47,
+  system_uptime: 87,
+};
 
 const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -16,20 +30,30 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
     return () => clearInterval(timer);
   }, []);
 
+  const getThreatLevel = () => {
+    if (dashboardStats.incidents_24h > 60) return { level: 'CRITICAL', color: 'text-red-400 bg-red-500/20 border-red-500/50' };
+    if (dashboardStats.incidents_24h > 40) return { level: 'ELEVATED', color: 'text-amber-400 bg-amber-500/20 border-amber-500/50' };
+    if (dashboardStats.incidents_24h > 20) return { level: 'MODERATE', color: 'text-yellow-400 bg-yellow-500/20 border-yellow-500/50' };
+    return { level: 'LOW', color: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/50' };
+  };
+
+  const threatStatus = getThreatLevel();
+
   return (
     <header className={cn(
       'border-b-2 shadow-2xl sticky top-0 z-50',
       isTravelerMode 
         ? 'bg-black border-red-500/50' 
-        : 'bg-gradient-header border-primary/50'
+        : 'bg-gradient-header border-primary/30'
     )}>
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-2 lg:py-3">
-        <div className="flex items-center justify-between gap-4">
+      <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-6 py-2">
+        {/* Top Row - Branding & Actions */}
+        <div className="flex items-center justify-between gap-3">
           {/* Logo & Title */}
-          <div className="flex items-center gap-3 lg:gap-4">
+          <div className="flex items-center gap-2 lg:gap-3">
             <div className="relative">
               <div className={cn(
-                'w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-2xl transition-all',
+                'w-9 h-9 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center shadow-xl transition-all',
                 isTravelerMode 
                   ? 'bg-red-600 glow-red' 
                   : 'bg-gradient-to-br from-primary to-blue-400 glow-blue'
@@ -37,61 +61,85 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
                 <Shield className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
               </div>
               <div className={cn(
-                'absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background animate-pulse',
-                isTravelerMode ? 'bg-red-500' : 'bg-safety-good'
+                'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background',
+                isTravelerMode ? 'bg-red-500 pulse-danger' : 'bg-safety-good animate-pulse'
               )} />
             </div>
             <div>
-              <h1 className="text-lg lg:text-2xl font-black text-foreground tracking-tight">
+              <h1 className="text-base lg:text-xl font-black text-foreground tracking-tight">
                 Safe<span className={isTravelerMode ? 'text-red-400' : 'text-primary'}>Sync</span>
               </h1>
-              <p className="text-primary/70 text-[9px] lg:text-[10px] font-mono tracking-wider uppercase">
-                {isTravelerMode ? 'TRAVELER EMERGENCY MODE' : 'CAPE TOWN SITUATIONAL AWARENESS'}
+              <p className="text-primary/70 text-[8px] lg:text-[9px] font-tactical tracking-wider uppercase hidden sm:block">
+                {isTravelerMode ? 'EMERGENCY MODE' : 'SITUATIONAL AWARENESS'}
               </p>
             </div>
           </div>
 
-          {/* Risk Level Ticker (Command Center Only) */}
+          {/* Center - Risk Level Ticker & Stats Summary (Command Center Only) */}
           {!isTravelerMode && (
-            <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-              <AlertTriangle className="w-4 h-4 text-yellow-400" />
-              <span className="text-xs font-mono text-yellow-400">THREAT LEVEL: MODERATE</span>
+            <div className="hidden lg:flex items-center gap-4">
+              {/* Threat Level Badge */}
+              <div className={cn(
+                'flex items-center gap-2 px-3 py-1.5 rounded-lg border',
+                threatStatus.color
+              )}>
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-tactical font-bold tracking-wider">
+                  THREAT: {threatStatus.level}
+                </span>
+              </div>
+
+              {/* Mini Stats Row */}
+              <div className="flex items-center gap-3 text-[10px] font-tactical">
+                <div className="flex items-center gap-1.5 text-emerald-400">
+                  <Camera className="w-3 h-3" />
+                  <span className="tabular-nums">{dashboardStats.functioning_cameras}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-red-400">
+                  <CameraOff className="w-3 h-3" />
+                  <span className="tabular-nums">{dashboardStats.offline_cameras}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-amber-400">
+                  <Activity className="w-3 h-3" />
+                  <span className="tabular-nums">{dashboardStats.incidents_24h}</span>
+                </div>
+              </div>
             </div>
           )}
           
           {/* Right Side Actions */}
-          <div className="flex items-center gap-2 lg:gap-3">
+          <div className="flex items-center gap-2">
             {/* Traveler Mode Toggle */}
             <button
               onClick={onToggleTravelerMode}
               className={cn(
-                'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-xl transition-all border-2',
+                'flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-lg transition-all border-2',
                 isTravelerMode
-                  ? 'bg-red-600 border-red-400 text-white hover:bg-red-500'
+                  ? 'bg-red-600 border-red-400 text-white hover:bg-red-500 glow-red'
                   : 'bg-card/50 border-border hover:border-primary/50 text-foreground hover:bg-primary/10'
               )}
             >
-              <Plane className="w-4 h-4" />
-              <span className="text-xs lg:text-sm font-semibold hidden sm:inline">
-                {isTravelerMode ? 'Exit Traveler Mode' : "Traveler's Mode"}
+              <Plane className="w-3.5 h-3.5" />
+              <span className="text-[10px] lg:text-xs font-bold hidden sm:inline">
+                {isTravelerMode ? 'EXIT' : 'TRAVELER'}
               </span>
               {isTravelerMode ? (
-                <ToggleRight className="w-5 h-5" />
+                <ToggleRight className="w-4 h-4" />
               ) : (
-                <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+                <ToggleLeft className="w-4 h-4 text-muted-foreground" />
               )}
             </button>
 
             {/* Alerts Button (Command Center Only) */}
             {!isTravelerMode && (
               <button className={cn(
-                'relative p-2 rounded-xl transition-all',
+                'relative p-1.5 rounded-lg transition-all',
                 'bg-background/30 hover:bg-background/50 border border-border/50',
                 alertCount > 0 && 'text-safety-moderate'
               )}>
-                <Bell className="w-4 h-4 lg:w-5 lg:h-5" />
+                <Bell className="w-4 h-4" />
                 {alertCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
                     {alertCount}
                   </span>
                 )}
@@ -100,36 +148,93 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
 
             {/* Settings (Command Center Only) */}
             {!isTravelerMode && (
-              <button className="hidden sm:flex p-2 rounded-xl bg-background/30 hover:bg-background/50 border border-border/50 transition-all">
-                <Settings className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
+              <button className="hidden sm:flex p-1.5 rounded-lg bg-background/30 hover:bg-background/50 border border-border/50 transition-all">
+                <Settings className="w-4 h-4 text-muted-foreground" />
               </button>
             )}
 
             {/* Live Indicator */}
             <div className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg shadow-lg pulse-live',
-              isTravelerMode ? 'bg-red-600' : 'bg-safety-good/90'
+              'flex items-center gap-1.5 px-2 py-1 rounded-md shadow-lg',
+              isTravelerMode ? 'bg-red-600 pulse-danger' : 'bg-safety-good/90 pulse-live'
             )}>
-              <div className="w-2 h-2 bg-foreground rounded-full" />
-              <span className="text-xs font-bold text-foreground hidden sm:inline">LIVE</span>
+              <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
+              <span className="text-[10px] font-bold text-foreground hidden sm:inline">LIVE</span>
             </div>
 
             {/* Time Display (Command Center Only) */}
             {!isTravelerMode && (
-              <div className="hidden md:block text-right">
-                <div className="text-[9px] text-muted-foreground uppercase tracking-wide font-mono">
-                  {currentTime.toLocaleDateString('en-ZA', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </div>
-                <div className="font-mono text-sm font-bold text-foreground tabular-nums">
-                  {currentTime.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              <div className="hidden md:flex items-center gap-2 text-right">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                <div>
+                  <div className="text-[8px] text-muted-foreground uppercase tracking-wide font-tactical">
+                    {currentTime.toLocaleDateString('en-ZA', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className="font-tactical text-xs font-bold text-foreground tabular-nums">
+                    {currentTime.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
+
+        {/* Stats Bar (Command Center Only) - 8 Key Metrics */}
+        {!isTravelerMode && (
+          <div className="mt-2 pt-2 border-t border-border/30">
+            <div className="grid grid-cols-4 lg:grid-cols-8 gap-1.5 lg:gap-2">
+              <StatMini icon={Camera} value={dashboardStats.functioning_cameras} label="Active Cams" color="emerald" />
+              <StatMini icon={CameraOff} value={dashboardStats.offline_cameras} label="Offline" color="red" />
+              <StatMini icon={Route} value={dashboardStats.major_routes} label="Routes" color="blue" />
+              <StatMini icon={Train} value={dashboardStats.train_lines} label="Train Lines" color="purple" />
+              <StatMini icon={Car} value={dashboardStats.uber_zones} label="Uber Zones" color="orange" className="hidden lg:flex" />
+              <StatMini icon={Activity} value={dashboardStats.incidents_24h} label="24h Incidents" color="amber" className="hidden lg:flex" />
+              <StatMini icon={Activity} value={`${dashboardStats.system_uptime}%`} label="Uptime" color="teal" className="hidden lg:flex" />
+              <StatMini icon={Phone} value="10111" label="Emergency" color="red" isPhone className="hidden lg:flex" />
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
+};
+
+interface StatMiniProps {
+  icon: typeof Camera;
+  value: string | number;
+  label: string;
+  color: 'emerald' | 'red' | 'blue' | 'purple' | 'orange' | 'amber' | 'teal';
+  className?: string;
+  isPhone?: boolean;
+}
+
+const StatMini = ({ icon: Icon, value, label, color, className, isPhone }: StatMiniProps) => {
+  const colorClasses = {
+    emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+    red: 'bg-red-500/10 border-red-500/30 text-red-400',
+    blue: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+    purple: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
+    orange: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
+    amber: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+    teal: 'bg-teal-500/10 border-teal-500/30 text-teal-400',
+  };
+
+  const content = (
+    <div className={cn(
+      'flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all hover:scale-[1.02]',
+      colorClasses[color],
+      className
+    )}>
+      <Icon className="w-3 h-3 flex-shrink-0" />
+      <span className="font-tactical text-xs font-bold tabular-nums">{value}</span>
+      <span className="text-[8px] text-muted-foreground uppercase hidden xl:inline">{label}</span>
+    </div>
+  );
+
+  if (isPhone) {
+    return <a href="tel:10111">{content}</a>;
+  }
+  return content;
 };
 
 export default Header;
