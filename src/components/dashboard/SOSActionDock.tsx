@@ -1,11 +1,11 @@
-import { Phone, Shield, Flame, Waves, Mountain } from 'lucide-react';
+import { Shield, Flame, Waves, Mountain, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SOSButton {
   id: string;
   label: string;
   number: string;
-  icon: typeof Phone;
+  icon: typeof Shield;
   color: string;
   bgColor: string;
   hoverColor: string;
@@ -13,6 +13,16 @@ interface SOSButton {
 }
 
 const sosButtons: SOSButton[] = [
+  {
+    id: 'ccid',
+    label: 'CCID',
+    number: '021 426 1325',
+    icon: Building2,
+    color: 'text-violet-100',
+    bgColor: 'bg-violet-600',
+    hoverColor: 'hover:bg-violet-500',
+    glowColor: 'shadow-violet-500/50',
+  },
   {
     id: 'saps',
     label: 'SAPS',
@@ -35,7 +45,7 @@ const sosButtons: SOSButton[] = [
   },
   {
     id: 'sea-rescue',
-    label: 'SEA RESCUE',
+    label: 'SEA',
     number: '087 094 9774',
     icon: Waves,
     color: 'text-cyan-100',
@@ -45,7 +55,7 @@ const sosButtons: SOSButton[] = [
   },
   {
     id: 'mtn-rescue',
-    label: 'MTN RESCUE',
+    label: 'MTN',
     number: '021 937 0300',
     icon: Mountain,
     color: 'text-emerald-100',
@@ -60,6 +70,9 @@ interface SOSActionDockProps {
 }
 
 const SOSActionDock = ({ isTravelerMode = false }: SOSActionDockProps) => {
+  // Use 5-column layout for traveler mode, 5 buttons in command center
+  const displayButtons = isTravelerMode ? sosButtons : sosButtons;
+
   return (
     <div className={cn(
       'fixed bottom-0 left-0 right-0 z-50',
@@ -71,49 +84,49 @@ const SOSActionDock = ({ isTravelerMode = false }: SOSActionDockProps) => {
         <div className="flex items-center justify-center gap-2 mb-3">
           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
           <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            Emergency SOS • Tap to Call
+            Emergency SOS • One-Tap Dial
           </span>
           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
         </div>
 
         {/* SOS Buttons Grid */}
         <div className={cn(
-          'grid gap-3',
-          isTravelerMode ? 'grid-cols-2' : 'grid-cols-4'
+          'grid gap-2',
+          isTravelerMode ? 'grid-cols-5' : 'grid-cols-5'
         )}>
-          {sosButtons.map((button) => {
+          {displayButtons.map((button) => {
             const Icon = button.icon;
             return (
               <a
                 key={button.id}
                 href={`tel:${button.number.replace(/\s/g, '')}`}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1.5 rounded-xl transition-all duration-200',
-                  'border-2 border-white/20',
+                  'flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200',
+                  'border-2 border-white/30',
                   button.bgColor,
                   button.hoverColor,
                   'hover:scale-[1.02] active:scale-[0.98]',
                   'shadow-lg hover:shadow-xl',
                   button.glowColor,
-                  isTravelerMode ? 'py-6' : 'py-4'
+                  isTravelerMode ? 'py-4' : 'py-3'
                 )}
               >
                 <Icon className={cn(
                   'transition-transform',
                   button.color,
-                  isTravelerMode ? 'w-10 h-10' : 'w-7 h-7'
-                )} />
+                  isTravelerMode ? 'w-8 h-8' : 'w-6 h-6'
+                )} strokeWidth={2.5} />
                 <span className={cn(
                   'font-bold tracking-wide',
                   button.color,
-                  isTravelerMode ? 'text-lg' : 'text-sm'
+                  isTravelerMode ? 'text-sm' : 'text-xs'
                 )}>
                   {button.label}
                 </span>
                 <span className={cn(
                   'font-mono opacity-80',
                   button.color,
-                  isTravelerMode ? 'text-sm' : 'text-xs'
+                  'text-[10px]'
                 )}>
                   {button.number}
                 </span>
