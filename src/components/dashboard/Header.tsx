@@ -43,12 +43,12 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
 
   return (
     <header className={cn(
-      'border-b-2 shadow-2xl sticky top-0 z-50',
+      'border-b shadow-xl sticky top-0 z-50',
       isTravelerMode 
-        ? 'bg-black border-red-500/50' 
-        : 'bg-gradient-header border-primary/30'
+        ? 'bg-black border-red-500/40' 
+        : 'bg-gradient-header border-primary/20'
     )}>
-      <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-6 py-2">
+      <div className="max-w-[2000px] mx-auto px-3 sm:px-4 lg:px-5 py-1.5">
         {/* Top Row - Branding & Actions */}
         <div className="flex items-center justify-between gap-3">
           {/* Logo & Title */}
@@ -195,18 +195,16 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Stats Bar (Command Center Only) - 8 Key Metrics */}
+        {/* Stats Bar (Command Center Only) - 6 Key Metrics, Compact */}
         {!isTravelerMode && (
-          <div className="mt-2 pt-2 border-t border-border/30">
-            <div className="grid grid-cols-4 lg:grid-cols-8 gap-1.5 lg:gap-2">
-              <StatMini icon={Camera} value={dashboardStats.functioning_cameras} label="Active Cams" color="emerald" />
-              <StatMini icon={CameraOff} value={dashboardStats.offline_cameras} label="Offline" color="red" />
-              <StatMini icon={Route} value={dashboardStats.major_routes} label="Routes" color="blue" />
-              <StatMini icon={Train} value={dashboardStats.train_lines} label="Train Lines" color="purple" />
-              <StatMini icon={Car} value={dashboardStats.uber_zones} label="Uber Zones" color="orange" className="hidden lg:flex" />
-              <StatMini icon={Activity} value={dashboardStats.incidents_24h} label="24h Incidents" color="amber" className="hidden lg:flex" />
-              <StatMini icon={Activity} value={`${dashboardStats.system_uptime}%`} label="Uptime" color="teal" className="hidden lg:flex" />
-              <StatMini icon={Phone} value="10111" label="Emergency" color="red" isPhone className="hidden lg:flex" />
+          <div className="mt-1.5 pt-1.5 border-t border-border/20">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-1 lg:gap-1.5">
+              <StatMini icon={Camera} value={dashboardStats.functioning_cameras} label="Cams" color="emerald" />
+              <StatMini icon={CameraOff} value={dashboardStats.offline_cameras} label="Off" color="red" />
+              <StatMini icon={Activity} value={dashboardStats.incidents_24h} label="24h" color="amber" />
+              <StatMini icon={Route} value={dashboardStats.major_routes} label="Routes" color="blue" className="hidden lg:flex" />
+              <StatMini icon={Train} value={dashboardStats.train_lines} label="Trains" color="purple" className="hidden lg:flex" />
+              <StatMini icon={Phone} value="10111" label="SOS" color="red" isPhone className="hidden lg:flex" />
             </div>
           </div>
         )}
@@ -229,24 +227,24 @@ interface StatMiniProps {
 
 const StatMini = ({ icon: Icon, value, label, color, className, isPhone }: StatMiniProps) => {
   const colorClasses = {
-    emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-    red: 'bg-red-500/10 border-red-500/30 text-red-400',
-    blue: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
-    purple: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
-    orange: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
-    amber: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
-    teal: 'bg-teal-500/10 border-teal-500/30 text-teal-400',
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
+    red: 'bg-red-500/10 border-red-500/20 text-red-400',
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+    orange: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    teal: 'bg-teal-500/10 border-teal-500/20 text-teal-400',
   };
 
   const content = (
     <div className={cn(
-      'flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all hover:scale-[1.02]',
+      'flex items-center justify-center gap-1 px-1.5 py-1 rounded border transition-all',
       colorClasses[color],
       className
     )}>
-      <Icon className="w-3 h-3 flex-shrink-0" />
-      <span className="font-tactical text-xs font-bold tabular-nums">{value}</span>
-      <span className="text-[8px] text-muted-foreground uppercase hidden xl:inline">{label}</span>
+      <Icon className="w-2.5 h-2.5 flex-shrink-0" />
+      <span className="font-tactical text-[10px] font-bold tabular-nums">{value}</span>
+      <span className="text-[7px] text-muted-foreground uppercase hidden xl:inline">{label}</span>
     </div>
   );
 

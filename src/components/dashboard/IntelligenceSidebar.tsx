@@ -10,7 +10,6 @@ import CitizenReportModal from './CitizenReportModal';
 import LiveReportFeed from './LiveReportFeed';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 
 interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
@@ -63,29 +62,28 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-4 overflow-hidden">
-      {/* Report Button */}
-      <Button
+    <div className="h-full flex flex-col space-y-2.5 overflow-hidden">
+      {/* Report Button - Compact, 1-tap */}
+      <button
         onClick={() => setReportModalOpen(true)}
-        className="flex-shrink-0 w-full bg-amber-500/20 border-2 border-amber-500/50 text-amber-400 hover:bg-amber-500/30 hover:border-amber-400"
-        variant="outline"
+        className="flex-shrink-0 flex items-center justify-center gap-2 w-full py-2 rounded-lg font-tactical text-xs font-bold tracking-wide bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 active:scale-[0.98] transition-all"
       >
-        <FileWarning className="w-4 h-4 mr-2" />
-        <span className="font-bold">REPORT AN INCIDENT</span>
-      </Button>
+        <FileWarning className="w-3.5 h-3.5" />
+        REPORT
+      </button>
 
-      {/* Search Section */}
+      {/* Search Section - Compact */}
       <div className="flex-shrink-0 relative">
         <div className={cn(
-          'relative bg-card/80 backdrop-blur-md rounded-xl border-2 transition-all duration-200',
-          isFocused ? 'border-primary shadow-lg shadow-primary/20' : 'border-border/50'
+          'relative bg-card/60 backdrop-blur-sm rounded-lg border transition-all duration-150',
+          isFocused ? 'border-primary/60 shadow-md shadow-primary/10' : 'border-border/40'
         )}>
-          <div className="flex items-center px-4 py-3">
+          <div className="flex items-center px-3 py-2">
             {loading ? (
-              <Loader2 className="w-5 h-5 mr-3 text-primary animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 text-primary animate-spin" />
             ) : (
               <Search className={cn(
-                'w-5 h-5 mr-3 transition-colors',
+                'w-4 h-4 mr-2 transition-colors',
                 isFocused ? 'text-primary' : 'text-muted-foreground'
               )} />
             )}
@@ -95,39 +93,39 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-              placeholder="Search suburb (e.g., Ottery, Claremont...)"
-              className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm font-mono"
+              placeholder="Find suburb..."
+              className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/70 outline-none text-xs font-mono"
               disabled={loading}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="p-1 rounded hover:bg-background transition-colors"
+                className="p-0.5 rounded hover:bg-background/50 transition-colors"
               >
-                <X className="w-4 h-4 text-muted-foreground" />
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Search Results Dropdown */}
+        {/* Search Results Dropdown - Compact */}
         {isFocused && filteredSuburbs.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl rounded-xl border-2 border-primary/30 shadow-2xl overflow-hidden z-50 animate-fade-in">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-card/95 backdrop-blur-lg rounded-lg border border-primary/25 shadow-xl overflow-hidden z-50 animate-fade-in">
             {filteredSuburbs.map(suburb => (
               <button
                 key={suburb.id}
                 onClick={() => handleSelectSuburb(suburb)}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors text-left border-b border-border/30 last:border-b-0"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-primary/10 transition-colors text-left border-b border-border/20 last:border-b-0"
               >
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="font-medium text-foreground text-sm">{suburb.suburb_name}</div>
-                  <div className="text-xs text-muted-foreground font-mono">
-                    Ward {suburb.ward_id} • {suburb.incidents_24h} incidents today
+                <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-foreground text-xs truncate">{suburb.suburb_name}</div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    W{suburb.ward_id} • {suburb.incidents_24h} today
                   </div>
                 </div>
                 <div 
-                  className="text-xl font-black font-mono tabular-nums"
+                  className="text-sm font-black font-mono tabular-nums"
                   style={{ color: getSafetyColor(suburb.safety_score) }}
                 >
                   {suburb.safety_score}
@@ -137,27 +135,23 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           </div>
         )}
 
-        {/* No Results */}
+        {/* No Results - Compact */}
         {isFocused && searchQuery && filteredSuburbs.length === 0 && !loading && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-xl rounded-xl border-2 border-border shadow-2xl p-4 text-center z-50 animate-fade-in">
-            <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <div className="text-sm text-muted-foreground">No suburbs found for "{searchQuery}"</div>
+          <div className="absolute top-full left-0 right-0 mt-1 bg-card/95 backdrop-blur-lg rounded-lg border border-border/50 shadow-lg p-3 text-center z-50 animate-fade-in">
+            <MapPin className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+            <div className="text-xs text-muted-foreground">No results for "{searchQuery}"</div>
           </div>
         )}
       </div>
 
-      {/* Quick Access Pills */}
+      {/* Quick Access Pills - Compact */}
       {!selectedSuburb && !loading && (
-        <div className="flex-shrink-0 flex flex-wrap gap-2">
+        <div className="flex-shrink-0 flex flex-wrap gap-1.5">
           {quickAccessSuburbs.map(suburb => (
             <button
               key={suburb.id}
               onClick={() => handleSelectSuburb(suburb)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all',
-                'bg-card/50 border border-border/50 hover:border-primary/50 hover:bg-primary/10',
-                'hover:scale-105 active:scale-95'
-              )}
+              className="px-2 py-1 rounded text-[10px] font-mono font-medium bg-card/40 border border-border/40 hover:border-primary/40 hover:bg-primary/10 active:scale-95 transition-all"
             >
               {suburb.suburb_name}
             </button>
@@ -167,18 +161,18 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
       {/* Loading State for Pills */}
       {!selectedSuburb && loading && (
-        <div className="flex-shrink-0 flex flex-wrap gap-2">
+        <div className="flex-shrink-0 flex flex-wrap gap-1.5">
           {[1, 2, 3, 4, 5].map(i => (
             <div
               key={i}
-              className="px-3 py-1.5 rounded-lg bg-card/30 border border-border/30 animate-pulse w-20 h-7"
+              className="px-2 py-1 rounded bg-card/20 border border-border/20 animate-pulse w-16 h-5"
             />
           ))}
         </div>
       )}
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto space-y-4 scrollbar-hide pb-4">
+      {/* Scrollable Content Area - Tighter spacing */}
+      <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide pb-4">
         {/* Sector Report Card (connected to Supabase) */}
         <SectorReport 
           suburb={selectedSuburb} 
@@ -192,26 +186,26 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         {/* Water Utility Panel */}
         <WaterUtilityPanel />
 
-        {/* Tourism & Reports Tabs */}
+        {/* Tourism & Reports Tabs - Compact */}
         <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="w-full bg-card/50 border border-border/50">
-            <TabsTrigger value="reports" className="flex-1 text-xs data-[state=active]:bg-primary/20">
-              <Radio className="w-3 h-3 mr-1" /> Live Feed
+          <TabsList className="w-full h-8 bg-card/40 border border-border/40">
+            <TabsTrigger value="reports" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
+              <Radio className="w-2.5 h-2.5 mr-1" /> Feed
             </TabsTrigger>
-            <TabsTrigger value="trails" className="flex-1 text-xs data-[state=active]:bg-primary/20">
-              <Mountain className="w-3 h-3 mr-1" /> Trails
+            <TabsTrigger value="trails" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
+              <Mountain className="w-2.5 h-2.5 mr-1" /> Trails
             </TabsTrigger>
-            <TabsTrigger value="guidelines" className="flex-1 text-xs data-[state=active]:bg-primary/20">
-              <Waves className="w-3 h-3 mr-1" /> Safety
+            <TabsTrigger value="guidelines" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
+              <Waves className="w-2.5 h-2.5 mr-1" /> Safety
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="reports" className="mt-2">
+          <TabsContent value="reports" className="mt-1.5">
             <LiveReportFeed />
           </TabsContent>
-          <TabsContent value="trails" className="mt-2">
+          <TabsContent value="trails" className="mt-1.5">
             <HikingTrailsPanel />
           </TabsContent>
-          <TabsContent value="guidelines" className="mt-2">
+          <TabsContent value="guidelines" className="mt-1.5">
             <TouristProtocolsPanel />
           </TabsContent>
         </Tabs>

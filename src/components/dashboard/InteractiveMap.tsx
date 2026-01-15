@@ -188,24 +188,24 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
       "bg-card/50 backdrop-blur-sm rounded-lg border border-primary/20 overflow-hidden shadow-lg",
       fullHeight && "h-full"
     )}>
-      {/* Header - Compact */}
-      <div className="bg-gradient-to-r from-primary/15 to-transparent px-2 py-1.5 border-b border-primary/10">
+      {/* Header - Ultra Compact */}
+      <div className="bg-gradient-to-r from-primary/10 to-transparent px-2 py-1 border-b border-primary/10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-primary" />
-            <h3 className="font-semibold text-foreground text-xs">Map</h3>
-            <span className="text-[8px] font-mono text-muted-foreground px-1.5 py-0.5 bg-background/50 rounded">
+          <div className="flex items-center gap-1">
+            <Layers className="w-3 h-3 text-primary" />
+            <span className="font-semibold text-foreground text-[10px]">MAP</span>
+            <span className="text-[7px] font-mono text-muted-foreground/70 px-1 py-0.5 bg-background/30 rounded">
               {filteredMarkers.length}
             </span>
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              'p-1 rounded transition-colors',
-              showFilters ? 'bg-primary text-primary-foreground' : 'bg-background/50 hover:bg-background'
+              'p-0.5 rounded transition-colors',
+              showFilters ? 'bg-primary text-primary-foreground' : 'bg-background/30 hover:bg-background/50'
             )}
           >
-            <Filter className="w-3 h-3" />
+            <Filter className="w-2.5 h-2.5" />
           </button>
         </div>
       </div>
@@ -271,7 +271,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
       {/* Map Container */}
       <div className={cn(
         "relative",
-        fullHeight ? "h-[calc(100%-40px)]" : "h-[350px]"
+        fullHeight ? "h-[calc(100%-32px)]" : "h-[300px]"
       )}>
         <MapContainer
           center={MAP_CENTER}
@@ -404,16 +404,16 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
         </MapContainer>
       </div>
 
-      {/* Legend - Compact */}
-      <div className="px-2 py-1 bg-black/50 border-t border-border/30 flex items-center text-[8px]">
-        <div className="flex items-center gap-2 flex-wrap">
-          {layers.filter(l => l.enabled).slice(0, 4).map(layer => (
+      {/* Legend - Minimal */}
+      <div className="px-1.5 py-0.5 bg-black/40 border-t border-border/20 flex items-center text-[6px]">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {layers.filter(l => l.enabled).slice(0, 3).map(layer => (
             <span key={layer.id} className="flex items-center gap-0.5">
               <div 
-                className="w-1.5 h-1.5 rounded-full" 
+                className="w-1 h-1 rounded-full" 
                 style={{ backgroundColor: layer.color }} 
               />
-              <span className="text-muted-foreground font-mono">{layer.name.split(' ')[0]}</span>
+              <span className="text-muted-foreground/70 font-mono">{layer.name.split(' ')[0]}</span>
             </span>
           ))}
         </div>

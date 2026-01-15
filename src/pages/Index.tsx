@@ -26,9 +26,9 @@ const Index = () => {
         <TravelerModeView />
       ) : (
         /* Command Center Mode - Full Dashboard */
-        <main className="max-w-[2000px] mx-auto px-4 py-4 pb-36">
-          {/* 12-Column Grid Layout */}
-          <div className="grid grid-cols-12 gap-4 lg:gap-6" style={{ height: 'calc(100vh - 200px)' }}>
+        <main className="max-w-[2000px] mx-auto px-3 py-3 pb-28">
+          {/* 12-Column Grid Layout - Tighter gaps for density */}
+          <div className="grid grid-cols-12 gap-3 lg:gap-4" style={{ height: 'calc(100vh - 180px)' }}>
             {/* Map - Cols 1-8 */}
             <div className="col-span-12 xl:col-span-8">
               <div className="h-full flex flex-col gap-4">
