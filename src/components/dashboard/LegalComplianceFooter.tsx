@@ -82,6 +82,16 @@ const LegalComplianceFooter = () => {
             Data sourced from City of Cape Town, SAPS, NSRI, and public municipal records.
           </p>
         </div>
+
+        {/* Company Attribution */}
+        <div className="mt-3 text-center">
+          <p className="text-[9px] text-muted-foreground/70">
+            SafeSync is a product of <span className="font-semibold text-muted-foreground">Evenor Holdings (Pty) Ltd</span>
+          </p>
+          <p className="text-[8px] text-muted-foreground/50 mt-0.5">
+            © {new Date().getFullYear()} Evenor Holdings. All rights reserved.
+          </p>
+        </div>
       </div>
     </div>
   );
