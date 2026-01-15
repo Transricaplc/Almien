@@ -3,14 +3,13 @@ import { ChevronUp, ChevronDown, Car, Train, Route, Mountain, Bike, Dog, Plane, 
 import { cn } from '@/lib/utils';
 import RoadsStatusPanel from './RoadsStatusPanel';
 import TrainRoutesPanel from './TrainRoutesPanel';
-import UberZoneCard from './UberZoneCard';
+import RideshareIntelPanel from './RideshareIntelPanel';
 import HikingTrailsPanel from './HikingTrailsPanel';
 import CyclingRoutesPanel from './CyclingRoutesPanel';
 import PetFriendlyZonesPanel from './PetFriendlyZonesPanel';
 import FlightStatusPanel from './FlightStatusPanel';
 import RunningRoutesPanel from './RunningRoutesPanel';
 import WindReportPanel from './WindReportPanel';
-import { uberDangerZones } from '@/data/dashboardData';
 
 type TabId = 'roads' | 'trains' | 'rideshare' | 'flights' | 'hiking' | 'running' | 'cycling' | 'pets' | 'wind';
 
@@ -43,13 +42,7 @@ const MobilityTray = () => {
       case 'trains':
         return <TrainRoutesPanel />;
       case 'rideshare':
-        return (
-          <div className="space-y-2">
-            {uberDangerZones.map(zone => (
-              <UberZoneCard key={zone.id} zone={zone} />
-            ))}
-          </div>
-        );
+        return <RideshareIntelPanel />;
       case 'flights':
         return <FlightStatusPanel />;
       case 'hiking':
