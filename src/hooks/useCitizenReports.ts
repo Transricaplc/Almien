@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 export interface CitizenReport {
   id: string;
@@ -23,6 +24,31 @@ export interface CreateReportInput {
 }
 
 export const useCitizenReports = () => {
+  const queryClient = useQueryClient();
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('citizen-reports-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'citizen_reports',
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          queryClient.invalidateQueries({ queryKey: ['citizen-reports'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ['citizen-reports'],
     queryFn: async () => {
