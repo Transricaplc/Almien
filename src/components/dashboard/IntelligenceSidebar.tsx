@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio, Network } from 'lucide-react';
+import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio, Network, Activity } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
@@ -9,9 +9,9 @@ import HikingTrailsPanel from './HikingTrailsPanel';
 import CitizenReportModal from './CitizenReportModal';
 import LiveReportFeed from './LiveReportFeed';
 import OntologyViewer from './OntologyViewer';
+import ExecutiveSummary from './ExecutiveSummary';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
@@ -187,11 +187,14 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         {/* Water Utility Panel */}
         <WaterUtilityPanel />
 
-        {/* Tourism & Reports Tabs - Compact */}
-        <Tabs defaultValue="ontology" className="w-full">
+        {/* Intelligence Tabs - Compact */}
+        <Tabs defaultValue="executive" className="w-full">
           <TabsList className="w-full h-8 bg-card/40 border border-border/40">
+            <TabsTrigger value="executive" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
+              <Activity className="w-2.5 h-2.5 mr-1" /> KPIs
+            </TabsTrigger>
             <TabsTrigger value="ontology" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Network className="w-2.5 h-2.5 mr-1" /> Ontology
+              <Network className="w-2.5 h-2.5 mr-1" /> Graph
             </TabsTrigger>
             <TabsTrigger value="reports" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
               <Radio className="w-2.5 h-2.5 mr-1" /> Feed
@@ -199,10 +202,10 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
             <TabsTrigger value="trails" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
               <Mountain className="w-2.5 h-2.5 mr-1" /> Trails
             </TabsTrigger>
-            <TabsTrigger value="guidelines" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Waves className="w-2.5 h-2.5 mr-1" /> Safety
-            </TabsTrigger>
           </TabsList>
+          <TabsContent value="executive" className="mt-1.5">
+            <ExecutiveSummary />
+          </TabsContent>
           <TabsContent value="ontology" className="mt-1.5">
             <OntologyViewer />
           </TabsContent>
@@ -211,9 +214,6 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           </TabsContent>
           <TabsContent value="trails" className="mt-1.5">
             <HikingTrailsPanel />
-          </TabsContent>
-          <TabsContent value="guidelines" className="mt-1.5">
-            <TouristProtocolsPanel />
           </TabsContent>
         </Tabs>
       </div>

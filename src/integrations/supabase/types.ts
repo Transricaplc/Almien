@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_queue: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          actual_value: number | null
+          alert_type: string
+          auto_expire_at: string | null
+          created_at: string
+          description: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          priority: string
+          resolved_at: string | null
+          status: string
+          threshold_value: number | null
+          title: string
+          ward_id: number | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value?: number | null
+          alert_type: string
+          auto_expire_at?: string | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          threshold_value?: number | null
+          title: string
+          ward_id?: number | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value?: number | null
+          alert_type?: string
+          auto_expire_at?: string | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          threshold_value?: number | null
+          title?: string
+          ward_id?: number | null
+        }
+        Relationships: []
+      }
       api_cache: {
         Row: {
           cache_key: string
@@ -44,6 +104,54 @@ export type Database = {
           id?: string
           source?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          query_params: Json | null
+          request_path: string | null
+          resource_id: string | null
+          resource_type: string
+          result: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          query_params?: Json | null
+          request_path?: string | null
+          resource_id?: string | null
+          resource_type: string
+          result?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          query_params?: Json | null
+          request_path?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          result?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -98,6 +206,66 @@ export type Database = {
         }
         Relationships: []
       }
+      cctv_assets: {
+        Row: {
+          camera_code: string
+          camera_type: string | null
+          coordinates_lat: number | null
+          coordinates_lng: number | null
+          created_at: string
+          has_night_vision: boolean | null
+          id: string
+          installed_date: string | null
+          last_maintenance: string | null
+          location: string
+          name: string
+          owner: string | null
+          recording_enabled: boolean | null
+          resolution: string | null
+          status: string
+          updated_at: string
+          ward_id: number | null
+        }
+        Insert: {
+          camera_code: string
+          camera_type?: string | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          has_night_vision?: boolean | null
+          id?: string
+          installed_date?: string | null
+          last_maintenance?: string | null
+          location: string
+          name: string
+          owner?: string | null
+          recording_enabled?: boolean | null
+          resolution?: string | null
+          status?: string
+          updated_at?: string
+          ward_id?: number | null
+        }
+        Update: {
+          camera_code?: string
+          camera_type?: string | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          has_night_vision?: boolean | null
+          id?: string
+          installed_date?: string | null
+          last_maintenance?: string | null
+          location?: string
+          name?: string
+          owner?: string | null
+          recording_enabled?: boolean | null
+          resolution?: string | null
+          status?: string
+          updated_at?: string
+          ward_id?: number | null
+        }
+        Relationships: []
+      }
       citizen_reports: {
         Row: {
           created_at: string
@@ -131,6 +299,192 @@ export type Database = {
           report_type?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      city_kpis: {
+        Row: {
+          category: string
+          created_at: string
+          current_value: number
+          id: string
+          kpi_code: string
+          kpi_name: string
+          last_updated: string
+          period: string
+          period_end: string
+          period_start: string
+          previous_value: number | null
+          target_value: number | null
+          trend: string | null
+          trend_percent: number | null
+          unit: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          current_value: number
+          id?: string
+          kpi_code: string
+          kpi_name: string
+          last_updated?: string
+          period: string
+          period_end: string
+          period_start: string
+          previous_value?: number | null
+          target_value?: number | null
+          trend?: string | null
+          trend_percent?: number | null
+          unit: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          kpi_code?: string
+          kpi_name?: string
+          last_updated?: string
+          period?: string
+          period_end?: string
+          period_start?: string
+          previous_value?: number | null
+          target_value?: number | null
+          trend?: string | null
+          trend_percent?: number | null
+          unit?: string
+        }
+        Relationships: []
+      }
+      data_retention_policies: {
+        Row: {
+          archive_enabled: boolean | null
+          archive_location: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_cleanup: string | null
+          next_cleanup: string | null
+          retention_days: number
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          archive_enabled?: boolean | null
+          archive_location?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_cleanup?: string | null
+          next_cleanup?: string | null
+          retention_days: number
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          archive_enabled?: boolean | null
+          archive_location?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_cleanup?: string | null
+          next_cleanup?: string | null
+          retention_days?: number
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      data_source_health: {
+        Row: {
+          avg_response_ms: number | null
+          consecutive_failures: number | null
+          created_at: string
+          endpoint_url: string | null
+          error_message: string | null
+          id: string
+          is_critical: boolean | null
+          last_failed_sync: string | null
+          last_successful_sync: string | null
+          source_name: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          avg_response_ms?: number | null
+          consecutive_failures?: number | null
+          created_at?: string
+          endpoint_url?: string | null
+          error_message?: string | null
+          id?: string
+          is_critical?: boolean | null
+          last_failed_sync?: string | null
+          last_successful_sync?: string | null
+          source_name: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          avg_response_ms?: number | null
+          consecutive_failures?: number | null
+          created_at?: string
+          endpoint_url?: string | null
+          error_message?: string | null
+          id?: string
+          is_critical?: boolean | null
+          last_failed_sync?: string | null
+          last_successful_sync?: string | null
+          source_name?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      emergency_call_aggregates: {
+        Row: {
+          avg_response_time_minutes: number | null
+          call_type: string
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          priority_high: number | null
+          priority_low: number | null
+          priority_medium: number | null
+          suburb: string | null
+          total_calls: number
+          ward_id: number
+        }
+        Insert: {
+          avg_response_time_minutes?: number | null
+          call_type: string
+          created_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          priority_high?: number | null
+          priority_low?: number | null
+          priority_medium?: number | null
+          suburb?: string | null
+          total_calls?: number
+          ward_id: number
+        }
+        Update: {
+          avg_response_time_minutes?: number | null
+          call_type?: string
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          priority_high?: number | null
+          priority_low?: number | null
+          priority_medium?: number | null
+          suburb?: string | null
+          total_calls?: number
+          ward_id?: number
         }
         Relationships: []
       }
@@ -227,6 +581,105 @@ export type Database = {
           safety_notes?: string | null
           sunrise_time?: string | null
           sunset_time?: string | null
+        }
+        Relationships: []
+      }
+      incident_clusters: {
+        Row: {
+          category: string
+          center_lat: number | null
+          center_lng: number | null
+          cluster_type: string
+          created_at: string
+          first_incident: string | null
+          id: string
+          incident_count: number
+          is_active: boolean | null
+          last_incident: string | null
+          metadata: Json | null
+          radius_meters: number | null
+          severity: string | null
+          time_window_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          center_lat?: number | null
+          center_lng?: number | null
+          cluster_type: string
+          created_at?: string
+          first_incident?: string | null
+          id?: string
+          incident_count: number
+          is_active?: boolean | null
+          last_incident?: string | null
+          metadata?: Json | null
+          radius_meters?: number | null
+          severity?: string | null
+          time_window_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          center_lat?: number | null
+          center_lng?: number | null
+          cluster_type?: string
+          created_at?: string
+          first_incident?: string | null
+          id?: string
+          incident_count?: number
+          is_active?: boolean | null
+          last_incident?: string | null
+          metadata?: Json | null
+          radius_meters?: number | null
+          severity?: string | null
+          time_window_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      infrastructure_status: {
+        Row: {
+          capacity_percent: number | null
+          created_at: string
+          estimated_restoration: string | null
+          id: string
+          incident_count_24h: number | null
+          infrastructure_type: string
+          last_incident: string | null
+          last_updated: string
+          source: string
+          status: string
+          zone_code: string
+          zone_name: string
+        }
+        Insert: {
+          capacity_percent?: number | null
+          created_at?: string
+          estimated_restoration?: string | null
+          id?: string
+          incident_count_24h?: number | null
+          infrastructure_type: string
+          last_incident?: string | null
+          last_updated?: string
+          source?: string
+          status?: string
+          zone_code: string
+          zone_name: string
+        }
+        Update: {
+          capacity_percent?: number | null
+          created_at?: string
+          estimated_restoration?: string | null
+          id?: string
+          incident_count_24h?: number | null
+          infrastructure_type?: string
+          last_incident?: string | null
+          last_updated?: string
+          source?: string
+          status?: string
+          zone_code?: string
+          zone_name?: string
         }
         Relationships: []
       }
@@ -505,6 +958,48 @@ export type Database = {
           },
         ]
       }
+      risk_scores: {
+        Row: {
+          computed_at: string
+          created_at: string
+          entity_id: string
+          entity_name: string
+          entity_type: string
+          factors: Json | null
+          id: string
+          risk_category: string
+          score: number
+          trend: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          computed_at?: string
+          created_at?: string
+          entity_id: string
+          entity_name: string
+          entity_type: string
+          factors?: Json | null
+          id?: string
+          risk_category: string
+          score: number
+          trend?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          computed_at?: string
+          created_at?: string
+          entity_id?: string
+          entity_name?: string
+          entity_type?: string
+          factors?: Json | null
+          id?: string
+          risk_category?: string
+          score?: number
+          trend?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       running_routes: {
         Row: {
           coordinates_lat: number | null
@@ -610,6 +1105,54 @@ export type Database = {
           suburb_name?: string
           updated_at?: string
           ward_id?: number
+        }
+        Relationships: []
+      }
+      traffic_signals: {
+        Row: {
+          controller_type: string | null
+          coordinates_lat: number | null
+          coordinates_lng: number | null
+          created_at: string
+          id: string
+          intersection_type: string | null
+          is_synchronized: boolean | null
+          last_maintenance: string | null
+          location: string
+          name: string
+          signal_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          controller_type?: string | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          id?: string
+          intersection_type?: string | null
+          is_synchronized?: boolean | null
+          last_maintenance?: string | null
+          location: string
+          name: string
+          signal_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          controller_type?: string | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          id?: string
+          intersection_type?: string | null
+          is_synchronized?: boolean | null
+          last_maintenance?: string | null
+          location?: string
+          name?: string
+          signal_code?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
