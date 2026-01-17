@@ -73,7 +73,7 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
                 Safe<span className={isTravelerMode ? 'text-red-400' : 'text-primary'}>Sync</span>
               </h1>
               <p className="text-primary/70 text-[8px] lg:text-[9px] font-tactical tracking-wider uppercase hidden sm:block">
-                {isTravelerMode ? 'EMERGENCY MODE' : 'SITUATIONAL AWARENESS'}
+                {isTravelerMode ? 'EMERGENCY MODE' : 'CITY INTEL • SYNCED SAFE'}
               </p>
             </div>
           </div>
