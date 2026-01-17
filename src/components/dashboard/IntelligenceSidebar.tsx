@@ -11,6 +11,7 @@ import LiveReportFeed from './LiveReportFeed';
 import OntologyViewer from './OntologyViewer';
 import ExecutiveSummary from './ExecutiveSummary';
 import ExpandablePanel from './ExpandablePanel';
+import EnvironmentalCluster from './EnvironmentalCluster';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -231,6 +232,14 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         </p>
       </div>
 
+      {/* Environmental Context Cluster */}
+      <div className="flex-shrink-0">
+        <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2 px-1">
+          Environmental Context
+        </h3>
+        <EnvironmentalCluster className="mb-3" />
+      </div>
+
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide pb-4">
         <SectorReport 
@@ -238,7 +247,6 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
           onClose={handleCloseSuburb}
           loading={loading && !!searchQuery}
         />
-        <WeatherPanel />
         <WaterUtilityPanel />
       </div>
 
