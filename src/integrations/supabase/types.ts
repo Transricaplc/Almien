@@ -269,6 +269,284 @@ export type Database = {
         }
         Relationships: []
       }
+      ontology_entities: {
+        Row: {
+          created_at: string
+          description: string | null
+          entity_type_id: string
+          external_id: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          name: string
+          properties: Json | null
+          source: string | null
+          source_timestamp: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entity_type_id: string
+          external_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name: string
+          properties?: Json | null
+          source?: string | null
+          source_timestamp?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entity_type_id?: string
+          external_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string
+          properties?: Json | null
+          source?: string | null
+          source_timestamp?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_entities_entity_type_id_fkey"
+            columns: ["entity_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_entity_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ontology_entity_types: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          display_name: string
+          icon: string | null
+          id: string
+          properties_schema: Json | null
+          type_name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          display_name: string
+          icon?: string | null
+          id?: string
+          properties_schema?: Json | null
+          type_name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          icon?: string | null
+          id?: string
+          properties_schema?: Json | null
+          type_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ontology_lineage: {
+        Row: {
+          actor: string | null
+          entity_id: string
+          id: string
+          new_state: Json | null
+          operation: string
+          previous_state: Json | null
+          source_record_id: string | null
+          source_system: string
+          source_table: string | null
+          timestamp: string
+          transformation: string | null
+        }
+        Insert: {
+          actor?: string | null
+          entity_id: string
+          id?: string
+          new_state?: Json | null
+          operation: string
+          previous_state?: Json | null
+          source_record_id?: string | null
+          source_system: string
+          source_table?: string | null
+          timestamp?: string
+          transformation?: string | null
+        }
+        Update: {
+          actor?: string | null
+          entity_id?: string
+          id?: string
+          new_state?: Json | null
+          operation?: string
+          previous_state?: Json | null
+          source_record_id?: string | null
+          source_system?: string
+          source_table?: string | null
+          timestamp?: string
+          transformation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_lineage_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["from_id"]
+          },
+          {
+            foreignKeyName: "ontology_lineage_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["to_id"]
+          },
+          {
+            foreignKeyName: "ontology_lineage_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ontology_relationship_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          from_entity_type: string
+          id: string
+          is_bidirectional: boolean | null
+          properties_schema: Json | null
+          to_entity_type: string
+          type_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          from_entity_type: string
+          id?: string
+          is_bidirectional?: boolean | null
+          properties_schema?: Json | null
+          to_entity_type: string
+          type_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          from_entity_type?: string
+          id?: string
+          is_bidirectional?: boolean | null
+          properties_schema?: Json | null
+          to_entity_type?: string
+          type_name?: string
+        }
+        Relationships: []
+      }
+      ontology_relationships: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          from_entity_id: string
+          id: string
+          properties: Json | null
+          relationship_type_id: string
+          source: string | null
+          to_entity_id: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          from_entity_id: string
+          id?: string
+          properties?: Json | null
+          relationship_type_id: string
+          source?: string | null
+          to_entity_id: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          from_entity_id?: string
+          id?: string
+          properties?: Json | null
+          relationship_type_id?: string
+          source?: string | null
+          to_entity_id?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ontology_relationships_from_entity_id_fkey"
+            columns: ["from_entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["from_id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_from_entity_id_fkey"
+            columns: ["from_entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["to_id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_from_entity_id_fkey"
+            columns: ["from_entity_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_relationship_type_id_fkey"
+            columns: ["relationship_type_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_relationship_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_to_entity_id_fkey"
+            columns: ["to_entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["from_id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_to_entity_id_fkey"
+            columns: ["to_entity_id"]
+            isOneToOne: false
+            referencedRelation: "mv_entity_graph"
+            referencedColumns: ["to_id"]
+          },
+          {
+            foreignKeyName: "ontology_relationships_to_entity_id_fkey"
+            columns: ["to_entity_id"]
+            isOneToOne: false
+            referencedRelation: "ontology_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       running_routes: {
         Row: {
           coordinates_lat: number | null
@@ -592,10 +870,49 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_entity_graph: {
+        Row: {
+          confidence: number | null
+          from_id: string | null
+          from_name: string | null
+          from_type: string | null
+          relationship_display: string | null
+          relationship_id: string | null
+          relationship_type: string | null
+          to_id: string | null
+          to_name: string | null
+          to_type: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Relationships: []
+      }
+      mv_entity_stats: {
+        Row: {
+          active_count: number | null
+          color: string | null
+          display_name: string | null
+          entity_count: number | null
+          icon: string | null
+          last_updated: string | null
+          type_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_entity_neighborhood: {
+        Args: { p_entity_id: string; p_max_depth?: number }
+        Returns: {
+          depth: number
+          direction: string
+          entity_id: string
+          entity_name: string
+          entity_type: string
+          relationship_type: string
+        }[]
+      }
+      refresh_ontology_views: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
