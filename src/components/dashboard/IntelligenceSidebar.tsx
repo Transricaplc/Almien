@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio } from 'lucide-react';
+import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio, Network } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
@@ -8,6 +8,7 @@ import WeatherPanel from './WeatherPanel';
 import HikingTrailsPanel from './HikingTrailsPanel';
 import CitizenReportModal from './CitizenReportModal';
 import LiveReportFeed from './LiveReportFeed';
+import OntologyViewer from './OntologyViewer';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -187,8 +188,11 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         <WaterUtilityPanel />
 
         {/* Tourism & Reports Tabs - Compact */}
-        <Tabs defaultValue="reports" className="w-full">
+        <Tabs defaultValue="ontology" className="w-full">
           <TabsList className="w-full h-8 bg-card/40 border border-border/40">
+            <TabsTrigger value="ontology" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
+              <Network className="w-2.5 h-2.5 mr-1" /> Ontology
+            </TabsTrigger>
             <TabsTrigger value="reports" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
               <Radio className="w-2.5 h-2.5 mr-1" /> Feed
             </TabsTrigger>
@@ -199,6 +203,9 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
               <Waves className="w-2.5 h-2.5 mr-1" /> Safety
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="ontology" className="mt-1.5">
+            <OntologyViewer />
+          </TabsContent>
           <TabsContent value="reports" className="mt-1.5">
             <LiveReportFeed />
           </TabsContent>
