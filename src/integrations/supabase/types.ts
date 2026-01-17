@@ -403,20 +403,6 @@ export type Database = {
             foreignKeyName: "ontology_lineage_entity_id_fkey"
             columns: ["entity_id"]
             isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["from_id"]
-          },
-          {
-            foreignKeyName: "ontology_lineage_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["to_id"]
-          },
-          {
-            foreignKeyName: "ontology_lineage_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
             referencedRelation: "ontology_entities"
             referencedColumns: ["id"]
           },
@@ -500,20 +486,6 @@ export type Database = {
             foreignKeyName: "ontology_relationships_from_entity_id_fkey"
             columns: ["from_entity_id"]
             isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["from_id"]
-          },
-          {
-            foreignKeyName: "ontology_relationships_from_entity_id_fkey"
-            columns: ["from_entity_id"]
-            isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["to_id"]
-          },
-          {
-            foreignKeyName: "ontology_relationships_from_entity_id_fkey"
-            columns: ["from_entity_id"]
-            isOneToOne: false
             referencedRelation: "ontology_entities"
             referencedColumns: ["id"]
           },
@@ -523,20 +495,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "ontology_relationship_types"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ontology_relationships_to_entity_id_fkey"
-            columns: ["to_entity_id"]
-            isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["from_id"]
-          },
-          {
-            foreignKeyName: "ontology_relationships_to_entity_id_fkey"
-            columns: ["to_entity_id"]
-            isOneToOne: false
-            referencedRelation: "mv_entity_graph"
-            referencedColumns: ["to_id"]
           },
           {
             foreignKeyName: "ontology_relationships_to_entity_id_fkey"
@@ -870,35 +828,7 @@ export type Database = {
       }
     }
     Views: {
-      mv_entity_graph: {
-        Row: {
-          confidence: number | null
-          from_id: string | null
-          from_name: string | null
-          from_type: string | null
-          relationship_display: string | null
-          relationship_id: string | null
-          relationship_type: string | null
-          to_id: string | null
-          to_name: string | null
-          to_type: string | null
-          valid_from: string | null
-          valid_to: string | null
-        }
-        Relationships: []
-      }
-      mv_entity_stats: {
-        Row: {
-          active_count: number | null
-          color: string | null
-          display_name: string | null
-          entity_count: number | null
-          icon: string | null
-          last_updated: string | null
-          type_name: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_entity_neighborhood: {
@@ -910,6 +840,18 @@ export type Database = {
           entity_name: string
           entity_type: string
           relationship_type: string
+        }[]
+      }
+      get_entity_stats: {
+        Args: never
+        Returns: {
+          active_count: number
+          color: string
+          display_name: string
+          entity_count: number
+          icon: string
+          last_updated: string
+          type_name: string
         }[]
       }
       refresh_ontology_views: { Args: never; Returns: undefined }
