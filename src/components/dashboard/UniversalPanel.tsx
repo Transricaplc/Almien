@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
-  X, Minimize2, Maximize2, ChevronUp, ChevronDown, 
-  GripHorizontal, Square, Copy 
+  X, Maximize2, ChevronUp, ChevronDown, 
+  GripHorizontal, Copy 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,8 +27,9 @@ interface UniversalPanelProps {
  * - Center-top positioning
  * - localStorage persistence for position/size/mode
  * - Draggable header
- * - Minimize/Maximize/Expand/Collapse/Close controls
+ * - Expand/Collapse/FullScreen/Close controls (NO minimize)
  * - Overlay without hiding content below
+ * - Always visible scrollbars
  * - Smooth animations
  */
 const UniversalPanel = ({
@@ -45,14 +46,11 @@ const UniversalPanel = ({
     position,
     mode,
     setPosition,
-    toggleMinimize,
     toggleMaximize,
-    expand,
-    collapse,
-    isMinimized,
     isMaximized,
   } = usePanelState(panelId);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -62,15 +60,12 @@ const UniversalPanel = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose();
-      } else if (e.key === 'm' && isOpen && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        toggleMinimize();
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, toggleMinimize]);
+  }, [isOpen, onClose]);
 
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -131,12 +126,10 @@ const UniversalPanel = ({
 
   if (!isOpen) return null;
 
-  const getModeLabel = (mode: PanelMode) => {
-    switch (mode) {
-      case 'minimized': return 'Minimized';
-      case 'maximized': return 'Full Screen';
-      default: return 'Expanded View';
-    }
+  const getModeLabel = () => {
+    if (isMaximized) return 'Full Screen';
+    if (isCollapsed) return 'Collapsed';
+    return 'Expanded View';
   };
 
   // Calculate panel dimensions based on mode
@@ -223,55 +216,37 @@ const UniversalPanel = ({
             <div>
               <h2 className="text-lg font-bold tracking-tight">{title}</h2>
               <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                {getModeLabel(mode)}
+                {getModeLabel()}
               </p>
             </div>
           </div>
           
-          {/* Control buttons */}
+          {/* Control buttons - Only Expand/Collapse, Full Screen, Close */}
           <div className="flex items-center gap-1.5">
-            {/* Expand (when minimized) */}
-            {isMinimized && (
+            {/* Expand/Collapse toggle */}
+            {isCollapsed ? (
               <button
-                onClick={expand}
+                onClick={() => setIsCollapsed(false)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-all duration-200 group"
                 aria-label="Expand panel"
-                title="Expand (Ctrl+M)"
+                title="Expand"
               >
                 <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
                 <span className="text-xs font-medium">Expand</span>
               </button>
-            )}
-            
-            {/* Collapse (when not minimized) */}
-            {!isMinimized && (
+            ) : (
               <button
-                onClick={collapse}
+                onClick={() => setIsCollapsed(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-amber-500/20 hover:text-amber-400 transition-all duration-200 group"
                 aria-label="Collapse panel"
-                title="Collapse (Ctrl+M)"
+                title="Collapse"
               >
                 <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                 <span className="text-xs font-medium">Collapse</span>
               </button>
             )}
 
-            {/* Minimize toggle */}
-            <button
-              onClick={toggleMinimize}
-              className={cn(
-                "p-2 rounded-lg transition-all duration-200",
-                isMinimized 
-                  ? "bg-primary/20 text-primary" 
-                  : "bg-muted/50 hover:bg-primary/10 hover:text-primary"
-              )}
-              aria-label={isMinimized ? "Restore panel" : "Minimize panel"}
-              title="Minimize"
-            >
-              <Minimize2 className="w-4 h-4" />
-            </button>
-
-            {/* Maximize toggle */}
+            {/* Full Screen toggle */}
             <button
               onClick={toggleMaximize}
               className={cn(
@@ -302,22 +277,23 @@ const UniversalPanel = ({
           </div>
         </div>
 
-        {/* Priority content - always visible even when minimized */}
-        {priorityContent && isMinimized && (
+        {/* Priority content - always visible even when collapsed */}
+        {priorityContent && isCollapsed && (
           <div className="p-3 border-b border-border/30 bg-background/50">
             {priorityContent}
           </div>
         )}
 
-        {/* Main content - collapsible */}
+        {/* Main content - collapsible with always visible scrollbar */}
         <div 
           className={cn(
             "transition-all duration-300 ease-in-out overflow-hidden",
-            isMinimized ? "max-h-0" : isMaximized ? "h-[calc(100%-80px)]" : "max-h-[65vh]"
+            isCollapsed ? "max-h-0" : isMaximized ? "h-[calc(100%-80px)]" : "max-h-[65vh]"
           )}
         >
           <ScrollArea className={cn(
-            isMaximized ? "h-full" : "max-h-[65vh]"
+            isMaximized ? "h-full" : "max-h-[65vh]",
+            "scrollbar-visible"
           )}>
             <div className="p-4 animate-in fade-in-0 duration-300">
               {children}
@@ -326,7 +302,7 @@ const UniversalPanel = ({
         </div>
 
         {/* Visual indicator at bottom */}
-        {!isMinimized && !isMaximized && (
+        {!isCollapsed && !isMaximized && (
           <div className="h-1 bg-gradient-to-b from-primary/20 to-transparent rounded-b-xl" />
         )}
       </div>

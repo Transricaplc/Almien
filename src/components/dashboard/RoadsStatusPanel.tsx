@@ -189,8 +189,8 @@ const RoadsStatusPanel = () => {
         ))}
       </div>
 
-      {/* Roads List */}
-      <div className="p-3 space-y-2 max-h-[400px] overflow-y-auto scrollbar-hide">
+      {/* Roads List - always visible scrollbar */}
+      <div className="p-3 space-y-2 max-h-[400px] overflow-y-auto scrollbar-visible">
         {filteredRoads.map(road => (
           <RoadCard key={road.id} road={road} />
         ))}

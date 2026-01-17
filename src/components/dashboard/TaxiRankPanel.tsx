@@ -50,8 +50,8 @@ const TaxiRankPanel = () => {
           />
         </div>
 
-        {/* Rank List */}
-        <div className="space-y-1.5 max-h-[200px] overflow-y-auto scrollbar-hide">
+        {/* Rank List - always visible scrollbar */}
+        <div className="space-y-1.5 max-h-[200px] overflow-y-auto scrollbar-visible">
           {filteredData.map(rank => (
             <div 
               key={rank.id}

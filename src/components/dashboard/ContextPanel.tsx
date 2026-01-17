@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { 
   X, MapPin, Clock, AlertTriangle, Camera, TrafficCone,
   ChevronRight, Activity, Link2, History, ExternalLink,
-  Shield, Minimize2, Maximize2, GripHorizontal, ChevronUp, ChevronDown, Copy
+  Shield, Maximize2, GripHorizontal, ChevronUp, ChevronDown, Copy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDashboard, SelectedEntity } from '@/contexts/DashboardContext';
@@ -18,23 +18,20 @@ import EnvironmentalCluster from './EnvironmentalCluster';
  * Level 3 - Context Panel
  * Center-top positioned panel that appears when user clicks a map object.
  * Shows related entities with localStorage persistence.
+ * Controls: Expand, Collapse, Full Screen, Close (NO minimize)
  */
 const ContextPanel = () => {
   const { selectedEntity, contextPanelOpen, closeContextPanel } = useDashboard();
   const { getEntityNeighborhood } = useOntology();
   const [neighbors, setNeighbors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const panelId = `context-${selectedEntity?.type || 'default'}`;
   const {
     position,
-    mode,
     setPosition,
-    toggleMinimize,
     toggleMaximize,
-    expand,
-    collapse,
-    isMinimized,
     isMaximized,
   } = usePanelState(panelId);
 
@@ -100,6 +97,12 @@ const ContextPanel = () => {
   }, [isDragging, setPosition]);
 
   if (!contextPanelOpen || !selectedEntity) return null;
+
+  const getModeLabel = () => {
+    if (isMaximized) return 'Full View';
+    if (isCollapsed) return 'Collapsed';
+    return 'Details';
+  };
 
   const getPanelStyle = () => {
     if (isMaximized) {
@@ -168,49 +171,65 @@ const ContextPanel = () => {
             <div>
               <h2 className="font-semibold text-foreground">{selectedEntity.name}</h2>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                {selectedEntity.type?.replace('_', ' ')} • {isMinimized ? 'Minimized' : isMaximized ? 'Full View' : 'Details'}
+                {selectedEntity.type?.replace('_', ' ')} • {getModeLabel()}
               </p>
             </div>
           </div>
           
-          {/* Controls */}
+          {/* Controls - Only Expand/Collapse, Full Screen, Close */}
           <div className="flex items-center gap-1.5">
-            {isMinimized ? (
-              <button onClick={expand} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-all">
+            {isCollapsed ? (
+              <button 
+                onClick={() => setIsCollapsed(false)} 
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-all"
+                title="Expand"
+              >
                 <ChevronDown className="w-3.5 h-3.5" />
                 <span className="text-xs font-medium">Expand</span>
               </button>
             ) : (
-              <button onClick={collapse} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-amber-500/20 hover:text-amber-400 transition-all">
+              <button 
+                onClick={() => setIsCollapsed(true)} 
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-amber-500/20 hover:text-amber-400 transition-all"
+                title="Collapse"
+              >
                 <ChevronUp className="w-3.5 h-3.5" />
                 <span className="text-xs font-medium">Collapse</span>
               </button>
             )}
-            <button onClick={toggleMinimize} className={cn("p-2 rounded-lg transition-all", isMinimized ? "bg-primary/20 text-primary" : "bg-muted/50 hover:bg-primary/10 hover:text-primary")}>
-              <Minimize2 className="w-4 h-4" />
-            </button>
-            <button onClick={toggleMaximize} className={cn("p-2 rounded-lg transition-all", isMaximized ? "bg-primary/20 text-primary" : "bg-muted/50 hover:bg-primary/10 hover:text-primary")}>
+            <button 
+              onClick={toggleMaximize} 
+              className={cn("p-2 rounded-lg transition-all", isMaximized ? "bg-primary/20 text-primary" : "bg-muted/50 hover:bg-primary/10 hover:text-primary")}
+              title="Full Screen"
+            >
               {isMaximized ? <Copy className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
-            <button onClick={closeContextPanel} className="p-2 rounded-lg bg-muted/50 hover:bg-destructive/20 hover:text-destructive transition-all">
+            <button 
+              onClick={closeContextPanel} 
+              className="p-2 rounded-lg bg-muted/50 hover:bg-destructive/20 hover:text-destructive transition-all"
+              title="Close (Esc)"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Quick Stats - Always visible when minimized */}
-        {isMinimized && (
+        {/* Quick Stats - Always visible when collapsed */}
+        {isCollapsed && (
           <div className="p-3 border-b border-border/30">
             <QuickStatsGrid entity={selectedEntity} />
           </div>
         )}
 
-        {/* Main Content - Collapsible */}
+        {/* Main Content - Collapsible with always visible scrollbar */}
         <div className={cn(
           "transition-all duration-300 ease-in-out overflow-hidden",
-          isMinimized ? "max-h-0" : isMaximized ? "max-h-[calc(100vh-200px)]" : "max-h-[60vh]"
+          isCollapsed ? "max-h-0" : isMaximized ? "max-h-[calc(100vh-200px)]" : "max-h-[60vh]"
         )}>
-          <ScrollArea className={cn(isMaximized ? "h-[calc(100vh-200px)]" : "max-h-[60vh]")}>
+          <ScrollArea className={cn(
+            isMaximized ? "h-[calc(100vh-200px)]" : "max-h-[60vh]",
+            "scrollbar-visible"
+          )}>
             <div className="p-4 space-y-4">
               {/* Priority: Quick Stats */}
               <QuickStatsGrid entity={selectedEntity} />
@@ -311,7 +330,7 @@ const ContextPanel = () => {
         </div>
 
         {/* Bottom gradient */}
-        {!isMinimized && (
+        {!isCollapsed && (
           <div className="h-1 bg-gradient-to-b from-primary/20 to-transparent rounded-b-xl" />
         )}
       </div>

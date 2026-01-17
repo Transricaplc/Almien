@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
-export type PanelMode = 'normal' | 'minimized' | 'maximized';
+// Removed 'minimized' - only normal, collapsed (via expand/collapse), and maximized
+export type PanelMode = 'normal' | 'maximized';
 
 export interface PanelPosition {
   x: number;
@@ -94,31 +95,10 @@ export const usePanelState = (panelId: string, initialState?: Partial<PanelState
     setState(prev => ({ ...prev, mode }));
   }, []);
 
-  const toggleMinimize = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      mode: prev.mode === 'minimized' ? 'normal' : 'minimized',
-    }));
-  }, []);
-
   const toggleMaximize = useCallback(() => {
     setState(prev => ({
       ...prev,
       mode: prev.mode === 'maximized' ? 'normal' : 'maximized',
-    }));
-  }, []);
-
-  const expand = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      mode: prev.mode === 'minimized' ? 'normal' : prev.mode,
-    }));
-  }, []);
-
-  const collapse = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      mode: 'minimized',
     }));
   }, []);
 
@@ -139,13 +119,9 @@ export const usePanelState = (panelId: string, initialState?: Partial<PanelState
     updatePosition,
     setSize,
     setMode,
-    toggleMinimize,
     toggleMaximize,
-    expand,
-    collapse,
     maximize,
     reset,
-    isMinimized: state.mode === 'minimized',
     isMaximized: state.mode === 'maximized',
     isNormal: state.mode === 'normal',
   };

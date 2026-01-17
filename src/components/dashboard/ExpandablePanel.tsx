@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  X, Minimize2, Maximize2, ChevronUp, ChevronDown, 
+  X, Maximize2, ChevronUp, ChevronDown, 
   GripHorizontal, Copy 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,8 @@ interface ExpandablePanelProps {
  * Universal center-top panel with:
  * - localStorage persistence for position/mode
  * - Draggable header
- * - Minimize/Maximize/Expand/Collapse/Close controls
+ * - Expand/Collapse/FullScreen/Close controls (NO minimize)
+ * - Always visible scrollbars
  * - Smooth animations
  */
 const ExpandablePanel = ({ 
@@ -41,16 +42,12 @@ const ExpandablePanel = ({
   
   const {
     position,
-    mode,
     setPosition,
-    toggleMinimize,
     toggleMaximize,
-    expand,
-    collapse,
-    isMinimized,
     isMaximized,
   } = usePanelState(stablePanelId);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, posX: 0, posY: 0 });
 
@@ -60,14 +57,11 @@ const ExpandablePanel = ({
       if (!isOpen) return;
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key === 'm' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        toggleMinimize();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, toggleMinimize]);
+  }, [isOpen, onClose]);
 
   // Drag handling
   const handleDragStart = (e: React.MouseEvent) => {
@@ -108,8 +102,8 @@ const ExpandablePanel = ({
   if (!isOpen) return null;
 
   const getModeLabel = () => {
-    if (isMinimized) return 'Minimized';
     if (isMaximized) return 'Full Screen';
+    if (isCollapsed) return 'Collapsed';
     return 'Expanded View';
   };
 
@@ -193,39 +187,29 @@ const ExpandablePanel = ({
             </div>
           </div>
           
-          {/* Controls */}
+          {/* Controls - Only Expand/Collapse, Full Screen, Close */}
           <div className="flex items-center gap-1.5">
-            {isMinimized ? (
+            {isCollapsed ? (
               <button
-                onClick={expand}
+                onClick={() => setIsCollapsed(false)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 transition-all group"
                 aria-label="Expand panel"
+                title="Expand"
               >
                 <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
                 <span className="text-xs font-medium">Expand</span>
               </button>
             ) : (
               <button
-                onClick={collapse}
+                onClick={() => setIsCollapsed(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-amber-500/20 hover:text-amber-400 transition-all group"
                 aria-label="Collapse panel"
+                title="Collapse"
               >
                 <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                 <span className="text-xs font-medium">Collapse</span>
               </button>
             )}
-
-            <button
-              onClick={toggleMinimize}
-              className={cn(
-                "p-2 rounded-lg transition-all",
-                isMinimized ? "bg-primary/20 text-primary" : "bg-muted/50 hover:bg-primary/10 hover:text-primary"
-              )}
-              aria-label={isMinimized ? "Restore" : "Minimize"}
-              title="Minimize"
-            >
-              <Minimize2 className="w-4 h-4" />
-            </button>
 
             <button
               onClick={toggleMaximize}
@@ -250,14 +234,17 @@ const ExpandablePanel = ({
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content with always visible scrollbar */}
         <div 
           className={cn(
             "transition-all duration-300 ease-in-out overflow-hidden",
-            isMinimized ? "max-h-0" : isMaximized ? "h-[calc(100%-80px)]" : "max-h-[65vh]"
+            isCollapsed ? "max-h-0" : isMaximized ? "h-[calc(100%-80px)]" : "max-h-[65vh]"
           )}
         >
-          <ScrollArea className={cn(isMaximized ? "h-full" : "max-h-[65vh]")}>
+          <ScrollArea className={cn(
+            isMaximized ? "h-full" : "max-h-[65vh]",
+            "scrollbar-visible"
+          )}>
             <div className="p-4 animate-in fade-in-0 duration-300">
               {children}
             </div>
@@ -265,7 +252,7 @@ const ExpandablePanel = ({
         </div>
 
         {/* Bottom gradient */}
-        {!isMinimized && !isMaximized && (
+        {!isCollapsed && !isMaximized && (
           <div className="h-1 bg-gradient-to-b from-primary/20 to-transparent rounded-b-xl" />
         )}
       </div>

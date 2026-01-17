@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, MapPin, X, Mountain, Loader2, Waves, FileWarning, Radio, Network, Activity, Maximize2 } from 'lucide-react';
+import { Search, MapPin, X, Mountain, Loader2, Waves, Radio, Network, Activity, Maximize2 } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import SectorReport from './SectorReport';
 import TouristProtocolsPanel from './TouristProtocolsPanel';
@@ -76,16 +76,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
   return (
     <div className="h-full flex flex-col space-y-2.5 overflow-hidden">
-      {/* Report Button */}
-      <button
-        onClick={() => setReportModalOpen(true)}
-        className="flex-shrink-0 flex items-center justify-center gap-2 w-full py-2 rounded-lg font-tactical text-xs font-bold tracking-wide bg-amber-500/20 border border-amber-500/40 text-amber-400 hover:bg-amber-500/30 active:scale-[0.98] transition-all"
-      >
-        <FileWarning className="w-3.5 h-3.5" />
-        REPORT
-      </button>
-
-      {/* Search Section */}
+      {/* Search Section - Report button removed (exists in global nav) */}
       <div className="flex-shrink-0 relative">
         <div className={cn(
           'relative bg-card/60 backdrop-blur-sm rounded-lg border transition-all duration-150',
@@ -123,7 +114,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
         {/* Search Results Dropdown */}
         {isFocused && filteredSuburbs.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-card/95 backdrop-blur-lg rounded-lg border border-primary/25 shadow-xl overflow-hidden z-50 animate-fade-in">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-card/95 backdrop-blur-lg rounded-lg border border-primary/25 shadow-xl overflow-hidden z-50 animate-fade-in max-h-64 overflow-y-auto scrollbar-visible">
             {filteredSuburbs.map(suburb => (
               <button
                 key={suburb.id}
@@ -240,8 +231,8 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         <EnvironmentalCluster className="mb-3" />
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide pb-4">
+      {/* Scrollable Content Area - always visible scrollbar */}
+      <div className="flex-1 overflow-y-auto space-y-3 scrollbar-visible pb-4">
         <SectorReport 
           suburb={selectedSuburb} 
           onClose={handleCloseSuburb}

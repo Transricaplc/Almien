@@ -74,7 +74,7 @@ const MobilityTray = () => {
       )}>
         {/* Header with tabs */}
         <div className="flex items-center justify-between px-2 py-2 border-b border-border/30 bg-background/30">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide flex-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-visible flex-1">
             {tabs.map((tab, index) => {
               const Icon = tab.icon;
               return (
@@ -125,7 +125,7 @@ const MobilityTray = () => {
 
         {/* Content */}
         {isExpanded && (
-          <div className="p-3 max-h-[400px] overflow-y-auto scrollbar-hide animate-in fade-in-0 slide-in-from-top-2 duration-300">
+          <div className="p-3 max-h-[400px] overflow-y-auto scrollbar-visible animate-in fade-in-0 slide-in-from-top-2 duration-300">
             {renderContent(activeTab)}
           </div>
         )}
