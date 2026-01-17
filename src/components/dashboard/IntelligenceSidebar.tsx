@@ -172,7 +172,67 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         </div>
       )}
 
-      {/* Scrollable Content Area - Tighter spacing */}
+      {/* Intelligence Tabs - Sticky at top for accessibility */}
+      <div 
+        className="flex-shrink-0 bg-card/60 backdrop-blur-sm rounded-lg border border-border/40 p-1"
+        role="navigation"
+        aria-label="Intelligence panels"
+      >
+        <Tabs defaultValue="executive" className="w-full">
+          <TabsList className="w-full grid grid-cols-4 h-9 bg-background/50 border border-border/30 rounded-md">
+            <TabsTrigger 
+              value="executive" 
+              className="text-[10px] h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground focus:ring-2 focus:ring-primary/50"
+              aria-label="City KPIs"
+            >
+              <Activity className="w-3 h-3 mr-1" aria-hidden="true" /> 
+              <span className="hidden sm:inline">KPIs</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="ontology" 
+              className="text-[10px] h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground focus:ring-2 focus:ring-primary/50"
+              aria-label="Entity Graph"
+            >
+              <Network className="w-3 h-3 mr-1" aria-hidden="true" /> 
+              <span className="hidden sm:inline">Graph</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reports" 
+              className="text-[10px] h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground focus:ring-2 focus:ring-primary/50"
+              aria-label="Live Report Feed"
+            >
+              <Radio className="w-3 h-3 mr-1" aria-hidden="true" /> 
+              <span className="hidden sm:inline">Feed</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="trails" 
+              className="text-[10px] h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground focus:ring-2 focus:ring-primary/50"
+              aria-label="Hiking Trails"
+            >
+              <Mountain className="w-3 h-3 mr-1" aria-hidden="true" /> 
+              <span className="hidden sm:inline">Trails</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* Tab content in scrollable area */}
+          <div className="mt-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+            <TabsContent value="executive" className="m-0">
+              <ExecutiveSummary />
+            </TabsContent>
+            <TabsContent value="ontology" className="m-0">
+              <OntologyViewer />
+            </TabsContent>
+            <TabsContent value="reports" className="m-0">
+              <LiveReportFeed />
+            </TabsContent>
+            <TabsContent value="trails" className="m-0">
+              <HikingTrailsPanel />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+
+      {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide pb-4">
         {/* Sector Report Card (connected to Supabase) */}
         <SectorReport 
@@ -186,36 +246,6 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
         {/* Water Utility Panel */}
         <WaterUtilityPanel />
-
-        {/* Intelligence Tabs - Compact */}
-        <Tabs defaultValue="executive" className="w-full">
-          <TabsList className="w-full h-8 bg-card/40 border border-border/40">
-            <TabsTrigger value="executive" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Activity className="w-2.5 h-2.5 mr-1" /> KPIs
-            </TabsTrigger>
-            <TabsTrigger value="ontology" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Network className="w-2.5 h-2.5 mr-1" /> Graph
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Radio className="w-2.5 h-2.5 mr-1" /> Feed
-            </TabsTrigger>
-            <TabsTrigger value="trails" className="flex-1 text-[10px] h-6 data-[state=active]:bg-primary/20">
-              <Mountain className="w-2.5 h-2.5 mr-1" /> Trails
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="executive" className="mt-1.5">
-            <ExecutiveSummary />
-          </TabsContent>
-          <TabsContent value="ontology" className="mt-1.5">
-            <OntologyViewer />
-          </TabsContent>
-          <TabsContent value="reports" className="mt-1.5">
-            <LiveReportFeed />
-          </TabsContent>
-          <TabsContent value="trails" className="mt-1.5">
-            <HikingTrailsPanel />
-          </TabsContent>
-        </Tabs>
       </div>
 
       {/* Citizen Report Modal */}

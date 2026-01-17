@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline, useMapEvents } from 'react-leaflet';
+import { useState, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { 
   Layers, Camera, TrafficCone, AlertTriangle, 
   MapPin, ZoomIn, ZoomOut, Locate, Filter,
-  Eye, EyeOff, Search, X, Bike
+  Eye, EyeOff, Search, X, Bike, Table2, Map
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -13,6 +13,7 @@ import {
   MapMarker
 } from '@/data/mapData';
 import { useDashboard } from '@/contexts/DashboardContext';
+import MapDataTable from './MapDataTable';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -130,8 +131,9 @@ interface InteractiveMapProps {
 }
 
 const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
-  const { selectEntity, selectedEntity, mapFilters, searchQuery, setSearchQuery } = useDashboard();
+  const { selectEntity } = useDashboard();
   
+  const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
   const [layers, setLayers] = useState<LayerToggle[]>([
     { id: 'cctv', name: 'CCTV Cameras', icon: Camera, color: '#3b82f6', enabled: true },
     { id: 'traffic', name: 'Traffic Lights', icon: TrafficCone, color: '#22c55e', enabled: true },
@@ -204,29 +206,79 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   const showPedestrianZones = layers.find(l => l.id === 'pedestrian')?.enabled;
 
   return (
-    <div className={cn(
-      "bg-card/50 backdrop-blur-sm rounded-lg border border-primary/20 overflow-hidden shadow-lg",
-      fullHeight && "h-full"
-    )}>
-      {/* Header - Ultra Compact */}
-      <div className="bg-gradient-to-r from-primary/10 to-transparent px-2 py-1 border-b border-primary/10">
+    <div 
+      className={cn(
+        "bg-card/50 backdrop-blur-sm rounded-lg border border-primary/20 overflow-hidden shadow-lg",
+        fullHeight && "h-full"
+      )}
+      role="region"
+      aria-label="City infrastructure map and data"
+    >
+      {/* Header with View Toggle */}
+      <div className="bg-gradient-to-r from-primary/10 to-transparent px-2 py-1.5 border-b border-primary/10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Layers className="w-3 h-3 text-primary" />
-            <span className="font-semibold text-foreground text-[10px]">MAP</span>
-            <span className="text-[7px] font-mono text-muted-foreground/70 px-1 py-0.5 bg-background/30 rounded">
-              {filteredMarkers.length}
+          <div className="flex items-center gap-2">
+            <Layers className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+            <span className="font-semibold text-foreground text-xs">Infrastructure</span>
+            <span className="text-[10px] font-mono text-muted-foreground/70 px-1.5 py-0.5 bg-background/30 rounded">
+              {filteredMarkers.length} assets
             </span>
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={cn(
-              'p-0.5 rounded transition-colors',
-              showFilters ? 'bg-primary text-primary-foreground' : 'bg-background/30 hover:bg-background/50'
+          <div className="flex items-center gap-1.5">
+            {/* View Mode Toggle */}
+            <div 
+              className="flex items-center bg-background/40 rounded-md p-0.5 border border-border/30"
+              role="tablist"
+              aria-label="View mode"
+            >
+              <button
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/50',
+                  viewMode === 'map' 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                )}
+                role="tab"
+                aria-selected={viewMode === 'map'}
+                aria-controls="map-view"
+                id="map-tab"
+              >
+                <Map className="w-3 h-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Map</span>
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/50',
+                  viewMode === 'table' 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                )}
+                role="tab"
+                aria-selected={viewMode === 'table'}
+                aria-controls="table-view"
+                id="table-tab"
+              >
+                <Table2 className="w-3 h-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Table</span>
+              </button>
+            </div>
+            {/* Filter Toggle - Only for map view */}
+            {viewMode === 'map' && (
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  'p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50',
+                  showFilters ? 'bg-primary text-primary-foreground' : 'bg-background/30 hover:bg-background/50'
+                )}
+                aria-label={showFilters ? 'Hide filters' : 'Show filters'}
+                aria-expanded={showFilters}
+              >
+                <Filter className="w-3 h-3" aria-hidden="true" />
+              </button>
             )}
-          >
-            <Filter className="w-2.5 h-2.5" />
-          </button>
+          </div>
         </div>
       </div>
 
@@ -288,11 +340,32 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
         </div>
       )}
 
+      {/* Table View */}
+      {viewMode === 'table' && (
+        <div 
+          id="table-view"
+          role="tabpanel"
+          aria-labelledby="table-tab"
+          className={cn(
+            "relative",
+            fullHeight ? "h-[calc(100%-44px)]" : "h-[300px]"
+          )}
+        >
+          <MapDataTable />
+        </div>
+      )}
+
       {/* Map Container */}
-      <div className={cn(
-        "relative",
-        fullHeight ? "h-[calc(100%-32px)]" : "h-[300px]"
-      )}>
+      {viewMode === 'map' && (
+      <div 
+        id="map-view"
+        role="tabpanel"
+        aria-labelledby="map-tab"
+        className={cn(
+          "relative",
+          fullHeight ? "h-[calc(100%-44px)]" : "h-[300px]"
+        )}
+      >
         <MapContainer
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
@@ -432,21 +505,29 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
           <MapControls />
         </MapContainer>
       </div>
+      )}
 
-      {/* Legend - Minimal */}
-      <div className="px-1.5 py-0.5 bg-black/40 border-t border-border/20 flex items-center text-[6px]">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {layers.filter(l => l.enabled).slice(0, 3).map(layer => (
-            <span key={layer.id} className="flex items-center gap-0.5">
-              <div 
-                className="w-1 h-1 rounded-full" 
-                style={{ backgroundColor: layer.color }} 
-              />
-              <span className="text-muted-foreground/70 font-mono">{layer.name.split(' ')[0]}</span>
-            </span>
-          ))}
+      {/* Legend - Only show in map mode */}
+      {viewMode === 'map' && (
+        <div 
+          className="px-2 py-1 bg-black/40 border-t border-border/20 flex items-center"
+          role="complementary"
+          aria-label="Map legend"
+        >
+          <div className="flex items-center gap-2 flex-wrap text-[9px]">
+            {layers.filter(l => l.enabled).slice(0, 4).map(layer => (
+              <span key={layer.id} className="flex items-center gap-1">
+                <span 
+                  className="w-2 h-2 rounded-full" 
+                  style={{ backgroundColor: layer.color }} 
+                  aria-hidden="true"
+                />
+                <span className="text-muted-foreground font-mono">{layer.name.split(' ')[0]}</span>
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
