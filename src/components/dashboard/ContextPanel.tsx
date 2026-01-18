@@ -40,6 +40,15 @@ const ContextPanel = () => {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; posX: number; posY: number } | null>(null);
 
+  // CRITICAL: Always expand panel when a new entity is selected
+  // This ensures location clicks always result in expanded, readable content
+  useEffect(() => {
+    if (selectedEntity?.id && contextPanelOpen) {
+      // Force panel to expanded state on new selection
+      setIsCollapsed(false);
+    }
+  }, [selectedEntity?.id, contextPanelOpen]);
+
   useEffect(() => {
     if (selectedEntity?.id) {
       setLoading(true);
@@ -233,9 +242,13 @@ const ContextPanel = () => {
             "scrollbar-visible"
           )}>
             <div className="p-4 space-y-4">
-              {/* Suburb/Rideshare/Area Specific Content */}
-              {(selectedEntity.type === 'suburb' || selectedEntity.type === 'rideshare' || selectedEntity.type === 'area') && selectedEntity.data ? (
-                <SuburbDetailContent entity={selectedEntity} />
+              {/* Location-based Entity Content (suburb, rideshare, area, ward) */}
+              {(selectedEntity.type === 'suburb' || selectedEntity.type === 'rideshare' || selectedEntity.type === 'area' || selectedEntity.type === 'ward') && selectedEntity.data ? (
+                selectedEntity.type === 'ward' ? (
+                  <WardDetailContent entity={selectedEntity} />
+                ) : (
+                  <SuburbDetailContent entity={selectedEntity} />
+                )
               ) : (
                 <>
                   {/* Priority: Quick Stats */}
@@ -578,6 +591,142 @@ const ChangeHistory = ({ entityId }: { entityId: string }) => {
   );
 };
 
+// Ward Detail Content Component
+const WardDetailContent = ({ entity }: { entity: SelectedEntity }) => {
+  const data = entity.data as Record<string, unknown>;
+  const safetyScore = Number(data?.safety_score) || 0;
+  const safetyColor = getSafetyColor(safetyScore);
+  const suburbCount = Number(data?.suburb_count) || 0;
+  const suburbList = (data?.suburbs as string[]) || [];
+  
+  const getRiskLabel = (score: number) => {
+    if (score >= 80) return { label: 'LOW RISK', class: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
+    if (score >= 60) return { label: 'MODERATE', class: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+    if (score >= 40) return { label: 'HIGH RISK', class: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
+    return { label: 'CRITICAL', class: 'bg-red-500/20 text-red-400 border-red-500/30' };
+  };
+  
+  const risk = getRiskLabel(safetyScore);
+
+  return (
+    <div className="space-y-4">
+      {/* Primary: Ward ID & Safety Score */}
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
+        <div>
+          <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 font-mono">Average Safety Score</div>
+          <div 
+            className="text-4xl font-black font-mono tabular-nums"
+            style={{ color: safetyColor }}
+          >
+            {safetyScore}
+          </div>
+        </div>
+        <div className={cn('px-4 py-2 rounded-lg border font-bold text-sm font-mono', risk.class)}>
+          {risk.label}
+        </div>
+      </div>
+
+      {/* Ward Metrics */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="p-3 rounded-lg bg-background/50 border border-border/30">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <AlertTriangle className="w-3 h-3" />
+            <span className="text-[10px] font-mono">INCIDENTS</span>
+          </div>
+          <div className="text-xl font-bold font-mono tabular-nums">{String(data?.incidents_24h || 0)}</div>
+        </div>
+        <div className="p-3 rounded-lg bg-background/50 border border-border/30">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <Camera className="w-3 h-3" />
+            <span className="text-[10px] font-mono">AVG CCTV</span>
+          </div>
+          <div className="text-xl font-bold font-mono tabular-nums text-primary">{String(data?.cctv_coverage || 0)}%</div>
+        </div>
+        <div className="p-3 rounded-lg bg-background/50 border border-border/30">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <MapPin className="w-3 h-3" />
+            <span className="text-[10px] font-mono">SUBURBS</span>
+          </div>
+          <div className="text-xl font-bold font-mono tabular-nums">{suburbCount}</div>
+        </div>
+      </div>
+
+      {/* Suburbs in Ward */}
+      {suburbList.length > 0 && (
+        <div className="p-3 rounded-lg bg-background/30 border border-border/30">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+            <MapPin className="w-3 h-3" />
+            Suburbs in this Ward
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {suburbList.map((suburb, idx) => (
+              <Badge key={idx} variant="outline" className="text-[10px] bg-background/50">
+                {suburb}
+              </Badge>
+            ))}
+            {suburbCount > 5 && (
+              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary">
+                +{suburbCount - 5} more
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Environmental Context */}
+      <div>
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+          <Activity className="w-3 h-3" />
+          Environmental Context
+        </h3>
+        <EnvironmentalCluster compact />
+      </div>
+
+      <Separator />
+
+      {/* Emergency Contacts */}
+      <div className="space-y-2">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <Phone className="w-3 h-3" />
+          Primary Emergency Contacts
+        </h3>
+        
+        {data?.saps_station && String(data.saps_station) !== 'N/A' && (
+          <a
+            href={`tel:${String(data.saps_contact || '').replace(/\s/g, '')}`}
+            className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+              <Shield className="w-4 h-4 text-blue-400 group-hover:text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-medium">{String(data.saps_station)}</div>
+              <div className="text-[10px] text-muted-foreground font-mono">{String(data.saps_contact)}</div>
+            </div>
+            <Phone className="w-4 h-4 text-blue-400" />
+          </a>
+        )}
+
+        {data?.hospital_name && String(data.hospital_name) !== 'N/A' && (
+          <a
+            href={`tel:${String(data.hospital_contact || '').replace(/\s/g, '')}`}
+            className="flex items-center gap-3 p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+              <Cross className="w-4 h-4 text-red-400 group-hover:text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs font-medium">{String(data.hospital_name)}</div>
+              <div className="text-[10px] text-muted-foreground font-mono">{String(data.hospital_contact)}</div>
+            </div>
+            <Phone className="w-4 h-4 text-red-400" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Utility functions
 const getTypeIcon = (type: string | null) => {
   switch (type) {
@@ -586,6 +735,7 @@ const getTypeIcon = (type: string | null) => {
     case 'incident': return <AlertTriangle className="w-4 h-4" />;
     case 'suburb': return <MapPin className="w-4 h-4" />;
     case 'area': return <MapPin className="w-4 h-4" />;
+    case 'ward': return <Shield className="w-4 h-4" />;
     case 'rideshare': return <Car className="w-4 h-4" />;
     default: return <MapPin className="w-4 h-4" />;
   }
@@ -598,6 +748,7 @@ const getTypeStyle = (type: string | null) => {
     case 'incident': return { bg: 'bg-orange-500/20', text: 'text-orange-400' };
     case 'suburb': return { bg: 'bg-primary/20', text: 'text-primary' };
     case 'area': return { bg: 'bg-cyan-500/20', text: 'text-cyan-400' };
+    case 'ward': return { bg: 'bg-indigo-500/20', text: 'text-indigo-400' };
     case 'rideshare': return { bg: 'bg-violet-500/20', text: 'text-violet-400' };
     default: return { bg: 'bg-primary/20', text: 'text-primary' };
   }

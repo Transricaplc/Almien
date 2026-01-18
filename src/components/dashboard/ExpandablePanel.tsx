@@ -51,6 +51,14 @@ const ExpandablePanel = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, posX: 0, posY: 0 });
 
+  // CRITICAL: Always expand panel when it opens
+  // Ensures location clicks always result in expanded, readable content
+  useEffect(() => {
+    if (isOpen) {
+      setIsCollapsed(false);
+    }
+  }, [isOpen]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

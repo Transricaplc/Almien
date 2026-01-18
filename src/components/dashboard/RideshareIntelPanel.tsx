@@ -489,6 +489,50 @@ const RideshareIntelPanel = () => {
     });
   }, [selectEntity, suburbs, timeOfDay]);
 
+  // Select ward and open global center-top panel
+  const handleSelectWard = useCallback((wardId: number) => {
+    setSearchQuery('');
+    setIsFocused(false);
+    
+    // Find suburbs in this ward to aggregate data
+    const wardSuburbs = suburbs.filter(s => s.ward_id === wardId);
+    
+    // Aggregate ward-level metrics
+    const avgSafetyScore = wardSuburbs.length > 0
+      ? Math.round(wardSuburbs.reduce((sum, s) => sum + s.safety_score, 0) / wardSuburbs.length)
+      : 0;
+    
+    const totalIncidents = wardSuburbs.reduce((sum, s) => sum + s.incidents_24h, 0);
+    const avgCCTV = wardSuburbs.length > 0
+      ? Math.round(wardSuburbs.reduce((sum, s) => sum + s.cctv_coverage, 0) / wardSuburbs.length)
+      : 0;
+    
+    // Use first suburb's emergency contacts as ward default
+    const primarySuburb = wardSuburbs[0];
+    
+    // Trigger global center-top panel via DashboardContext
+    selectEntity({
+      id: `ward-${wardId}`,
+      type: 'ward',
+      name: `Ward ${wardId}`,
+      data: {
+        ward_id: wardId,
+        safety_score: avgSafetyScore,
+        incidents_24h: totalIncidents,
+        cctv_coverage: avgCCTV,
+        suburb_count: wardSuburbs.length,
+        suburbs: wardSuburbs.map(s => s.suburb_name).slice(0, 5),
+        saps_station: primarySuburb?.saps_station || 'N/A',
+        saps_contact: primarySuburb?.saps_contact || 'N/A',
+        fire_station: primarySuburb?.fire_station || 'N/A',
+        fire_contact: primarySuburb?.fire_contact || 'N/A',
+        hospital_name: primarySuburb?.hospital_name || 'N/A',
+        hospital_contact: primarySuburb?.hospital_contact || 'N/A',
+        timeOfDay: timeOfDay,
+      }
+    });
+  }, [selectEntity, suburbs, timeOfDay]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">

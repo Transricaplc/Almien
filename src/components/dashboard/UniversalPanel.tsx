@@ -55,6 +55,14 @@ const UniversalPanel = ({
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // CRITICAL: Always expand panel when it opens
+  // Ensures location clicks always result in expanded, readable content
+  useEffect(() => {
+    if (isOpen) {
+      setIsCollapsed(false);
+    }
+  }, [isOpen]);
+
   // Handle escape key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
