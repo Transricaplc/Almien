@@ -4,7 +4,16 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 // TYPES
 // =============================================
 
-export type EntityType = 'cctv' | 'traffic_signal' | 'incident' | 'suburb' | 'ward' | 'area' | 'street' | 'alert' | 'infrastructure' | 'rideshare' | null;
+// All supported entity types for the ontology - includes location and fixed asset types
+export type EntityType = 
+  // Location entities
+  | 'suburb' | 'ward' | 'area' | 'street' | 'rideshare'
+  // Fixed asset entities (with address support)
+  | 'cctv' | 'traffic_signal' | 'hospital' | 'police_station' | 'fire_station'
+  | 'taxi_rank' | 'bus_stop' | 'clinic'
+  // Event/status entities
+  | 'incident' | 'alert' | 'infrastructure'
+  | null;
 export type TimeFilter = 'live' | '24h' | '7d' | '30d';
 
 export interface SelectedEntity {

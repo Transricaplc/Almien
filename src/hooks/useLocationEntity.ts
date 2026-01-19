@@ -13,6 +13,28 @@ export interface LocationEntityData {
   module?: string;
 }
 
+/**
+ * Fixed Asset Data Contract
+ * Defines the structure for fixed asset entities with address fields
+ */
+export interface FixedAssetData {
+  id: string;
+  name: string;
+  type: 'cctv' | 'traffic_signal' | 'hospital' | 'police_station' | 'fire_station' | 'taxi_rank' | 'bus_stop' | 'clinic' | 'infrastructure';
+  status?: string;
+  // Physical address fields (required for ontology compliance)
+  street?: string;
+  suburb?: string;
+  area_code?: string;
+  ward_id?: number;
+  municipality?: string;
+  // Coordinates
+  coordinates_lat?: number;
+  coordinates_lng?: number;
+  // Additional properties
+  [key: string]: unknown;
+}
+
 export interface LocationEntityPayload {
   id: string;
   type: EntityType;
@@ -187,11 +209,105 @@ export const useLocationEntity = () => {
     selectEntity(payload);
   }, [selectEntity]);
 
+  /**
+   * Select a fixed asset entity - triggers top-center panel expansion
+   * Ensures physical address is always included in panel display
+   */
+  const selectFixedAsset = useCallback((
+    asset: FixedAssetData,
+    source: LocationEntityData['source'] = 'list',
+    module?: string
+  ) => {
+    const payload: LocationEntityPayload = {
+      id: asset.id,
+      type: asset.type as EntityType,
+      name: asset.name,
+      coordinates: asset.coordinates_lat && asset.coordinates_lng 
+        ? { lat: asset.coordinates_lat, lng: asset.coordinates_lng }
+        : undefined,
+      data: {
+        // Physical address fields (ontology compliant)
+        street: asset.street,
+        suburb: asset.suburb,
+        area_code: asset.area_code,
+        ward_id: asset.ward_id,
+        municipality: asset.municipality || 'City of Cape Town',
+        // Asset status
+        status: asset.status || 'operational',
+        // Pass through all other properties
+        ...asset,
+        _source: source,
+        _module: module,
+      }
+    };
+    
+    selectEntity(payload);
+  }, [selectEntity]);
+
+  /**
+   * Select a CCTV camera asset
+   */
+  const selectCCTV = useCallback((
+    camera: {
+      id: string;
+      name: string;
+      camera_code: string;
+      location: string;
+      status: string;
+      camera_type?: string;
+      resolution?: string;
+      owner?: string;
+      street?: string;
+      suburb?: string;
+      area_code?: string;
+      ward_id?: number;
+      coordinates_lat?: number;
+      coordinates_lng?: number;
+    },
+    source: LocationEntityData['source'] = 'list'
+  ) => {
+    selectFixedAsset({
+      ...camera,
+      type: 'cctv',
+    }, source, 'cctv');
+  }, [selectFixedAsset]);
+
+  /**
+   * Select a traffic signal asset
+   */
+  const selectTrafficSignal = useCallback((
+    signal: {
+      id: string;
+      name: string;
+      signal_code: string;
+      location: string;
+      status: string;
+      intersection_type?: string;
+      controller_type?: string;
+      is_synchronized?: boolean;
+      street?: string;
+      suburb?: string;
+      area_code?: string;
+      ward_id?: number;
+      coordinates_lat?: number;
+      coordinates_lng?: number;
+    },
+    source: LocationEntityData['source'] = 'list'
+  ) => {
+    selectFixedAsset({
+      ...signal,
+      type: 'traffic_signal',
+    }, source, 'traffic');
+  }, [selectFixedAsset]);
+
   return {
     selectSuburb,
     selectArea,
     selectWard,
     selectRideshareEntity,
+    selectFixedAsset,
+    selectCCTV,
+    selectTrafficSignal,
   };
 };
 

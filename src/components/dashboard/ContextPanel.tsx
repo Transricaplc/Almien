@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   X, MapPin, Clock, AlertTriangle, Camera, TrafficCone,
   ChevronRight, Activity, Link2, History, ExternalLink,
   Shield, Maximize2, GripHorizontal, ChevronUp, ChevronDown, Copy,
-  Phone, Flame, Cross, Signal, Radio, Car
+  Phone, Flame, Cross, Car, Bus, HeartPulse, Building
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDashboard, SelectedEntity } from '@/contexts/DashboardContext';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import EnvironmentalCluster from './EnvironmentalCluster';
+import AssetDetailContent from './AssetDetailContent';
 
 /**
  * Level 3 - Context Panel
@@ -249,6 +250,9 @@ const ContextPanel = () => {
                 ) : (
                   <SuburbDetailContent entity={selectedEntity} />
                 )
+              ) : isFixedAssetType(selectedEntity.type) ? (
+                /* Fixed Asset Entity Content - Uses uniform AssetDetailContent */
+                <AssetDetailContent entity={selectedEntity} />
               ) : (
                 <>
                   {/* Priority: Quick Stats */}
@@ -727,6 +731,15 @@ const WardDetailContent = ({ entity }: { entity: SelectedEntity }) => {
   );
 };
 
+// Helper to identify fixed asset entity types
+const isFixedAssetType = (type: string | null): boolean => {
+  const fixedAssetTypes = [
+    'cctv', 'traffic_signal', 'hospital', 'police_station', 
+    'fire_station', 'taxi_rank', 'bus_stop', 'clinic', 'infrastructure'
+  ];
+  return type ? fixedAssetTypes.includes(type) : false;
+};
+
 // Utility functions
 const getTypeIcon = (type: string | null) => {
   switch (type) {
@@ -737,19 +750,33 @@ const getTypeIcon = (type: string | null) => {
     case 'area': return <MapPin className="w-4 h-4" />;
     case 'ward': return <Shield className="w-4 h-4" />;
     case 'rideshare': return <Car className="w-4 h-4" />;
+    case 'hospital': return <Cross className="w-4 h-4" />;
+    case 'police_station': return <Shield className="w-4 h-4" />;
+    case 'fire_station': return <Flame className="w-4 h-4" />;
+    case 'taxi_rank': return <Car className="w-4 h-4" />;
+    case 'bus_stop': return <Bus className="w-4 h-4" />;
+    case 'clinic': return <HeartPulse className="w-4 h-4" />;
+    case 'infrastructure': return <Building className="w-4 h-4" />;
     default: return <MapPin className="w-4 h-4" />;
   }
 };
 
 const getTypeStyle = (type: string | null) => {
   switch (type) {
-    case 'cctv': return { bg: 'bg-blue-500/20', text: 'text-blue-400' };
+    case 'cctv': return { bg: 'bg-violet-500/20', text: 'text-violet-400' };
     case 'traffic_signal': return { bg: 'bg-emerald-500/20', text: 'text-emerald-400' };
     case 'incident': return { bg: 'bg-orange-500/20', text: 'text-orange-400' };
     case 'suburb': return { bg: 'bg-primary/20', text: 'text-primary' };
     case 'area': return { bg: 'bg-cyan-500/20', text: 'text-cyan-400' };
     case 'ward': return { bg: 'bg-indigo-500/20', text: 'text-indigo-400' };
     case 'rideshare': return { bg: 'bg-violet-500/20', text: 'text-violet-400' };
+    case 'hospital': return { bg: 'bg-red-500/20', text: 'text-red-400' };
+    case 'police_station': return { bg: 'bg-blue-500/20', text: 'text-blue-400' };
+    case 'fire_station': return { bg: 'bg-orange-500/20', text: 'text-orange-400' };
+    case 'taxi_rank': return { bg: 'bg-purple-500/20', text: 'text-purple-400' };
+    case 'bus_stop': return { bg: 'bg-cyan-500/20', text: 'text-cyan-400' };
+    case 'clinic': return { bg: 'bg-pink-500/20', text: 'text-pink-400' };
+    case 'infrastructure': return { bg: 'bg-slate-500/20', text: 'text-slate-400' };
     default: return { bg: 'bg-primary/20', text: 'text-primary' };
   }
 };

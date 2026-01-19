@@ -208,6 +208,7 @@ export type Database = {
       }
       cctv_assets: {
         Row: {
+          area_code: string | null
           camera_code: string
           camera_type: string | null
           coordinates_lat: number | null
@@ -218,15 +219,19 @@ export type Database = {
           installed_date: string | null
           last_maintenance: string | null
           location: string
+          municipality: string | null
           name: string
           owner: string | null
           recording_enabled: boolean | null
           resolution: string | null
           status: string
+          street: string | null
+          suburb: string | null
           updated_at: string
           ward_id: number | null
         }
         Insert: {
+          area_code?: string | null
           camera_code: string
           camera_type?: string | null
           coordinates_lat?: number | null
@@ -237,15 +242,19 @@ export type Database = {
           installed_date?: string | null
           last_maintenance?: string | null
           location: string
+          municipality?: string | null
           name: string
           owner?: string | null
           recording_enabled?: boolean | null
           resolution?: string | null
           status?: string
+          street?: string | null
+          suburb?: string | null
           updated_at?: string
           ward_id?: number | null
         }
         Update: {
+          area_code?: string | null
           camera_code?: string
           camera_type?: string | null
           coordinates_lat?: number | null
@@ -256,11 +265,14 @@ export type Database = {
           installed_date?: string | null
           last_maintenance?: string | null
           location?: string
+          municipality?: string | null
           name?: string
           owner?: string | null
           recording_enabled?: boolean | null
           resolution?: string | null
           status?: string
+          street?: string | null
+          suburb?: string | null
           updated_at?: string
           ward_id?: number | null
         }
@@ -640,6 +652,7 @@ export type Database = {
       }
       infrastructure_status: {
         Row: {
+          area_code: string | null
           capacity_percent: number | null
           created_at: string
           estimated_restoration: string | null
@@ -648,12 +661,17 @@ export type Database = {
           infrastructure_type: string
           last_incident: string | null
           last_updated: string
+          municipality: string | null
           source: string
           status: string
+          street: string | null
+          suburb: string | null
+          ward_id: number | null
           zone_code: string
           zone_name: string
         }
         Insert: {
+          area_code?: string | null
           capacity_percent?: number | null
           created_at?: string
           estimated_restoration?: string | null
@@ -662,12 +680,17 @@ export type Database = {
           infrastructure_type: string
           last_incident?: string | null
           last_updated?: string
+          municipality?: string | null
           source?: string
           status?: string
+          street?: string | null
+          suburb?: string | null
+          ward_id?: number | null
           zone_code: string
           zone_name: string
         }
         Update: {
+          area_code?: string | null
           capacity_percent?: number | null
           created_at?: string
           estimated_restoration?: string | null
@@ -676,8 +699,12 @@ export type Database = {
           infrastructure_type?: string
           last_incident?: string | null
           last_updated?: string
+          municipality?: string | null
           source?: string
           status?: string
+          street?: string | null
+          suburb?: string | null
+          ward_id?: number | null
           zone_code?: string
           zone_name?: string
         }
@@ -1110,6 +1137,7 @@ export type Database = {
       }
       traffic_signals: {
         Row: {
+          area_code: string | null
           controller_type: string | null
           coordinates_lat: number | null
           coordinates_lng: number | null
@@ -1119,12 +1147,17 @@ export type Database = {
           is_synchronized: boolean | null
           last_maintenance: string | null
           location: string
+          municipality: string | null
           name: string
           signal_code: string
           status: string
+          street: string | null
+          suburb: string | null
           updated_at: string
+          ward_id: number | null
         }
         Insert: {
+          area_code?: string | null
           controller_type?: string | null
           coordinates_lat?: number | null
           coordinates_lng?: number | null
@@ -1134,12 +1167,17 @@ export type Database = {
           is_synchronized?: boolean | null
           last_maintenance?: string | null
           location: string
+          municipality?: string | null
           name: string
           signal_code: string
           status?: string
+          street?: string | null
+          suburb?: string | null
           updated_at?: string
+          ward_id?: number | null
         }
         Update: {
+          area_code?: string | null
           controller_type?: string | null
           coordinates_lat?: number | null
           coordinates_lng?: number | null
@@ -1149,10 +1187,14 @@ export type Database = {
           is_synchronized?: boolean | null
           last_maintenance?: string | null
           location?: string
+          municipality?: string | null
           name?: string
           signal_code?: string
           status?: string
+          street?: string | null
+          suburb?: string | null
           updated_at?: string
+          ward_id?: number | null
         }
         Relationships: []
       }
