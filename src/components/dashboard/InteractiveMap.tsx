@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { 
   Layers, Camera, TrafficCone, AlertTriangle, 
   MapPin, ZoomIn, ZoomOut, Locate, Filter,
-  Eye, EyeOff, Search, X, Bike, Table2, Map
+  Eye, EyeOff, Search, X, Bike, Table2, Map, Grid3X3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -14,6 +14,7 @@ import {
 } from '@/data/mapData';
 import { useDashboard } from '@/contexts/DashboardContext';
 import MapDataTable from './MapDataTable';
+import WardBoundariesLayer from './WardBoundariesLayer';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -142,6 +143,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
     { id: 'cycling', name: 'Cycle Lanes', icon: Bike, color: '#10b981', enabled: true },
     { id: 'hiking', name: 'Hiking Trails', icon: MapPin, color: '#92400e', enabled: true },
     { id: 'pedestrian', name: 'Safe Pedestrian', icon: MapPin, color: '#3b82f6', enabled: true },
+    { id: 'wards', name: 'Ward Boundaries', icon: Grid3X3, color: '#6366f1', enabled: true },
   ]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -204,6 +206,16 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   const showCycleLanes = layers.find(l => l.id === 'cycling')?.enabled;
   const showHikingTrails = layers.find(l => l.id === 'hiking')?.enabled;
   const showPedestrianZones = layers.find(l => l.id === 'pedestrian')?.enabled;
+  const showWardBoundaries = layers.find(l => l.id === 'wards')?.enabled;
+
+  const handleWardClick = useCallback((wardNumber: number) => {
+    selectEntity({
+      id: `ward-${wardNumber}`,
+      type: 'ward',
+      name: `Ward ${wardNumber}`,
+      data: { wardNumber }
+    });
+  }, [selectEntity]);
 
   return (
     <div 
@@ -375,6 +387,13 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+          
+          {/* Ward Boundaries - Show when zoomed in */}
+          <WardBoundariesLayer 
+            visible={showWardBoundaries} 
+            minZoom={11}
+            onWardClick={handleWardClick}
           />
           
           {/* Pickpocket Zones - Pulsing Orange */}
