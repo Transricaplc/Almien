@@ -545,6 +545,226 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_districts: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          municipality_type: string
+          name: string
+          region_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          municipality_type: string
+          name: string
+          region_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          municipality_type?: string
+          name?: string
+          region_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_districts_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "geo_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_local_municipalities: {
+        Row: {
+          code: string | null
+          created_at: string
+          district_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          district_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          district_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_local_municipalities_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "geo_districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_regions: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      geo_suburbs: {
+        Row: {
+          boundary_geojson: Json | null
+          coordinates_lat: number | null
+          coordinates_lng: number | null
+          created_at: string
+          district_id: string | null
+          id: string
+          local_municipality_id: string | null
+          name: string
+          postcode: string
+        }
+        Insert: {
+          boundary_geojson?: Json | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          local_municipality_id?: string | null
+          name: string
+          postcode: string
+        }
+        Update: {
+          boundary_geojson?: Json | null
+          coordinates_lat?: number | null
+          coordinates_lng?: number | null
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          local_municipality_id?: string | null
+          name?: string
+          postcode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_suburbs_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "geo_districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_suburbs_local_municipality_id_fkey"
+            columns: ["local_municipality_id"]
+            isOneToOne: false
+            referencedRelation: "geo_local_municipalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_ward_suburbs: {
+        Row: {
+          coverage_percent: number | null
+          created_at: string
+          id: string
+          suburb_id: string
+          ward_id: string
+        }
+        Insert: {
+          coverage_percent?: number | null
+          created_at?: string
+          id?: string
+          suburb_id: string
+          ward_id: string
+        }
+        Update: {
+          coverage_percent?: number | null
+          created_at?: string
+          id?: string
+          suburb_id?: string
+          ward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_ward_suburbs_suburb_id_fkey"
+            columns: ["suburb_id"]
+            isOneToOne: false
+            referencedRelation: "geo_suburbs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_ward_suburbs_ward_id_fkey"
+            columns: ["ward_id"]
+            isOneToOne: false
+            referencedRelation: "geo_wards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_wards: {
+        Row: {
+          boundary_geojson: Json | null
+          created_at: string
+          district_id: string | null
+          id: string
+          local_municipality_id: string | null
+          ward_number: number
+        }
+        Insert: {
+          boundary_geojson?: Json | null
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          local_municipality_id?: string | null
+          ward_number: number
+        }
+        Update: {
+          boundary_geojson?: Json | null
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          local_municipality_id?: string | null
+          ward_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_wards_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "geo_districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_wards_local_municipality_id_fkey"
+            columns: ["local_municipality_id"]
+            isOneToOne: false
+            referencedRelation: "geo_local_municipalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hiking_trails: {
         Row: {
           coordinates_lat: number | null
