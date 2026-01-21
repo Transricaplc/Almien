@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
 import type { FeatureCollection, Feature, Polygon, MultiPolygon } from 'geojson';
 import { useGeoWardsRealtime } from '@/hooks/useGeoWardsRealtime';
+import { wardData } from '@/data/mapData';
 
 interface WardData {
   id: string;
@@ -310,16 +311,30 @@ const WardBoundariesLayer = ({
   const onEachWard = (feature: Feature, layer: L.Layer) => {
     const wardNumber = feature.properties?.ward_number;
     const wardName = feature.properties?.name || `Ward ${wardNumber}`;
+
+    // Attach comparative statistics from static wardData (if available)
+    const stats = wardNumber
+      ? wardData.find(w => {
+          const match = w.id.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 0;
+          return num === wardNumber;
+        })
+      : undefined;
     
     layer.bindPopup(`
-      <div class="p-2 min-w-[160px]">
+      <div class="p-2 min-w-[200px]">
         <div class="font-bold text-sm text-primary">${wardName}</div>
-        <div class="text-xs text-muted-foreground mt-1">
-          Cape Town Metropolitan
-        </div>
-        <div class="mt-2 text-[10px] text-muted-foreground">
-          Click for ward details
-        </div>
+        <div class="text-xs text-muted-foreground mt-1">Cape Town Metropolitan</div>
+        ${stats ? `
+          <div class="mt-2 space-y-1 text-xs">
+            <div><span class="text-muted-foreground">Safety:</span> <span class="font-bold text-foreground">${stats.safetyScore}</span></div>
+            <div><span class="text-muted-foreground">Population:</span> <span class="font-mono text-foreground">${stats.population.toLocaleString()}</span></div>
+            <div><span class="text-muted-foreground">CCTV:</span> <span class="font-mono text-foreground">${stats.cctvCount}</span> <span class="text-muted-foreground">(${(stats.cctvCount / stats.areaKm2).toFixed(1)}/km²)</span></div>
+          </div>
+        ` : `
+          <div class="mt-2 text-xs text-muted-foreground">No ward stats loaded.</div>
+        `}
+        <div class="mt-2 text-[10px] text-muted-foreground">Click for ward details</div>
       </div>
     `);
 

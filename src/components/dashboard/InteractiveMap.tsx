@@ -15,6 +15,7 @@ import {
 import { useDashboard } from '@/contexts/DashboardContext';
 import MapDataTable from './MapDataTable';
 import WardBoundariesLayer from './WardBoundariesLayer';
+import WardFallbackMarkersLayer from './WardFallbackMarkersLayer';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -396,6 +397,15 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
           {/* Ward Boundaries - Show when zoomed in */}
           <WardBoundariesLayer 
             visible={showWardBoundaries} 
+            minZoom={11}
+            onWardClick={handleWardClick}
+            highlightedWards={comparisonHighlightedWards}
+            comparisonMode={comparisonHighlightedWards.size > 0}
+          />
+
+          {/* Fallback ward markers (for wards missing boundary polygons) */}
+          <WardFallbackMarkersLayer
+            visible={showWardBoundaries}
             minZoom={11}
             onWardClick={handleWardClick}
             highlightedWards={comparisonHighlightedWards}
