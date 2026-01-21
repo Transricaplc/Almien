@@ -52,6 +52,9 @@ export interface DashboardState {
   // View State
   isTravelerMode: boolean;
   mobilityTrayExpanded: boolean;
+
+  // Ward Comparison (multi-select highlight)
+  comparisonWardNumbers: number[];
 }
 
 interface DashboardContextValue extends DashboardState {
@@ -74,6 +77,9 @@ interface DashboardContextValue extends DashboardState {
   // View Actions
   setTravelerMode: (enabled: boolean) => void;
   setMobilityTrayExpanded: (expanded: boolean) => void;
+
+  // Comparison Actions
+  setComparisonWardNumbers: (wardNumbers: number[]) => void;
 }
 
 // =============================================
@@ -101,6 +107,8 @@ const defaultState: DashboardState = {
   detailPanelOpen: false,
   isTravelerMode: false,
   mobilityTrayExpanded: false,
+
+  comparisonWardNumbers: [],
 };
 
 // =============================================
@@ -199,6 +207,11 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     setState(prev => ({ ...prev, mobilityTrayExpanded: expanded }));
   }, []);
 
+  // Comparison Actions
+  const setComparisonWardNumbers = useCallback((wardNumbers: number[]) => {
+    setState(prev => ({ ...prev, comparisonWardNumbers: wardNumbers }));
+  }, []);
+
   const value: DashboardContextValue = {
     ...state,
     selectEntity,
@@ -213,6 +226,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     toggleDetailPanel,
     setTravelerMode,
     setMobilityTrayExpanded,
+
+    setComparisonWardNumbers,
   };
 
   return (

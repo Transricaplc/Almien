@@ -11,6 +11,7 @@ import CitizenReportModal from './CitizenReportModal';
 import LiveReportFeed from './LiveReportFeed';
 import OntologyViewer from './OntologyViewer';
 import ExecutiveSummary from './ExecutiveSummary';
+import ComparisonView from './ComparisonView';
 import ExpandablePanel from './ExpandablePanel';
 import EnvironmentalCluster from './EnvironmentalCluster';
 import { cn } from '@/lib/utils';
@@ -20,7 +21,7 @@ interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
 
-type TabType = 'executive' | 'ontology' | 'reports' | 'trails';
+type TabType = 'executive' | 'ontology' | 'reports' | 'trails' | 'comparison';
 
 const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
   const { suburbs, loading, error, searchSuburbs } = useSuburbIntelligence();
@@ -128,6 +129,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
     ontology: { icon: <Network className="w-4 h-4 text-primary" />, title: 'Entity Graph & Relationships', component: <OntologyViewer /> },
     reports: { icon: <Radio className="w-4 h-4 text-primary" />, title: 'Live Report Feed', component: <LiveReportFeed /> },
     trails: { icon: <Mountain className="w-4 h-4 text-primary" />, title: 'Hiking Trails & Outdoor Safety', component: <HikingTrailsPanel /> },
+    comparison: { icon: <Activity className="w-4 h-4 text-primary" />, title: 'Ward Comparison', component: <ComparisonView /> },
   };
 
   if (error) {
@@ -248,7 +250,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         role="navigation"
         aria-label="Intelligence panels - click to expand"
       >
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {(Object.keys(tabConfig) as TabType[]).map((tab) => {
             const config = tabConfig[tab];
             const icons = {
@@ -256,12 +258,14 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
               ontology: <Network className="w-3.5 h-3.5" />,
               reports: <Radio className="w-3.5 h-3.5" />,
               trails: <Mountain className="w-3.5 h-3.5" />,
+              comparison: <Activity className="w-3.5 h-3.5" />,
             };
             const labels = {
               executive: 'KPIs',
               ontology: 'Graph',
               reports: 'Feed',
               trails: 'Trails',
+              comparison: 'Compare',
             };
             
             return (

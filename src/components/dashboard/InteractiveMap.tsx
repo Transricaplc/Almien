@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { 
@@ -132,7 +132,11 @@ interface InteractiveMapProps {
 }
 
 const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
-  const { selectEntity } = useDashboard();
+  const { selectEntity, comparisonWardNumbers } = useDashboard();
+  const comparisonHighlightedWards = useMemo(
+    () => new Set<number>(comparisonWardNumbers ?? []),
+    [comparisonWardNumbers]
+  );
   
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
   const [layers, setLayers] = useState<LayerToggle[]>([
@@ -394,6 +398,8 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
             visible={showWardBoundaries} 
             minZoom={11}
             onWardClick={handleWardClick}
+            highlightedWards={comparisonHighlightedWards}
+            comparisonMode={comparisonHighlightedWards.size > 0}
           />
           
           {/* Pickpocket Zones - Pulsing Orange */}

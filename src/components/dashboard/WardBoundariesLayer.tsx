@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { GeoJSON, Popup, useMap, useMapEvents } from 'react-leaflet';
-import { supabase } from '@/integrations/supabase/client';
 import type { FeatureCollection, Feature, Polygon, MultiPolygon } from 'geojson';
+import { useGeoWardsRealtime } from '@/hooks/useGeoWardsRealtime';
 
 interface WardData {
   id: string;
@@ -209,8 +209,9 @@ const WardBoundariesLayer = ({
 }: WardBoundariesLayerProps) => {
   const map = useMap();
   const [currentZoom, setCurrentZoom] = useState(map.getZoom());
-  const [wards, setWards] = useState<WardData[]>([]);
   const [hoveredWard, setHoveredWard] = useState<number | null>(null);
+
+  const { wards } = useGeoWardsRealtime();
 
   // Create stable color mapping for highlighted wards
   const wardColorMap = useMemo(() => {
@@ -231,21 +232,7 @@ const WardBoundariesLayer = ({
     }
   });
 
-  // Fetch ward boundaries from database
-  useEffect(() => {
-    const fetchWards = async () => {
-      const { data, error } = await supabase
-        .from('geo_wards')
-        .select('id, ward_number, boundary_geojson')
-        .not('boundary_geojson', 'is', null);
-      
-      if (!error && data) {
-        setWards(data as WardData[]);
-      }
-    };
-    
-    fetchWards();
-  }, []);
+  // Ward boundaries are hydrated and kept in-sync via realtime (see useGeoWardsRealtime)
 
   // Use a stable key that includes comparison mode and highlighted wards - must be before early return
   const layerKey = useMemo(() => {

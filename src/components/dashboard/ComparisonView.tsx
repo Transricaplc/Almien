@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { 
   BarChart3, TrendingUp, Users, MapPin, Camera, 
   TrafficCone, AlertTriangle, ArrowUpDown, Check,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { wardData, WardData } from '@/data/mapData';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 type SortKey = 'name' | 'population' | 'cctvCount' | 'safetyScore' | 'cctvPerKm' | 'cctvPerPop';
 type SortDir = 'asc' | 'desc';
@@ -32,10 +33,12 @@ const getWardNumber = (wardId: string): number => {
 };
 
 const ComparisonView = ({ onHighlightedWardsChange, onHoveredWardChange }: ComparisonViewProps) => {
+  const { setComparisonWardNumbers } = useDashboard();
   const [selectedWards, setSelectedWards] = useState<string[]>([wardData[0].id, wardData[1].id]);
   const [sortKey, setSortKey] = useState<SortKey>('safetyScore');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [filterType, setFilterType] = useState<'all' | 'urban' | 'peri-urban'>('all');
+  const [hoveredWardId, setHoveredWardId] = useState<string | null>(null);
 
   // Compute highlighted ward numbers for map
   const highlightedWardNumbers = useMemo(() => {
@@ -43,13 +46,18 @@ const ComparisonView = ({ onHighlightedWardsChange, onHoveredWardChange }: Compa
     selectedWards.forEach(wardId => {
       numbers.add(getWardNumber(wardId));
     });
+    if (hoveredWardId) {
+      numbers.add(getWardNumber(hoveredWardId));
+    }
     return numbers;
-  }, [selectedWards]);
+  }, [selectedWards, hoveredWardId]);
 
-  // Notify parent of highlighted wards change
-  useMemo(() => {
+  // Sync highlights to map (and keep optional parent callbacks working)
+  useEffect(() => {
+    const wardNumbersArray = Array.from(highlightedWardNumbers).sort((a, b) => a - b);
+    setComparisonWardNumbers(wardNumbersArray);
     onHighlightedWardsChange?.(highlightedWardNumbers);
-  }, [highlightedWardNumbers, onHighlightedWardsChange]);
+  }, [highlightedWardNumbers, onHighlightedWardsChange, setComparisonWardNumbers]);
 
   // Get color for ward based on selection order
   const getWardColor = (wardId: string) => {
@@ -182,8 +190,14 @@ const ComparisonView = ({ onHighlightedWardsChange, onHoveredWardChange }: Compa
                   "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border transition-all",
                   colors?.border || 'border-primary/50'
                 )}
-                onMouseEnter={() => onHoveredWardChange?.(ward.id)}
-                onMouseLeave={() => onHoveredWardChange?.(null)}
+                onMouseEnter={() => {
+                  setHoveredWardId(ward.id);
+                  onHoveredWardChange?.(ward.id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredWardId(null);
+                  onHoveredWardChange?.(null);
+                }}
               >
                 <div className={cn("w-2 h-2 rounded-full", colors?.bg || 'bg-primary')} />
                 <span className="text-foreground">{ward.name}</span>
@@ -237,8 +251,14 @@ const ComparisonView = ({ onHighlightedWardsChange, onHoveredWardChange }: Compa
                     "bg-background/50 rounded-lg p-3 border-2 transition-all hover:shadow-md cursor-pointer",
                     colors?.border || 'border-border/50'
                   )}
-                  onMouseEnter={() => onHoveredWardChange?.(ward.id)}
-                  onMouseLeave={() => onHoveredWardChange?.(null)}
+                  onMouseEnter={() => {
+                    setHoveredWardId(ward.id);
+                    onHoveredWardChange?.(ward.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredWardId(null);
+                    onHoveredWardChange?.(null);
+                  }}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
