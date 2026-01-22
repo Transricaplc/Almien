@@ -1580,6 +1580,125 @@ export type Database = {
         }
         Relationships: []
       }
+      wildfire_alerts: {
+        Row: {
+          alert_id: string
+          created_at: string
+          event_id: string
+        }
+        Insert: {
+          alert_id: string
+          created_at?: string
+          event_id: string
+        }
+        Update: {
+          alert_id?: string
+          created_at?: string
+          event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wildfire_alerts_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alert_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wildfire_alerts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "wildfire_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wildfire_events: {
+        Row: {
+          created_at: string
+          detected_at: string
+          external_id: string | null
+          id: string
+          intensity: number | null
+          last_seen_at: string
+          latitude: number | null
+          longitude: number | null
+          metadata: Json
+          severity: string
+          source: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detected_at?: string
+          external_id?: string | null
+          id?: string
+          intensity?: number | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          severity?: string
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detected_at?: string
+          external_id?: string | null
+          id?: string
+          intensity?: number | null
+          last_seen_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          metadata?: Json
+          severity?: string
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wildfire_perimeters: {
+        Row: {
+          area_ha: number | null
+          created_at: string
+          event_id: string
+          id: string
+          perimeter_geojson: Json
+          updated_at: string
+        }
+        Insert: {
+          area_ha?: number | null
+          created_at?: string
+          event_id: string
+          id?: string
+          perimeter_geojson: Json
+          updated_at?: string
+        }
+        Update: {
+          area_ha?: number | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          perimeter_geojson?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wildfire_perimeters_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "wildfire_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wind_reports: {
         Row: {
           advisory: string | null
