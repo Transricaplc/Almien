@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, Car, Train, Route, Mountain, Bike, Dog, Plane, PersonStanding, Wind, Maximize2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, Car, Train, Route, Mountain, Bike, Dog, Plane, PersonStanding, Wind, Maximize2, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import RoadsStatusPanel from './RoadsStatusPanel';
 import TrainRoutesPanel from './TrainRoutesPanel';
@@ -11,8 +11,9 @@ import FlightStatusPanel from './FlightStatusPanel';
 import RunningRoutesPanel from './RunningRoutesPanel';
 import WindReportPanel from './WindReportPanel';
 import ExpandablePanel from './ExpandablePanel';
+import WildfireAFISPanel from './WildfireAFISPanel';
 
-type TabId = 'roads' | 'trains' | 'rideshare' | 'flights' | 'hiking' | 'running' | 'cycling' | 'pets' | 'wind';
+type TabId = 'roads' | 'trains' | 'rideshare' | 'wildfire' | 'flights' | 'hiking' | 'running' | 'cycling' | 'pets' | 'wind';
 
 interface TabConfig {
   id: TabId;
@@ -25,6 +26,7 @@ const tabs: TabConfig[] = [
   { id: 'roads', label: 'Roads', fullLabel: 'Road Network Status', icon: Route },
   { id: 'trains', label: 'Rail', fullLabel: 'Metrorail Intelligence', icon: Train },
   { id: 'rideshare', label: 'Rideshare', fullLabel: 'Rideshare Safety Zones', icon: Car },
+  { id: 'wildfire', label: 'Wildfire', fullLabel: 'CSI AFIS Wildfire Viewer', icon: Flame },
   { id: 'flights', label: 'Flights', fullLabel: 'Flight Status Board', icon: Plane },
   { id: 'hiking', label: 'Trails', fullLabel: 'Hiking Trails Guide', icon: Mountain },
   { id: 'running', label: 'Running', fullLabel: 'Running Routes', icon: PersonStanding },
@@ -46,6 +48,8 @@ const MobilityTray = () => {
         return <TrainRoutesPanel />;
       case 'rideshare':
         return <RideshareIntelPanel />;
+      case 'wildfire':
+        return <WildfireAFISPanel />;
       case 'flights':
         return <FlightStatusPanel />;
       case 'hiking':

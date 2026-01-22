@@ -7,6 +7,7 @@ import MobilityTray from '@/components/dashboard/MobilityTray';
 import GlobalStatusBar from '@/components/dashboard/GlobalStatusBar';
 import ContextPanel from '@/components/dashboard/ContextPanel';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
+import { WildfireProvider } from '@/contexts/WildfireContext';
 import { cn } from '@/lib/utils';
 
 const DashboardContent = () => {
@@ -85,7 +86,9 @@ const DashboardContent = () => {
 const Index = () => {
   return (
     <DashboardProvider>
-      <DashboardContent />
+      <WildfireProvider>
+        <DashboardContent />
+      </WildfireProvider>
     </DashboardProvider>
   );
 };

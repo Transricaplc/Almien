@@ -16,6 +16,7 @@ import { useDashboard } from '@/contexts/DashboardContext';
 import MapDataTable from './MapDataTable';
 import WardBoundariesLayer from './WardBoundariesLayer';
 import WardFallbackMarkersLayer from './WardFallbackMarkersLayer';
+import WildfireLayer from './WildfireLayer';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -149,6 +150,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
     { id: 'hiking', name: 'Hiking Trails', icon: MapPin, color: '#92400e', enabled: true },
     { id: 'pedestrian', name: 'Safe Pedestrian', icon: MapPin, color: '#3b82f6', enabled: true },
     { id: 'wards', name: 'Ward Boundaries', icon: Grid3X3, color: '#6366f1', enabled: true },
+    { id: 'wildfire', name: 'Wildfire (AFIS)', icon: AlertTriangle, color: 'hsl(var(--destructive))', enabled: true },
   ]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -212,6 +214,7 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   const showHikingTrails = layers.find(l => l.id === 'hiking')?.enabled;
   const showPedestrianZones = layers.find(l => l.id === 'pedestrian')?.enabled;
   const showWardBoundaries = layers.find(l => l.id === 'wards')?.enabled;
+  const showWildfire = layers.find(l => l.id === 'wildfire')?.enabled;
 
   const handleWardClick = useCallback((wardNumber: number) => {
     selectEntity({
@@ -393,6 +396,9 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
+
+           {/* CSI AFIS Wildfire overlay */}
+           <WildfireLayer visible={!!showWildfire} />
           
           {/* Ward Boundaries - Show when zoomed in */}
           <WardBoundariesLayer 
