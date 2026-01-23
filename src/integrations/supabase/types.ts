@@ -816,6 +816,71 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_assignments: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          assigned_at: string
+          assigned_by: string
+          id: string
+          incident_id: string
+          note: string | null
+          status: Database["public"]["Enums"]["assignment_status"]
+          unit_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          assigned_at?: string
+          assigned_by: string
+          id?: string
+          incident_id: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          unit_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          assigned_at?: string
+          assigned_by?: string
+          id?: string
+          incident_id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_assignments_ack_by_fk"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "incident_assignments_assigned_by_fk"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "incident_assignments_incident_fk"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_assignments_unit_fk"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "responder_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_clusters: {
         Row: {
           category: string
@@ -869,6 +934,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      incidents: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          priority: Database["public"]["Enums"]["incident_priority"]
+          source_report_id: string | null
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          source_report_id?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          source_report_id?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_created_by_fk"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "incidents_source_report_fk"
+            columns: ["source_report_id"]
+            isOneToOne: false
+            referencedRelation: "citizen_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       infrastructure_status: {
         Row: {
@@ -1205,6 +1327,63 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      responder_units: {
+        Row: {
+          callsign: string | null
+          created_at: string
+          current_status: Database["public"]["Enums"]["unit_status"]
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          callsign?: string | null
+          created_at?: string
+          current_status?: Database["public"]["Enums"]["unit_status"]
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          callsign?: string | null
+          created_at?: string
+          current_status?: Database["public"]["Enums"]["unit_status"]
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       risk_scores: {
         Row: {
           computed_at: string
@@ -1462,6 +1641,110 @@ export type Database = {
           total_cameras?: number
         }
         Relationships: []
+      }
+      unit_members: {
+        Row: {
+          created_at: string
+          unit_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          unit_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          unit_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_members_unit_fk"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "responder_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_members_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      unit_status_events: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          set_by: string
+          status: Database["public"]["Enums"]["unit_status"]
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          set_by: string
+          status: Database["public"]["Enums"]["unit_status"]
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          set_by?: string
+          status?: Database["public"]["Enums"]["unit_status"]
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_status_events_set_by_fk"
+            columns: ["set_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "unit_status_events_unit_fk"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "responder_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       water_outages: {
         Row: {
@@ -1778,10 +2061,35 @@ export type Database = {
           type_name: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_unit_member: {
+        Args: { _unit_id: string; _user_id: string }
+        Returns: boolean
+      }
       refresh_ontology_views: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "dispatcher" | "responder"
+      assignment_status:
+        | "assigned"
+        | "accepted"
+        | "declined"
+        | "completed"
+        | "cancelled"
+      incident_priority: "low" | "medium" | "high" | "critical"
+      incident_status: "new" | "triaged" | "dispatched" | "resolved" | "closed"
+      unit_status:
+        | "available"
+        | "enroute"
+        | "on_scene"
+        | "transporting"
+        | "unavailable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1908,6 +2216,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "dispatcher", "responder"],
+      assignment_status: [
+        "assigned",
+        "accepted",
+        "declined",
+        "completed",
+        "cancelled",
+      ],
+      incident_priority: ["low", "medium", "high", "critical"],
+      incident_status: ["new", "triaged", "dispatched", "resolved", "closed"],
+      unit_status: [
+        "available",
+        "enroute",
+        "on_scene",
+        "transporting",
+        "unavailable",
+      ],
+    },
   },
 } as const

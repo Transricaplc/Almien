@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Shield, Bell, Settings, ToggleLeft, ToggleRight, AlertTriangle, Plane,
   Camera, CameraOff, Route, Train, Car, Activity, Phone, Clock, FileWarning
@@ -165,6 +166,14 @@ const Header = ({ isTravelerMode, onToggleTravelerMode }: HeaderProps) => {
 
             {/* Theme Toggle */}
             <ThemeToggle />
+
+            {/* Staff */}
+            <Link
+              to="/auth"
+              className="hidden sm:flex px-2.5 py-1.5 rounded-lg bg-background/30 hover:bg-background/50 border border-border/50 transition-all text-[10px] lg:text-xs font-bold"
+            >
+              STAFF
+            </Link>
 
             {/* Settings (Command Center Only) */}
             {!isTravelerMode && (
