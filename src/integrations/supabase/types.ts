@@ -2038,6 +2038,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      any_admin_exists: { Args: never; Returns: boolean }
+      claim_initial_admin: { Args: never; Returns: boolean }
       get_entity_neighborhood: {
         Args: { p_entity_id: string; p_max_depth?: number }
         Returns: {

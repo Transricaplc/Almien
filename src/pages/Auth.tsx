@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useRoles } from "@/hooks/useRoles";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,29 @@ export default function AuthPage() {
   }, [from, roles]);
 
   if (user) {
+    const claimInitialAdmin = async () => {
+      try {
+        const { data: hasAdmin, error: e1 } = await supabase.rpc("any_admin_exists");
+        if (e1) throw e1;
+        if (hasAdmin) {
+          toast({ title: "An admin already exists", description: "Ask an admin to grant your role(s)." });
+          return;
+        }
+
+        const { data: claimed, error: e2 } = await supabase.rpc("claim_initial_admin");
+        if (e2) throw e2;
+        if (!claimed) {
+          toast({ title: "Unable to claim admin", description: "An admin may have been created concurrently." });
+          return;
+        }
+
+        toast({ title: "Admin role granted", description: "You can now manage roles and units." });
+        nav("/dispatch");
+      } catch (e: any) {
+        toast({ title: "Bootstrap failed", description: e?.message ?? "Please try again.", variant: "destructive" });
+      }
+    };
+
     return (
       <main className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-lg">
@@ -60,6 +84,18 @@ export default function AuthPage() {
             <div className="text-sm text-muted-foreground">
               Roles: <span className="text-foreground">{(roles ?? []).length ? (roles ?? []).join(", ") : "(none)"}</span>
             </div>
+
+            {(roles ?? []).length === 0 && (
+              <div className="rounded-md border p-3 text-sm">
+                <div className="font-medium">No roles yet</div>
+                <div className="text-muted-foreground mt-1">
+                  If this is a fresh environment, the first signed-in user can claim the initial Admin role.
+                </div>
+                <div className="mt-3">
+                  <Button onClick={claimInitialAdmin}>Claim initial admin</Button>
+                </div>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex gap-2">
             <Button onClick={() => nav(postAuthTarget)}>Continue</Button>
