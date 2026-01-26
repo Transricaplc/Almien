@@ -1,5 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCriticalRealtimeQuery, useStandardRealtimeQuery } from './useRealtimeQuery';
+
+// =============================================
+// TYPES
+// =============================================
 
 export interface CityKPI {
   id: string;
@@ -39,63 +44,114 @@ export interface AlertQueueItem {
   created_at: string;
 }
 
-interface UseCityIntelligenceReturn {
-  kpis: CityKPI[];
-  dataSourceHealth: DataSourceHealth[];
-  activeAlerts: AlertQueueItem[];
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
+// =============================================
+// FETCHERS
+// =============================================
 
-export const useCityIntelligence = (): UseCityIntelligenceReturn => {
-  const [kpis, setKpis] = useState<CityKPI[]>([]);
-  const [dataSourceHealth, setDataSourceHealth] = useState<DataSourceHealth[]>([]);
-  const [activeAlerts, setActiveAlerts] = useState<AlertQueueItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const fetchKPIs = async (): Promise<CityKPI[]> => {
+  const { data, error } = await supabase
+    .from('city_kpis')
+    .select('*')
+    .order('category');
+  
+  if (error) throw error;
+  return data || [];
+};
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+const fetchDataSourceHealth = async (): Promise<DataSourceHealth[]> => {
+  const { data, error } = await supabase
+    .from('data_source_health')
+    .select('*')
+    .order('is_critical', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+};
 
-      const [kpisResult, healthResult, alertsResult] = await Promise.all([
-        supabase.from('city_kpis').select('*').order('category'),
-        supabase.from('data_source_health').select('*').order('is_critical', { ascending: false }),
-        supabase.from('alert_queue').select('*').eq('status', 'pending').order('created_at', { ascending: false }).limit(10)
-      ]);
+const fetchActiveAlerts = async (): Promise<AlertQueueItem[]> => {
+  const { data, error } = await supabase
+    .from('alert_queue')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  
+  if (error) throw error;
+  return data || [];
+};
 
-      if (kpisResult.error) throw kpisResult.error;
-      if (healthResult.error) throw healthResult.error;
-      if (alertsResult.error) throw alertsResult.error;
+// =============================================
+// HOOKS
+// =============================================
 
-      setKpis(kpisResult.data || []);
-      setDataSourceHealth(healthResult.data || []);
-      setActiveAlerts(alertsResult.data || []);
-    } catch (err) {
-      console.error('Error fetching city intelligence:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
-  };
+export const useCityKPIs = () => {
+  return useStandardRealtimeQuery({
+    queryKey: ['city-kpis'],
+    queryFn: fetchKPIs,
+    table: 'city_kpis',
+    pollingInterval: 60000, // 1 minute
+  });
+};
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60 * 1000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []);
+export const useDataSourceHealth = () => {
+  return useCriticalRealtimeQuery({
+    queryKey: ['data-source-health'],
+    queryFn: fetchDataSourceHealth,
+    table: 'data_source_health',
+    pollingInterval: 15000, // 15 seconds for critical monitoring
+  });
+};
+
+export const useActiveAlerts = () => {
+  return useCriticalRealtimeQuery({
+    queryKey: ['active-alerts'],
+    queryFn: fetchActiveAlerts,
+    table: 'alert_queue',
+    pollingInterval: 10000, // 10 seconds for alerts
+  });
+};
+
+/**
+ * Combined hook for city intelligence dashboard
+ * Uses individual hooks for better caching and selective updates
+ */
+export const useCityIntelligence = () => {
+  const kpisQuery = useCityKPIs();
+  const healthQuery = useDataSourceHealth();
+  const alertsQuery = useActiveAlerts();
 
   return {
-    kpis,
-    dataSourceHealth,
-    activeAlerts,
-    loading,
-    error,
-    refetch: fetchData
+    // Data
+    kpis: kpisQuery.data || [],
+    dataSourceHealth: healthQuery.data || [],
+    activeAlerts: alertsQuery.data || [],
+    
+    // Combined loading state
+    loading: kpisQuery.isLoading || healthQuery.isLoading || alertsQuery.isLoading,
+    isRefetching: kpisQuery.isRefetching || healthQuery.isRefetching || alertsQuery.isRefetching,
+    
+    // Combined error state
+    error: kpisQuery.error?.message || healthQuery.error?.message || alertsQuery.error?.message || null,
+    
+    // Last updated (most recent of all three)
+    lastUpdated: [kpisQuery.lastUpdated, healthQuery.lastUpdated, alertsQuery.lastUpdated]
+      .filter(Boolean)
+      .sort((a, b) => (b?.getTime() || 0) - (a?.getTime() || 0))[0] || null,
+    
+    // Refetch all
+    refetch: async () => {
+      await Promise.all([
+        kpisQuery.refetch(),
+        healthQuery.refetch(),
+        alertsQuery.refetch(),
+      ]);
+    },
   };
 };
+
+// =============================================
+// UTILITIES
+// =============================================
 
 export const getKPIsByCategory = (kpis: CityKPI[], category: string): CityKPI[] => {
   return kpis.filter(k => k.category === category);
@@ -112,7 +168,7 @@ export const getTrendColor = (trend: string): string => {
 export const getHealthStatusColor = (status: string): string => {
   switch (status) {
     case 'healthy': return 'bg-emerald-500';
-    case 'degraded': return 'bg-yellow-500';
+    case 'degraded': return 'bg-amber-500';
     case 'unhealthy': return 'bg-orange-500';
     case 'offline': return 'bg-red-500';
     default: return 'bg-muted';
@@ -123,8 +179,21 @@ export const getPriorityColor = (priority: string): string => {
   switch (priority) {
     case 'critical': return 'bg-red-500 text-white';
     case 'high': return 'bg-orange-500 text-white';
-    case 'medium': return 'bg-yellow-500 text-black';
+    case 'medium': return 'bg-amber-500 text-black';
     case 'low': return 'bg-blue-500 text-white';
     default: return 'bg-muted';
   }
+};
+
+export const useCategorizedKPIs = () => {
+  const { kpis, loading, error } = useCityIntelligence();
+  
+  return useMemo(() => ({
+    safety: kpis.filter(k => k.category === 'safety'),
+    infrastructure: kpis.filter(k => k.category === 'infrastructure'),
+    environment: kpis.filter(k => k.category === 'environment'),
+    transport: kpis.filter(k => k.category === 'transport'),
+    loading,
+    error,
+  }), [kpis, loading, error]);
 };

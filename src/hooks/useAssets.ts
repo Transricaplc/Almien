@@ -1,5 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useStandardRealtimeQuery } from './useRealtimeQuery';
+
+// =============================================
+// TYPES
+// =============================================
 
 export interface TrafficSignal {
   id: string;
@@ -42,86 +47,145 @@ export interface InfrastructureStatus {
   last_updated: string;
 }
 
-interface UseAssetsReturn {
-  trafficSignals: TrafficSignal[];
-  cctvAssets: CCTVAsset[];
-  infrastructureStatus: InfrastructureStatus[];
-  loading: boolean;
-  error: string | null;
-  stats: {
-    totalCCTV: number;
-    operationalCCTV: number;
-    totalSignals: number;
-    operationalSignals: number;
-    infrastructureHealthy: number;
-  };
-  refetch: () => Promise<void>;
+export interface AssetStats {
+  totalCCTV: number;
+  operationalCCTV: number;
+  totalSignals: number;
+  operationalSignals: number;
+  infrastructureHealthy: number;
+  totalInfrastructure: number;
 }
 
-export const useAssets = (): UseAssetsReturn => {
-  const [trafficSignals, setTrafficSignals] = useState<TrafficSignal[]>([]);
-  const [cctvAssets, setCctvAssets] = useState<CCTVAsset[]>([]);
-  const [infrastructureStatus, setInfrastructureStatus] = useState<InfrastructureStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// =============================================
+// FETCHERS
+// =============================================
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+const fetchTrafficSignals = async (): Promise<TrafficSignal[]> => {
+  const { data, error } = await supabase
+    .from('traffic_signals')
+    .select('*')
+    .order('location');
+  
+  if (error) throw error;
+  return data || [];
+};
 
-      const [signalsResult, cctvResult, infraResult] = await Promise.all([
-        supabase.from('traffic_signals').select('*').order('location'),
-        supabase.from('cctv_assets').select('*').order('location'),
-        supabase.from('infrastructure_status').select('*').order('infrastructure_type')
-      ]);
+const fetchCCTVAssets = async (): Promise<CCTVAsset[]> => {
+  const { data, error } = await supabase
+    .from('cctv_assets')
+    .select('*')
+    .order('location');
+  
+  if (error) throw error;
+  return data || [];
+};
 
-      if (signalsResult.error) throw signalsResult.error;
-      if (cctvResult.error) throw cctvResult.error;
-      if (infraResult.error) throw infraResult.error;
+const fetchInfrastructureStatus = async (): Promise<InfrastructureStatus[]> => {
+  const { data, error } = await supabase
+    .from('infrastructure_status')
+    .select('*')
+    .order('infrastructure_type');
+  
+  if (error) throw error;
+  return data || [];
+};
 
-      setTrafficSignals(signalsResult.data || []);
-      setCctvAssets(cctvResult.data || []);
-      setInfrastructureStatus(infraResult.data || []);
-    } catch (err) {
-      console.error('Error fetching assets:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch assets');
-    } finally {
-      setLoading(false);
-    }
-  };
+// =============================================
+// HOOKS
+// =============================================
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+export const useTrafficSignals = () => {
+  return useStandardRealtimeQuery({
+    queryKey: ['traffic-signals'],
+    queryFn: fetchTrafficSignals,
+    table: 'traffic_signals',
+    pollingInterval: 30000, // 30 seconds
+  });
+};
 
-  const stats = useMemo(() => ({
+export const useCCTVAssets = () => {
+  return useStandardRealtimeQuery({
+    queryKey: ['cctv-assets'],
+    queryFn: fetchCCTVAssets,
+    table: 'cctv_assets',
+    pollingInterval: 30000, // 30 seconds
+  });
+};
+
+export const useInfrastructureStatus = () => {
+  return useStandardRealtimeQuery({
+    queryKey: ['infrastructure-status'],
+    queryFn: fetchInfrastructureStatus,
+    table: 'infrastructure_status',
+    pollingInterval: 30000, // 30 seconds
+  });
+};
+
+/**
+ * Combined assets hook with computed statistics
+ */
+export const useAssets = () => {
+  const signalsQuery = useTrafficSignals();
+  const cctvQuery = useCCTVAssets();
+  const infraQuery = useInfrastructureStatus();
+
+  const trafficSignals = signalsQuery.data || [];
+  const cctvAssets = cctvQuery.data || [];
+  const infrastructureStatus = infraQuery.data || [];
+
+  const stats = useMemo((): AssetStats => ({
     totalCCTV: cctvAssets.length,
     operationalCCTV: cctvAssets.filter(c => c.status === 'operational').length,
     totalSignals: trafficSignals.length,
     operationalSignals: trafficSignals.filter(s => s.status === 'operational').length,
-    infrastructureHealthy: infrastructureStatus.filter(i => i.status === 'operational').length
+    totalInfrastructure: infrastructureStatus.length,
+    infrastructureHealthy: infrastructureStatus.filter(i => i.status === 'operational').length,
   }), [cctvAssets, trafficSignals, infrastructureStatus]);
+
+  const loading = signalsQuery.isLoading || cctvQuery.isLoading || infraQuery.isLoading;
+  const error = signalsQuery.error?.message || cctvQuery.error?.message || infraQuery.error?.message || null;
 
   return {
     trafficSignals,
     cctvAssets,
     infrastructureStatus,
+    stats,
     loading,
     error,
-    stats,
-    refetch: fetchData
+    lastUpdated: signalsQuery.lastUpdated,
+    refetch: async () => {
+      await Promise.all([
+        signalsQuery.refetch(),
+        cctvQuery.refetch(),
+        infraQuery.refetch(),
+      ]);
+    },
   };
 };
+
+// =============================================
+// UTILITIES
+// =============================================
 
 export const getStatusColor = (status: string): string => {
   switch (status) {
     case 'operational': return 'bg-emerald-500';
     case 'maintenance': return 'bg-blue-500';
-    case 'faulty': return 'bg-yellow-500';
+    case 'faulty': return 'bg-amber-500';
     case 'degraded': return 'bg-orange-500';
     case 'offline': return 'bg-red-500';
     default: return 'bg-muted';
+  }
+};
+
+export const getStatusTextColor = (status: string): string => {
+  switch (status) {
+    case 'operational': return 'text-emerald-500';
+    case 'maintenance': return 'text-blue-500';
+    case 'faulty': return 'text-amber-500';
+    case 'degraded': return 'text-orange-500';
+    case 'offline': return 'text-red-500';
+    default: return 'text-muted-foreground';
   }
 };
 
@@ -136,4 +200,14 @@ export const getAssetIcon = (type: string): string => {
     case 'smart': return 'cpu';
     default: return 'circle';
   }
+};
+
+export const useCCTVByWard = (wardId: number | null) => {
+  const { cctvAssets, loading, error } = useAssets();
+  
+  return useMemo(() => ({
+    cameras: wardId ? cctvAssets.filter(c => c.ward_id === wardId) : cctvAssets,
+    loading,
+    error,
+  }), [cctvAssets, wardId, loading, error]);
 };

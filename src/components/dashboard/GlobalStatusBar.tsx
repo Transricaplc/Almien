@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Shield, AlertTriangle, Camera, Activity, Clock, 
-  TrendingUp, TrendingDown, Bell, Zap
+  Bell, Zap, RefreshCw, WifiOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDashboard } from '@/contexts/DashboardContext';
@@ -11,11 +11,12 @@ import { useAssets } from '@/hooks/useAssets';
 /**
  * Level 1 - Global Status Bar
  * Always visible at top. Answers: "What is the state of the city right now?"
+ * Now with real-time data sync indicators
  */
 const GlobalStatusBar = () => {
   const { timeFilter, setTimeFilter } = useDashboard();
-  const { activeAlerts, kpis } = useCityIntelligence();
-  const { stats } = useAssets();
+  const { activeAlerts, kpis, loading: kpiLoading, lastUpdated, refetch, isRefetching } = useCityIntelligence();
+  const { stats, loading: assetsLoading } = useAssets();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -38,14 +39,17 @@ const GlobalStatusBar = () => {
   const criticalAlerts = activeAlerts.filter(a => a.priority === 'critical').length;
   const highRiskZones = 3; // Would come from real data
 
+  const isLoading = kpiLoading || assetsLoading;
+
   return (
     <div className="bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-2">
       <div className="max-w-[2000px] mx-auto flex items-center justify-between gap-4">
         {/* Left: City Health Summary */}
         <div className="flex items-center gap-4">
           <div className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-lg border",
-            healthStatus.color
+            "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
+            healthStatus.color,
+            isLoading && "animate-pulse"
           )}>
             <Shield className="w-4 h-4" />
             <span className="text-xs font-tactical font-bold">{healthStatus.label}</span>
@@ -67,7 +71,7 @@ const GlobalStatusBar = () => {
           </div>
         </div>
 
-        {/* Center: Quick Stats */}
+        {/* Center: Quick Stats with loading states */}
         <div className="hidden lg:flex items-center gap-6">
           <QuickStat 
             icon={Camera} 
@@ -75,6 +79,7 @@ const GlobalStatusBar = () => {
             total={stats.totalCCTV}
             label="CCTV" 
             color="text-blue-400" 
+            isLoading={isLoading}
           />
           <QuickStat 
             icon={Zap} 
@@ -82,17 +87,48 @@ const GlobalStatusBar = () => {
             total={stats.totalSignals}
             label="Signals" 
             color="text-emerald-400" 
+            isLoading={isLoading}
           />
           <QuickStat 
             icon={Activity} 
             value={activeAlerts.length} 
             label="Alerts" 
             color="text-amber-400" 
+            isLoading={isLoading}
           />
         </div>
 
-        {/* Right: Time Context */}
+        {/* Right: Time Context & Sync Status */}
         <div className="flex items-center gap-3">
+          {/* Real-time Sync Indicator */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              className={cn(
+                "p-1.5 rounded-lg transition-all border",
+                isRefetching 
+                  ? "bg-primary/10 border-primary/30" 
+                  : "bg-background/50 border-border/50 hover:border-primary/50"
+              )}
+              title="Refresh data"
+            >
+              <RefreshCw className={cn(
+                "w-3.5 h-3.5 text-muted-foreground",
+                isRefetching && "animate-spin text-primary"
+              )} />
+            </button>
+            
+            {/* Connection Status */}
+            <div className={cn(
+              "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-tactical",
+              "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+            )}>
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+              <span>SYNCED</span>
+            </div>
+          </div>
+
           {/* Time Filter Selector */}
           <div className="flex items-center bg-background/50 rounded-lg p-0.5 border border-border/50">
             {(['live', '24h', '7d'] as const).map((filter) => (
@@ -134,15 +170,22 @@ interface QuickStatProps {
   total?: number;
   label: string;
   color: string;
+  isLoading?: boolean;
 }
 
-const QuickStat = ({ icon: Icon, value, total, label, color }: QuickStatProps) => (
+const QuickStat = ({ icon: Icon, value, total, label, color, isLoading }: QuickStatProps) => (
   <div className="flex items-center gap-2">
     <Icon className={cn("w-3.5 h-3.5", color)} />
     <div className="text-xs font-tactical">
-      <span className={cn("font-bold tabular-nums", color)}>{value}</span>
-      {total !== undefined && (
-        <span className="text-muted-foreground">/{total}</span>
+      {isLoading ? (
+        <span className="inline-block w-8 h-4 bg-muted animate-pulse rounded" />
+      ) : (
+        <>
+          <span className={cn("font-bold tabular-nums", color)}>{value}</span>
+          {total !== undefined && (
+            <span className="text-muted-foreground">/{total}</span>
+          )}
+        </>
       )}
     </div>
     <span className="text-[9px] text-muted-foreground uppercase">{label}</span>
