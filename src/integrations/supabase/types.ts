@@ -1091,6 +1091,57 @@ export type Database = {
         }
         Relationships: []
       }
+      neighborhood_ratings: {
+        Row: {
+          assault_count: number | null
+          burglary_count: number | null
+          created_at: string
+          crime_count_30d: number | null
+          crime_rate: string
+          id: string
+          last_updated: string
+          latitude: number | null
+          longitude: number | null
+          neighborhood: string
+          population_estimate: number | null
+          robbery_count: number | null
+          safety_score: number
+          theft_count: number | null
+        }
+        Insert: {
+          assault_count?: number | null
+          burglary_count?: number | null
+          created_at?: string
+          crime_count_30d?: number | null
+          crime_rate: string
+          id?: string
+          last_updated?: string
+          latitude?: number | null
+          longitude?: number | null
+          neighborhood: string
+          population_estimate?: number | null
+          robbery_count?: number | null
+          safety_score: number
+          theft_count?: number | null
+        }
+        Update: {
+          assault_count?: number | null
+          burglary_count?: number | null
+          created_at?: string
+          crime_count_30d?: number | null
+          crime_rate?: string
+          id?: string
+          last_updated?: string
+          latitude?: number | null
+          longitude?: number | null
+          neighborhood?: string
+          population_estimate?: number | null
+          robbery_count?: number | null
+          safety_score?: number
+          theft_count?: number | null
+        }
+        Relationships: []
+      }
       ontology_entities: {
         Row: {
           created_at: string
@@ -1474,6 +1525,57 @@ export type Database = {
           notes?: string | null
           safety_rating?: number | null
           terrain?: string
+        }
+        Relationships: []
+      }
+      safe_zones: {
+        Row: {
+          address: string
+          contact_number: string | null
+          created_at: string
+          id: string
+          is_24_hours: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          neighborhood: string | null
+          operating_hours: Json | null
+          safety_rating: number | null
+          updated_at: string
+          verified: boolean | null
+          zone_type: string
+        }
+        Insert: {
+          address: string
+          contact_number?: string | null
+          created_at?: string
+          id?: string
+          is_24_hours?: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          neighborhood?: string | null
+          operating_hours?: Json | null
+          safety_rating?: number | null
+          updated_at?: string
+          verified?: boolean | null
+          zone_type: string
+        }
+        Update: {
+          address?: string
+          contact_number?: string | null
+          created_at?: string
+          id?: string
+          is_24_hours?: boolean | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          neighborhood?: string | null
+          operating_hours?: Json | null
+          safety_rating?: number | null
+          updated_at?: string
+          verified?: boolean | null
+          zone_type?: string
         }
         Relationships: []
       }

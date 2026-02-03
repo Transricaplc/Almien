@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { 
   Layers, Camera, TrafficCone, AlertTriangle, 
   MapPin, ZoomIn, ZoomOut, Locate, Filter,
-  Eye, EyeOff, Search, X, Bike, Table2, Map, Grid3X3
+  Eye, EyeOff, Search, X, Bike, Table2, Map, Grid3X3, Shield, Building
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -17,6 +17,9 @@ import MapDataTable from './MapDataTable';
 import WardBoundariesLayer from './WardBoundariesLayer';
 import WardFallbackMarkersLayer from './WardFallbackMarkersLayer';
 import WildfireLayer from './WildfireLayer';
+import SafeZonesLayer from './SafeZonesLayer';
+import CrimeHeatmapLayer from './CrimeHeatmapLayer';
+import CitizenReportsLayer from './CitizenReportsLayer';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -142,15 +145,18 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   
   const [viewMode, setViewMode] = useState<'map' | 'table'>('map');
   const [layers, setLayers] = useState<LayerToggle[]>([
+    { id: 'reports', name: 'Citizen Reports', icon: AlertTriangle, color: '#f97316', enabled: true },
+    { id: 'safezones', name: 'Safe Zones', icon: Shield, color: '#10b981', enabled: true },
+    { id: 'heatmap', name: 'Crime Heatmap', icon: AlertTriangle, color: '#ef4444', enabled: true },
     { id: 'cctv', name: 'CCTV Cameras', icon: Camera, color: '#3b82f6', enabled: true },
-    { id: 'traffic', name: 'Traffic Lights', icon: TrafficCone, color: '#22c55e', enabled: true },
     { id: 'risk', name: 'Pickpocket Zones', icon: AlertTriangle, color: '#f97316', enabled: true },
-    { id: 'hotspots', name: 'Accident Hotspots', icon: MapPin, color: '#ef4444', enabled: false },
-    { id: 'cycling', name: 'Cycle Lanes', icon: Bike, color: '#10b981', enabled: true },
-    { id: 'hiking', name: 'Hiking Trails', icon: MapPin, color: '#92400e', enabled: true },
-    { id: 'pedestrian', name: 'Safe Pedestrian', icon: MapPin, color: '#3b82f6', enabled: true },
     { id: 'wards', name: 'Ward Boundaries', icon: Grid3X3, color: '#6366f1', enabled: true },
     { id: 'wildfire', name: 'Wildfire (AFIS)', icon: AlertTriangle, color: 'hsl(var(--destructive))', enabled: true },
+    { id: 'traffic', name: 'Traffic Lights', icon: TrafficCone, color: '#22c55e', enabled: false },
+    { id: 'hotspots', name: 'Accident Hotspots', icon: MapPin, color: '#ef4444', enabled: false },
+    { id: 'cycling', name: 'Cycle Lanes', icon: Bike, color: '#10b981', enabled: false },
+    { id: 'hiking', name: 'Hiking Trails', icon: MapPin, color: '#92400e', enabled: false },
+    { id: 'pedestrian', name: 'Safe Pedestrian', icon: MapPin, color: '#3b82f6', enabled: false },
   ]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -215,6 +221,9 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
   const showPedestrianZones = layers.find(l => l.id === 'pedestrian')?.enabled;
   const showWardBoundaries = layers.find(l => l.id === 'wards')?.enabled;
   const showWildfire = layers.find(l => l.id === 'wildfire')?.enabled;
+  const showSafeZones = layers.find(l => l.id === 'safezones')?.enabled;
+  const showHeatmap = layers.find(l => l.id === 'heatmap')?.enabled;
+  const showReports = layers.find(l => l.id === 'reports')?.enabled;
 
   const handleWardClick = useCallback((wardNumber: number) => {
     selectEntity({
@@ -396,6 +405,15 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
+
+           {/* Citizen Reports Layer */}
+           <CitizenReportsLayer visible={!!showReports} />
+
+           {/* Crime Heatmap Layer */}
+           <CrimeHeatmapLayer visible={!!showHeatmap} />
+
+           {/* Safe Zones Layer */}
+           <SafeZonesLayer visible={!!showSafeZones} />
 
            {/* CSI AFIS Wildfire overlay */}
            <WildfireLayer visible={!!showWildfire} />

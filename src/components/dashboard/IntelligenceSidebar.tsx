@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Search, MapPin, X, Mountain, Loader2, Waves, Radio, Network, Activity, Maximize2 } from 'lucide-react';
+import { Search, MapPin, X, Mountain, Loader2, Waves, Radio, Network, Activity, Maximize2, Navigation, Building } from 'lucide-react';
 import { useSuburbIntelligence, SuburbIntelligence, getSafetyColor } from '@/hooks/useSuburbIntelligence';
 import { useDashboard } from '@/contexts/DashboardContext';
 import SectorReport from './SectorReport';
@@ -14,6 +14,8 @@ import ExecutiveSummary from './ExecutiveSummary';
 import ComparisonView from './ComparisonView';
 import ExpandablePanel from './ExpandablePanel';
 import EnvironmentalCluster from './EnvironmentalCluster';
+import NeighborhoodExplorer from './NeighborhoodExplorer';
+import SafeRoutePlanner from './SafeRoutePlanner';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -21,7 +23,7 @@ interface IntelligenceSidebarProps {
   onSuburbSelect?: (suburb: SuburbIntelligence | null) => void;
 }
 
-type TabType = 'executive' | 'ontology' | 'reports' | 'trails' | 'comparison';
+type TabType = 'executive' | 'ontology' | 'reports' | 'trails' | 'comparison' | 'neighborhoods' | 'routes';
 
 const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
   const { suburbs, loading, error, searchSuburbs } = useSuburbIntelligence();
@@ -126,6 +128,8 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
   const tabConfig = {
     executive: { icon: <Activity className="w-4 h-4 text-primary" />, title: 'City KPIs & Executive Summary', component: <ExecutiveSummary /> },
+    neighborhoods: { icon: <Building className="w-4 h-4 text-primary" />, title: 'Neighborhood Explorer', component: <NeighborhoodExplorer /> },
+    routes: { icon: <Navigation className="w-4 h-4 text-primary" />, title: 'Safe Route Planner', component: <SafeRoutePlanner /> },
     ontology: { icon: <Network className="w-4 h-4 text-primary" />, title: 'Entity Graph & Relationships', component: <OntologyViewer /> },
     reports: { icon: <Radio className="w-4 h-4 text-primary" />, title: 'Live Report Feed', component: <LiveReportFeed /> },
     trails: { icon: <Mountain className="w-4 h-4 text-primary" />, title: 'Hiking Trails & Outdoor Safety', component: <HikingTrailsPanel /> },
@@ -250,18 +254,22 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         role="navigation"
         aria-label="Intelligence panels - click to expand"
       >
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-7 gap-1">
           {(Object.keys(tabConfig) as TabType[]).map((tab) => {
             const config = tabConfig[tab];
-            const icons = {
+            const icons: Record<TabType, React.ReactNode> = {
               executive: <Activity className="w-3.5 h-3.5" />,
+              neighborhoods: <Building className="w-3.5 h-3.5" />,
+              routes: <Navigation className="w-3.5 h-3.5" />,
               ontology: <Network className="w-3.5 h-3.5" />,
               reports: <Radio className="w-3.5 h-3.5" />,
               trails: <Mountain className="w-3.5 h-3.5" />,
               comparison: <Activity className="w-3.5 h-3.5" />,
             };
-            const labels = {
+            const labels: Record<TabType, string> = {
               executive: 'KPIs',
+              neighborhoods: 'Areas',
+              routes: 'Routes',
               ontology: 'Graph',
               reports: 'Feed',
               trails: 'Trails',
