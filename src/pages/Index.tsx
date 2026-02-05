@@ -1,4 +1,4 @@
-import CommandCenterLayout from '@/components/dashboard/CommandCenterLayout';
+import MapFirstLayout from '@/components/dashboard/MapFirstLayout';
 import TravelerModeView from '@/components/dashboard/TravelerModeView';
 import SOSActionDock from '@/components/dashboard/SOSActionDock';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
@@ -27,7 +27,7 @@ const DashboardContent = () => {
 
   return (
     <>
-      <CommandCenterLayout />
+      <MapFirstLayout />
       <SOSActionDock isTravelerMode={false} />
     </>
   );
