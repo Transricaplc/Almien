@@ -1,19 +1,17 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import MapFirstLayout from '@/components/dashboard/MapFirstLayout';
-import TravelerModeView from '@/components/dashboard/TravelerModeView';
-import SOSActionDock from '@/components/dashboard/SOSActionDock';
 import HeroSection from '@/components/dashboard/HeroSection';
 import TopStatusBar from '@/components/dashboard/TopStatusBar';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
 import { WildfireProvider } from '@/contexts/WildfireContext';
 
+// Lazy-load heavy secondary views
+const TravelerModeView = lazy(() => import('@/components/dashboard/TravelerModeView'));
+const SOSActionDock = lazy(() => import('@/components/dashboard/SOSActionDock'));
+
 const DashboardContent = () => {
   const { isTravelerMode, setTravelerMode } = useDashboard();
   const [showDashboard, setShowDashboard] = useState(false);
-
-  const handleToggleTravelerMode = () => {
-    setTravelerMode(!isTravelerMode);
-  };
 
   // Show hero first
   if (!showDashboard) {
@@ -22,13 +20,17 @@ const DashboardContent = () => {
 
   if (isTravelerMode) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
         <TopStatusBar 
           isTravelerMode={true} 
-          onToggleTravelerMode={handleToggleTravelerMode} 
+          onToggleTravelerMode={() => setTravelerMode(false)} 
         />
-        <TravelerModeView />
-        <SOSActionDock isTravelerMode={true} />
+        <Suspense fallback={<div className="flex-1 bg-black" />}>
+          <div className="flex-1 overflow-y-auto">
+            <TravelerModeView />
+          </div>
+          <SOSActionDock isTravelerMode={true} />
+        </Suspense>
       </div>
     );
   }
@@ -36,19 +38,19 @@ const DashboardContent = () => {
   return (
     <>
       <MapFirstLayout />
-      <SOSActionDock isTravelerMode={false} />
+      <Suspense fallback={null}>
+        <SOSActionDock isTravelerMode={false} />
+      </Suspense>
     </>
   );
 };
 
-const Index = () => {
-  return (
-    <DashboardProvider>
-      <WildfireProvider>
-        <DashboardContent />
-      </WildfireProvider>
-    </DashboardProvider>
-  );
-};
+const Index = () => (
+  <DashboardProvider>
+    <WildfireProvider>
+      <DashboardContent />
+    </WildfireProvider>
+  </DashboardProvider>
+);
 
 export default Index;

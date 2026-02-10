@@ -1,18 +1,22 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { 
   Layers, Filter, Search, X, ChevronUp, ChevronDown,
-  Camera, TrafficCone, AlertTriangle, Shield, Grid3X3, Flame,
-  Bike, MapPin, Mountain, Route, Eye, EyeOff, Clock, Users
+  AlertTriangle, Shield, Grid3X3, Clock,
+  Eye, EyeOff, MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 /**
- * Control Hub Component
- * Single expandable control center with tabbed navigation
- * Tabs: Layers | Filters | Search
- * Mobile-first: collapsible, only one section open at a time
+ * Control Hub — Stabilized
+ * 
+ * Single expandable control center with tabbed navigation.
+ * Rules:
+ * - Docked position (bottom-left mobile, top-left desktop)
+ * - No floating/dragging
+ * - Auto-collapses on map interaction
+ * - Tabs: Layers | Filters | Search — never stacked modals
  */
 
 type Tab = 'layers' | 'filters' | 'search';
@@ -42,9 +46,11 @@ interface ControlHubProps {
   onToggleExpand: () => void;
   onCollapseAll: () => void;
   className?: string;
+  activeTab?: Tab;
+  onTabChange?: (tab: Tab) => void;
 }
 
-const ControlHub = ({
+const ControlHub = memo(({
   layers,
   onToggleLayer,
   searchQuery,
@@ -70,7 +76,6 @@ const ControlHub = ({
     { id: 'search', label: 'Search', icon: Search },
   ];
 
-  // Group layers by category
   const safetyLayers = layers.filter(l => l.category === 'safety');
   const infrastructureLayers = layers.filter(l => l.category === 'infrastructure');
   const operationsLayers = layers.filter(l => l.category === 'operations');
@@ -78,13 +83,12 @@ const ControlHub = ({
   return (
     <div 
       className={cn(
-        "fixed z-40 transition-all duration-300 ease-out",
-        // Mobile: bottom center, Desktop: top left
-        "bottom-20 left-2 right-2 md:bottom-auto md:top-20 md:left-4 md:right-auto md:w-72",
+        "fixed z-30 transition-all duration-200 ease-out",
+        "bottom-16 left-2 right-2 md:bottom-auto md:top-16 md:left-4 md:right-auto md:w-72",
         className
       )}
     >
-      {/* Collapsed State - Just the toggle button */}
+      {/* Collapsed — compact toggle */}
       {!isExpanded && (
         <button
           onClick={onToggleExpand}
@@ -99,10 +103,10 @@ const ControlHub = ({
         </button>
       )}
 
-      {/* Expanded State */}
+      {/* Expanded */}
       {isExpanded && (
-        <div className="bg-card/98 backdrop-blur-xl rounded-xl border border-border/50 shadow-2xl shadow-black/30 overflow-hidden">
-          {/* Header with tabs */}
+        <div className="bg-card/98 backdrop-blur-xl rounded-xl border border-border/50 shadow-2xl shadow-black/30 overflow-hidden will-change-auto">
+          {/* Tab Header */}
           <div className="flex items-center justify-between p-2 border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent">
             <div className="flex items-center gap-1">
               {tabs.map((tab) => (
@@ -110,9 +114,9 @@ const ControlHub = ({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors",
                     activeTab === tab.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
@@ -129,62 +133,23 @@ const ControlHub = ({
             </button>
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content — fixed max-height, no resize jitter */}
           <div className="max-h-[40vh] md:max-h-[50vh] overflow-y-auto scrollbar-visible">
-            {/* Layers Tab */}
             {activeTab === 'layers' && (
               <div className="p-3 space-y-3">
-                {/* Safety Layers */}
-                <div>
-                  <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Safety
-                  </h4>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {safetyLayers.map((layer) => (
-                      <LayerButton key={layer.id} layer={layer} onToggle={onToggleLayer} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Infrastructure Layers */}
-                <div>
-                  <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Grid3X3 className="w-3 h-3" />
-                    Infrastructure
-                  </h4>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {infrastructureLayers.map((layer) => (
-                      <LayerButton key={layer.id} layer={layer} onToggle={onToggleLayer} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Operations Layers */}
+                <LayerGroup title="Safety" icon={<Shield className="w-3 h-3" />} layers={safetyLayers} onToggle={onToggleLayer} />
+                <LayerGroup title="Infrastructure" icon={<Grid3X3 className="w-3 h-3" />} layers={infrastructureLayers} onToggle={onToggleLayer} />
                 {operationsLayers.length > 0 && (
-                  <div>
-                    <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />
-                      Operations
-                    </h4>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {operationsLayers.map((layer) => (
-                        <LayerButton key={layer.id} layer={layer} onToggle={onToggleLayer} />
-                      ))}
-                    </div>
-                  </div>
+                  <LayerGroup title="Operations" icon={<AlertTriangle className="w-3 h-3" />} layers={operationsLayers} onToggle={onToggleLayer} />
                 )}
               </div>
             )}
 
-            {/* Filters Tab */}
             {activeTab === 'filters' && (
               <div className="p-3 space-y-4">
-                {/* Time Range */}
                 <div>
                   <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Time Range
+                    <Clock className="w-3 h-3" /> Time Range
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {timeRanges.map((range) => (
@@ -192,9 +157,9 @@ const ControlHub = ({
                         key={range}
                         onClick={() => onTimeRangeChange(range)}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                           timeRange === range
-                            ? "bg-primary text-primary-foreground shadow-sm"
+                            ? "bg-primary text-primary-foreground"
                             : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
                         )}
                       >
@@ -203,12 +168,9 @@ const ControlHub = ({
                     ))}
                   </div>
                 </div>
-
-                {/* Severity Level */}
                 <div>
                   <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    Severity
+                    <AlertTriangle className="w-3 h-3" /> Severity
                   </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {severityLevels.map((level) => (
@@ -216,14 +178,10 @@ const ControlHub = ({
                         key={level}
                         onClick={() => onSeverityChange(level)}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all",
+                          "px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors",
                           severity === level
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "bg-muted/30 text-muted-foreground hover:bg-muted/50",
-                          level === 'critical' && severity === level && "bg-red-500",
-                          level === 'high' && severity === level && "bg-orange-500",
-                          level === 'medium' && severity === level && "bg-amber-500",
-                          level === 'low' && severity === level && "bg-emerald-500"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
                         )}
                       >
                         {level}
@@ -234,7 +192,6 @@ const ControlHub = ({
               </div>
             )}
 
-            {/* Search Tab */}
             {activeTab === 'search' && (
               <div className="p-3">
                 <div className="relative">
@@ -247,16 +204,11 @@ const ControlHub = ({
                     className="pl-9 pr-9 bg-background/50 border-border/50 focus:border-primary/50"
                   />
                   {searchQuery && (
-                    <button
-                      onClick={() => onSearchChange('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                    >
+                    <button onClick={() => onSearchChange('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                       <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                     </button>
                   )}
                 </div>
-                
-                {/* Quick search suggestions */}
                 <div className="mt-3 space-y-1.5">
                   <p className="text-[10px] font-mono text-muted-foreground uppercase">Quick Search</p>
                   {['CBD', 'Sea Point', 'Khayelitsha', 'Claremont'].map((area) => (
@@ -274,7 +226,7 @@ const ControlHub = ({
             )}
           </div>
 
-          {/* Footer with active count */}
+          {/* Footer */}
           <div className="px-3 py-2 border-t border-border/30 bg-muted/10 flex items-center justify-between">
             <span className="text-[10px] font-mono text-muted-foreground">
               {enabledCount} layers active
@@ -290,19 +242,37 @@ const ControlHub = ({
       )}
     </div>
   );
-};
+});
 
-// Layer Button Component
-const LayerButton = ({ layer, onToggle }: { layer: LayerConfig; onToggle: (id: string) => void }) => {
+ControlHub.displayName = 'ControlHub';
+
+// Extracted sub-components for clarity
+const LayerGroup = memo(({ title, icon, layers, onToggle }: { 
+  title: string; icon: React.ReactNode; layers: LayerConfig[]; onToggle: (id: string) => void 
+}) => (
+  <div>
+    <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+      {icon} {title}
+    </h4>
+    <div className="grid grid-cols-2 gap-1.5">
+      {layers.map((layer) => (
+        <LayerButton key={layer.id} layer={layer} onToggle={onToggle} />
+      ))}
+    </div>
+  </div>
+));
+
+LayerGroup.displayName = 'LayerGroup';
+
+const LayerButton = memo(({ layer, onToggle }: { layer: LayerConfig; onToggle: (id: string) => void }) => {
   const Icon = layer.icon;
-  
   return (
     <button
       onClick={() => onToggle(layer.id)}
       className={cn(
-        "flex items-center gap-2 p-2 rounded-lg border transition-all text-left",
+        "flex items-center gap-2 p-2 rounded-lg border transition-colors text-left",
         layer.enabled
-          ? "bg-primary/10 border-primary/40 shadow-sm"
+          ? "bg-primary/10 border-primary/40"
           : "bg-muted/20 border-border/30 hover:border-primary/30"
       )}
     >
@@ -313,10 +283,7 @@ const LayerButton = ({ layer, onToggle }: { layer: LayerConfig; onToggle: (id: s
           border: `2px solid ${layer.color}`,
         }}
       >
-        <Icon 
-          className="w-2.5 h-2.5" 
-          style={{ color: layer.enabled ? 'white' : layer.color }} 
-        />
+        <Icon className="w-2.5 h-2.5" style={{ color: layer.enabled ? 'white' : layer.color }} />
       </div>
       <span className={cn(
         "text-[10px] font-medium truncate",
@@ -331,6 +298,8 @@ const LayerButton = ({ layer, onToggle }: { layer: LayerConfig; onToggle: (id: s
       )}
     </button>
   );
-};
+});
+
+LayerButton.displayName = 'LayerButton';
 
 export default ControlHub;
