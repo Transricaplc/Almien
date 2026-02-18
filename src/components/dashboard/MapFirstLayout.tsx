@@ -3,48 +3,50 @@ import {
   AlertTriangle, Grid3X3, Camera, Flame, Shield,
   Bike, Mountain, MapPin, TrafficCone, Users, Menu,
   PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen,
-  Crosshair
+  Bell, Activity
 } from 'lucide-react';
 import TopStatusBar from './TopStatusBar';
 import MapFirstView from './MapFirstView';
 import ControlHub, { LayerConfig } from './ControlHub';
 import ContextDrawer from './ContextDrawer';
-import AreaIntelligenceDrawer from './AreaIntelligenceDrawer';
+import AlertsFeed from './AlertsFeed';
+import ModuleTabBar from './ModuleTabBar';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Lazy-load non-critical panels
 const IntelligenceSidebar = lazy(() => import('./IntelligenceSidebar'));
 const MobileBottomSheet = lazy(() => import('./MobileBottomSheet'));
+const AreaIntelligenceDrawer = lazy(() => import('./AreaIntelligenceDrawer'));
 
 /**
- * Map-First Layout — v1.2 Grid System
+ * Map-First Layout — v2.0 Smart Hybrid Model
  * 
- * 12-column responsive grid with collapsible sidebars:
+ * Three-zone layout with persistent sidebars:
  * ┌──────────────────────────────────────────────────┐
- * │ TOP STATUS BAR (h-12, z-50, col-span-12)        │
- * ├──────┬──────────────────────────────┬─────────────┤
- * │LEFT  │                              │RIGHT        │
- * │PANEL │   CENTER MAP CANVAS          │INTEL PANEL  │
- * │col 3 │   col 6-9 (flex)             │col 3        │
- * │1.5rem│   1.5rem pad, 12px radius    │1.5rem pad   │
- * ├──────┴──────────────────────────────┴─────────────┤
- * │ SOS DOCK (z-50, fixed bottom, col-span-12)       │
+ * │ TOP STATUS BAR (h-12, z-50)                      │
+ * ├──────────┬────────────────────────┬───────────────┤
+ * │ LEFT     │                        │ RIGHT         │
+ * │ 30%      │  CENTER MAP + MODULES  │ 20%           │
+ * │ Nav/Ctrl │  50% (flex)            │ Contextual    │
+ * │ Filters  │  + Bottom Tab Bar      │ Alerts Feed   │
+ * │ Search   │                        │ or Details    │
+ * ├──────────┴────────────────────────┴───────────────┤
+ * │ SOS DOCK (z-50, fixed bottom)                     │
  * └──────────────────────────────────────────────────┘
  *
- * Rules:
- * 1. Sidebars are collapsible — toggle to maximize map
- * 2. Panels use 1.5rem padding, 12px border-radius
- * 3. Only ONE primary panel visible at a time
- * 4. Panels auto-collapse on map interaction
- * 5. Traveler mode locks all secondary panels
- * 6. z-index: map(0) < intel(20) < controls(30) < statusbar(50)
+ * Principles:
+ * 1. Map always visible — anchor for spatial context
+ * 2. 3-tier info: always-visible → on-demand → deep-dive
+ * 3. Everything accessible within 2 clicks
+ * 4. Right panel: alerts feed by default, entity details on selection
+ * 5. Bottom tab bar: Crime, Areas, Routes, Trails modules
  */
 
 type TimeRange = '1h' | '6h' | '24h' | '7d' | '30d';
 type SeverityLevel = 'all' | 'low' | 'medium' | 'high' | 'critical';
-type ActivePanel = 'none' | 'controls' | 'intelligence' | 'area-intel';
 
 const MapFirstLayout = () => {
   const { isTravelerMode, setTravelerMode, selectedEntity, clearSelection } = useDashboard();
@@ -54,9 +56,6 @@ const MapFirstLayout = () => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
 
-  // Single panel state — only one panel open at a time
-  const [activePanel, setActivePanel] = useState<ActivePanel>('none');
-  
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
@@ -83,21 +82,12 @@ const MapFirstLayout = () => {
     ));
   }, []);
 
-  const handleMapInteraction = useCallback(() => {
-    setActivePanel('none');
-  }, []);
-
-  const togglePanel = useCallback((panel: ActivePanel) => {
-    setActivePanel(prev => prev === panel ? 'none' : panel);
-  }, []);
-
   const showLeftSidebar = !isTravelerMode && !isMobile;
   const showRightSidebar = !isTravelerMode && !isMobile;
-  const showMobileIntelButton = !isTravelerMode && isMobile;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* TOP STATUS BAR — col-span-12, h-12, z-50 */}
+      {/* TOP STATUS BAR */}
       <TopStatusBar
         isTravelerMode={isTravelerMode}
         onToggleTravelerMode={() => setTravelerMode(!isTravelerMode)}
@@ -105,81 +95,67 @@ const MapFirstLayout = () => {
         connectionStatus="connected"
       />
 
-      {/* MAIN CONTENT — 12-column grid with consistent gaps */}
-      <div className="flex-1 overflow-hidden grid grid-cols-12 gap-3 p-3 relative">
+      {/* MAIN CONTENT — flex layout */}
+      <div className="flex-1 overflow-hidden flex gap-0 relative">
         
-        {/* LEFT SIDEBAR — Navigation & Controls (col-span-3 or collapsed) */}
+        {/* LEFT PANEL — 30% width, persistent nav + controls */}
         {showLeftSidebar && (
           <aside className={cn(
-            "relative z-30 flex flex-col bg-card/95 backdrop-blur-xl rounded-xl border border-border/30",
-            "transition-all duration-300 ease-out overflow-hidden shadow-sm",
-            leftCollapsed ? "col-span-1 w-14" : "col-span-3"
+            "relative z-30 flex flex-col bg-card/95 backdrop-blur-xl border-r border-border/30",
+            "transition-all duration-300 ease-out overflow-hidden shrink-0",
+            leftCollapsed ? "w-12" : "w-[280px] xl:w-[320px]"
           )}>
             {/* Collapse toggle */}
             <button
               onClick={() => setLeftCollapsed(!leftCollapsed)}
-              className="absolute top-3 right-2 z-10 p-1.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              className="absolute top-2 right-1.5 z-10 p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
               aria-label={leftCollapsed ? "Expand left panel" : "Collapse left panel"}
             >
               {leftCollapsed 
-                ? <PanelLeftOpen className="w-4 h-4 text-muted-foreground" /> 
-                : <PanelLeftClose className="w-4 h-4 text-muted-foreground" />
+                ? <PanelLeftOpen className="w-3.5 h-3.5 text-muted-foreground" /> 
+                : <PanelLeftClose className="w-3.5 h-3.5 text-muted-foreground" />
               }
             </button>
 
             {leftCollapsed ? (
-              /* Collapsed: icon-only strip */
-              <div className="flex flex-col items-center gap-3 pt-12 p-2">
+              <div className="flex flex-col items-center gap-2 pt-10 p-1.5">
                 <button
-                  onClick={() => { setLeftCollapsed(false); togglePanel('controls'); }}
-                  className="p-2.5 rounded-xl bg-muted/30 hover:bg-primary/10 hover:border-primary/40 border border-border/30 transition-colors"
+                  onClick={() => setLeftCollapsed(false)}
+                  className="p-2 rounded-lg bg-muted/30 hover:bg-primary/10 border border-border/30 transition-colors"
                   title="Controls"
                 >
                   <Shield className="w-4 h-4 text-primary" />
                 </button>
               </div>
             ) : (
-              /* Expanded: full control hub */
-              <div className="flex-1 overflow-hidden p-4 pt-10">
-                <ControlHub
-                  layers={layers}
-                  onToggleLayer={handleToggleLayer}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  timeRange={timeRange}
-                  onTimeRangeChange={setTimeRange}
-                  severity={severity}
-                  onSeverityChange={setSeverity}
-                  isExpanded={true}
-                  onToggleExpand={() => {}}
-                  onCollapseAll={handleMapInteraction}
-                  className="relative static w-full"
-                />
-              </div>
+              <ScrollArea className="flex-1 pt-8">
+                <div className="p-3 space-y-3">
+                  {/* Control Hub — Layers, Filters, Search */}
+                  <ControlHub
+                    layers={layers}
+                    onToggleLayer={handleToggleLayer}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    timeRange={timeRange}
+                    onTimeRangeChange={setTimeRange}
+                    severity={severity}
+                    onSeverityChange={setSeverity}
+                    isExpanded={true}
+                    onToggleExpand={() => {}}
+                    onCollapseAll={() => {}}
+                    className="relative static w-full"
+                  />
+                </div>
+              </ScrollArea>
             )}
           </aside>
         )}
 
-        {/* CENTER MAP CANVAS — fills remaining columns */}
-        <main className={cn(
-          "relative overflow-hidden",
-          // Dynamic column span based on sidebar states
-          showLeftSidebar && showRightSidebar
-            ? cn(
-                leftCollapsed && rightCollapsed ? "col-span-10" :
-                leftCollapsed ? "col-span-8" :
-                rightCollapsed ? "col-span-8" :
-                "col-span-6"
-              )
-            : "col-span-12"
-        )}>
+        {/* CENTER — Map canvas + bottom module tabs */}
+        <main className="flex-1 relative overflow-hidden">
+          {/* Map */}
           <div className="absolute inset-0">
-            <div className="w-full h-full rounded-xl overflow-hidden border border-border/30 shadow-sm">
-              <MapFirstView
-                fullHeight
-                onMapInteraction={handleMapInteraction}
-              />
-            </div>
+            <MapFirstView fullHeight onMapInteraction={() => {}} />
           </div>
 
           {/* Mobile: floating control hub */}
@@ -193,124 +169,108 @@ const MapFirstLayout = () => {
               onTimeRangeChange={setTimeRange}
               severity={severity}
               onSeverityChange={setSeverity}
-              isExpanded={activePanel === 'controls'}
-              onToggleExpand={() => togglePanel('controls')}
-              onCollapseAll={handleMapInteraction}
+              isExpanded={false}
+              onToggleExpand={() => {}}
+              onCollapseAll={() => {}}
             />
+          )}
+
+          {/* Bottom Module Tab Bar */}
+          {!isTravelerMode && (
+            <ModuleTabBar />
           )}
         </main>
 
-        {/* RIGHT SIDEBAR — Intelligence Panel (col-span-3 or collapsed) */}
+        {/* RIGHT PANEL — 20% width, contextual */}
         {showRightSidebar && (
           <aside className={cn(
-            "relative z-20 flex flex-col bg-card/95 backdrop-blur-xl rounded-xl border border-border/30",
-            "transition-all duration-300 ease-out overflow-hidden shadow-sm",
-            rightCollapsed ? "col-span-1 w-14" : "col-span-3"
+            "relative z-20 flex flex-col bg-card/95 backdrop-blur-xl border-l border-border/30",
+            "transition-all duration-300 ease-out overflow-hidden shrink-0",
+            rightCollapsed ? "w-12" : "w-[260px] xl:w-[300px]"
           )}>
             {/* Collapse toggle */}
             <button
               onClick={() => setRightCollapsed(!rightCollapsed)}
-              className="absolute top-3 left-2 z-10 p-1.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              className="absolute top-2 left-1.5 z-10 p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
               aria-label={rightCollapsed ? "Expand right panel" : "Collapse right panel"}
             >
               {rightCollapsed 
-                ? <PanelRightOpen className="w-4 h-4 text-muted-foreground" />
-                : <PanelRightClose className="w-4 h-4 text-muted-foreground" />
+                ? <PanelRightOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                : <PanelRightClose className="w-3.5 h-3.5 text-muted-foreground" />
               }
             </button>
 
             {rightCollapsed ? (
-              /* Collapsed: icon-only strip */
-              <div className="flex flex-col items-center gap-3 pt-12 p-2">
+              <div className="flex flex-col items-center gap-2 pt-10 p-1.5">
                 <button
                   onClick={() => setRightCollapsed(false)}
-                  className="p-2.5 rounded-xl bg-muted/30 hover:bg-primary/10 hover:border-primary/40 border border-border/30 transition-colors"
-                  title="Intelligence"
+                  className="p-2 rounded-lg bg-muted/30 hover:bg-primary/10 border border-border/30 transition-colors"
+                  title="Alerts"
                 >
-                  <Menu className="w-4 h-4 text-primary" />
+                  <Bell className="w-4 h-4 text-primary" />
                 </button>
               </div>
             ) : (
-              /* Expanded: full intelligence sidebar */
-              <div className="flex-1 overflow-hidden p-4 pt-10">
-                <Suspense fallback={
-                  <div className="flex-1 flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground font-mono">Loading…</span>
-                  </div>
-                }>
-                  <IntelligenceSidebar />
-                </Suspense>
-              </div>
+              <ScrollArea className="flex-1 pt-8">
+                <div className="p-3">
+                  {/* Show entity details when selected, otherwise alerts feed */}
+                  {selectedEntity && selectedEntity.type !== 'area' ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold">
+                          Entity Detail
+                        </h3>
+                        <button
+                          onClick={clearSelection}
+                          className="text-[10px] font-mono text-primary hover:underline"
+                        >
+                          ← Back to feed
+                        </button>
+                      </div>
+                      <Suspense fallback={null}>
+                        <IntelligenceSidebar />
+                      </Suspense>
+                    </div>
+                  ) : (
+                    <AlertsFeed />
+                  )}
+                </div>
+              </ScrollArea>
             )}
           </aside>
         )}
 
-        {/* MOBILE: Intelligence Toggle Button */}
-        {showMobileIntelButton && (
-          <button
-            onClick={() => togglePanel('intelligence')}
-            className={cn(
-              "lg:hidden fixed bottom-20 right-4 z-30",
-              "flex items-center gap-2 px-4 py-2.5",
-              "rounded-xl shadow-lg transition-all duration-200",
-              activePanel === 'intelligence'
-                ? "bg-primary text-primary-foreground"
-                : "bg-card/90 text-foreground border border-border/50"
-            )}
-          >
-            <Menu className="w-4 h-4" />
-            <span className="text-sm font-medium">Intel</span>
-          </button>
-        )}
-
-        {/* MOBILE: Bottom Sheet */}
+        {/* MOBILE: Bottom Sheet for intelligence */}
         {isMobile && (
           <Suspense fallback={null}>
             <MobileBottomSheet
-              isOpen={activePanel === 'intelligence'}
-              onClose={() => setActivePanel('none')}
+              isOpen={false}
+              onClose={() => {}}
               title="Safety Intelligence"
               initialState="expanded"
             >
-              <div className="p-[1.5rem]">
+              <div className="p-4">
                 <IntelligenceSidebar />
               </div>
             </MobileBottomSheet>
           </Suspense>
         )}
 
-        {/* CONTEXT DRAWER — non-area entities */}
-        {selectedEntity && selectedEntity.type !== 'area' && (
+        {/* CONTEXT DRAWER — non-area entities (mobile or overlay) */}
+        {selectedEntity && selectedEntity.type !== 'area' && isMobile && (
           <ContextDrawer
             entity={selectedEntity}
             onClose={clearSelection}
           />
         )}
 
-        {/* AREA INTELLIGENCE DRAWER — z-40, right-aligned sliding panel */}
-        <AreaIntelligenceDrawer
-          isOpen={activePanel === 'area-intel'}
-          onClose={() => setActivePanel('none')}
-        />
-
-        {/* AREA INTEL TOGGLE — floating button on map */}
-        {!isTravelerMode && (
-          <button
-            onClick={() => togglePanel('area-intel')}
-            className={cn(
-              "fixed bottom-20 left-4 z-30",
-              "flex items-center gap-2 px-3 py-2",
-              "rounded-lg shadow-lg transition-all duration-200",
-              "md:bottom-4 md:left-auto md:right-4",
-              activePanel === 'area-intel'
-                ? "bg-primary text-primary-foreground"
-                : "bg-card/90 text-foreground border border-border/50 hover:border-primary/50"
-            )}
-          >
-            <Crosshair className="w-4 h-4" />
-            <span className="text-xs font-mono font-medium uppercase tracking-wider">Area Intel</span>
-          </button>
-        )}
+        {/* AREA INTELLIGENCE DRAWER */}
+        <Suspense fallback={null}>
+          <AreaIntelligenceDrawer
+            isOpen={selectedEntity?.type === 'area'}
+            onClose={clearSelection}
+          />
+        </Suspense>
       </div>
     </div>
   );
