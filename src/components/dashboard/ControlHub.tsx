@@ -9,13 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 /**
- * Control Hub — Stabilized
+ * Control Hub — v1.2 Grid System
  * 
  * Single expandable control center with tabbed navigation.
- * Rules:
- * - Docked position (bottom-left mobile, top-left desktop)
- * - No floating/dragging
- * - Auto-collapses on map interaction
+ * - Consistent 1.5rem padding, 12px border-radius
+ * - Docked inside left sidebar (desktop) or floating (mobile)
  * - Tabs: Layers | Filters | Search — never stacked modals
  */
 
@@ -80,19 +78,23 @@ const ControlHub = memo(({
   const infrastructureLayers = layers.filter(l => l.category === 'infrastructure');
   const operationsLayers = layers.filter(l => l.category === 'operations');
 
+  // When used inside sidebar (static), show inline. When floating (mobile), show toggle.
+  const isInline = className?.includes('static');
+
   return (
     <div 
       className={cn(
-        "fixed z-30 transition-all duration-200 ease-out",
-        "bottom-16 left-2 right-2 md:bottom-auto md:top-16 md:left-4 md:right-auto md:w-72",
+        isInline
+          ? "w-full"
+          : "fixed z-30 transition-all duration-200 ease-out bottom-16 left-2 right-2 md:bottom-auto md:top-16 md:left-4 md:right-auto md:w-72",
         className
       )}
     >
-      {/* Collapsed — compact toggle */}
-      {!isExpanded && (
+      {/* Collapsed — compact toggle (only for floating mode) */}
+      {!isExpanded && !isInline && (
         <button
           onClick={onToggleExpand}
-          className="flex items-center gap-2 px-3 py-2 bg-card/95 backdrop-blur-xl rounded-lg border border-border/50 shadow-lg hover:border-primary/50 transition-all w-full md:w-auto"
+          className="flex items-center gap-2 px-4 py-2.5 bg-card/95 backdrop-blur-xl rounded-xl border border-border/50 shadow-lg hover:border-primary/50 transition-all w-full md:w-auto"
         >
           <Layers className="w-4 h-4 text-primary" />
           <span className="text-xs font-medium">Controls</span>
@@ -104,10 +106,15 @@ const ControlHub = memo(({
       )}
 
       {/* Expanded */}
-      {isExpanded && (
-        <div className="bg-card/98 backdrop-blur-xl rounded-xl border border-border/50 shadow-2xl shadow-black/30 overflow-hidden will-change-auto">
+      {(isExpanded || isInline) && (
+        <div className={cn(
+          "bg-card/98 backdrop-blur-xl overflow-hidden will-change-auto",
+          isInline 
+            ? "rounded-xl border border-border/40" 
+            : "rounded-xl border border-border/50 shadow-2xl shadow-black/30"
+        )}>
           {/* Tab Header */}
-          <div className="flex items-center justify-between p-2 border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent">
+          <div className="flex items-center justify-between p-[0.75rem] border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent rounded-t-xl">
             <div className="flex items-center gap-1">
               {tabs.map((tab) => (
                 <button
@@ -125,18 +132,23 @@ const ControlHub = memo(({
                 </button>
               ))}
             </div>
-            <button
-              onClick={onCollapseAll}
-              className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </button>
+            {!isInline && (
+              <button
+                onClick={onCollapseAll}
+                className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
           </div>
 
-          {/* Tab Content — fixed max-height, no resize jitter */}
-          <div className="max-h-[40vh] md:max-h-[50vh] overflow-y-auto scrollbar-visible">
+          {/* Tab Content — consistent padding */}
+          <div className={cn(
+            "overflow-y-auto scrollbar-visible",
+            isInline ? "max-h-[calc(100vh-16rem)]" : "max-h-[40vh] md:max-h-[50vh]"
+          )}>
             {activeTab === 'layers' && (
-              <div className="p-3 space-y-3">
+              <div className="p-[1rem] space-y-3">
                 <LayerGroup title="Safety" icon={<Shield className="w-3 h-3" />} layers={safetyLayers} onToggle={onToggleLayer} />
                 <LayerGroup title="Infrastructure" icon={<Grid3X3 className="w-3 h-3" />} layers={infrastructureLayers} onToggle={onToggleLayer} />
                 {operationsLayers.length > 0 && (
@@ -146,7 +158,7 @@ const ControlHub = memo(({
             )}
 
             {activeTab === 'filters' && (
-              <div className="p-3 space-y-4">
+              <div className="p-[1rem] space-y-4">
                 <div>
                   <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
                     <Clock className="w-3 h-3" /> Time Range
@@ -157,7 +169,7 @@ const ControlHub = memo(({
                         key={range}
                         onClick={() => onTimeRangeChange(range)}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                          "px-3 py-1.5 rounded-xl text-xs font-medium transition-colors",
                           timeRange === range
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
@@ -178,7 +190,7 @@ const ControlHub = memo(({
                         key={level}
                         onClick={() => onSeverityChange(level)}
                         className={cn(
-                          "px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors",
+                          "px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-colors",
                           severity === level
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
@@ -193,7 +205,7 @@ const ControlHub = memo(({
             )}
 
             {activeTab === 'search' && (
-              <div className="p-3">
+              <div className="p-[1rem]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -201,7 +213,7 @@ const ControlHub = memo(({
                     placeholder="Search areas, wards, assets..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9 pr-9 bg-background/50 border-border/50 focus:border-primary/50"
+                    className="pl-9 pr-9 bg-background/50 border-border/50 focus:border-primary/50 rounded-xl"
                   />
                   {searchQuery && (
                     <button onClick={() => onSearchChange('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -215,7 +227,7 @@ const ControlHub = memo(({
                     <button
                       key={area}
                       onClick={() => onSearchChange(area)}
-                      className="w-full flex items-center gap-2 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+                      className="w-full flex items-center gap-2 p-2 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left"
                     >
                       <MapPin className="w-3 h-3 text-muted-foreground" />
                       <span className="text-xs">{area}</span>
@@ -227,7 +239,7 @@ const ControlHub = memo(({
           </div>
 
           {/* Footer */}
-          <div className="px-3 py-2 border-t border-border/30 bg-muted/10 flex items-center justify-between">
+          <div className="px-[1rem] py-2 border-t border-border/30 bg-muted/10 flex items-center justify-between rounded-b-xl">
             <span className="text-[10px] font-mono text-muted-foreground">
               {enabledCount} layers active
             </span>
@@ -246,7 +258,7 @@ const ControlHub = memo(({
 
 ControlHub.displayName = 'ControlHub';
 
-// Extracted sub-components for clarity
+// Extracted sub-components
 const LayerGroup = memo(({ title, icon, layers, onToggle }: { 
   title: string; icon: React.ReactNode; layers: LayerConfig[]; onToggle: (id: string) => void 
 }) => (
@@ -270,7 +282,7 @@ const LayerButton = memo(({ layer, onToggle }: { layer: LayerConfig; onToggle: (
     <button
       onClick={() => onToggle(layer.id)}
       className={cn(
-        "flex items-center gap-2 p-2 rounded-lg border transition-colors text-left",
+        "flex items-center gap-2 p-2 rounded-xl border transition-colors text-left",
         layer.enabled
           ? "bg-primary/10 border-primary/40"
           : "bg-muted/20 border-border/30 hover:border-primary/30"
