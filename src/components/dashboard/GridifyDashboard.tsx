@@ -1,7 +1,7 @@
 import { useState, useCallback, memo, lazy, Suspense } from 'react';
 import { 
   Search, MapPin, Bookmark, Crown, ChevronLeft, ChevronRight,
-  Filter, X, Layers
+  Filter, X, Layers, BarChart3, Briefcase, Bell, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -16,27 +16,17 @@ import SafetyScoreBadge from './SafetyScoreBadge';
 import UpgradeModal from './UpgradeModal';
 import AlertsFeed from './AlertsFeed';
 import ControlHub, { LayerConfig } from './ControlHub';
+import AnalyticsPanel from './AnalyticsPanel';
+import ProfessionalTools from './ProfessionalTools';
+import NotificationsHub from './NotificationsHub';
+import ActivityRecommender from './ActivityRecommender';
+import SavedLocationsManager from './SavedLocationsManager';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { capeTownAreas, searchAreas, type AreaSafetyData, type TimeOfDay } from '@/data/capeTownSafetyData';
-import { AlertTriangle, Shield, Grid3X3, Camera, Flame, Bike, Mountain, MapPin as MapPinIcon, TrafficCone, Users } from 'lucide-react';
+import { AlertTriangle, Shield, Grid3X3, Camera, Flame, TrafficCone, Users } from 'lucide-react';
 
 const AreaIntelligenceDrawer = lazy(() => import('./AreaIntelligenceDrawer'));
 const SOSActionDock = lazy(() => import('./SOSActionDock'));
-
-/**
- * GridifyDashboard — Freemium map-first layout.
- * 
- * ┌──────────────────────────────────────────────┐
- * │ HEADER (h-16, z-50)                          │
- * ├──────────┬─────────────────────┬──────────────┤
- * │ LEFT     │                     │ RIGHT        │
- * │ Sidebar  │   MAP (60%)         │ Detail Panel │
- * │ 25%      │   + Time Toggle     │ 300px        │
- * │ Search   │   + Explore Tabs    │ (on select)  │
- * │ Filters  │                     │              │
- * │ Saved    │                     │              │
- * └──────────┴─────────────────────┴──────────────┘
- */
 
 const GridifyDashboard = memo(() => {
   const { selectedEntity, clearSelection } = useDashboard();
@@ -49,6 +39,13 @@ const GridifyDashboard = memo(() => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger?: string }>({ open: false });
   const [savedLocations, setSavedLocations] = useState<string[]>([]);
+
+  // Phase 2 panel states
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [proToolsOpen, setProToolsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [recommenderOpen, setRecommenderOpen] = useState(false);
+  const [savedManagerOpen, setSavedManagerOpen] = useState(false);
 
   // Layer config
   const [layers, setLayers] = useState<LayerConfig[]>([
@@ -82,6 +79,10 @@ const GridifyDashboard = memo(() => {
     setSavedLocations(prev => prev.includes(areaId) ? prev.filter(id => id !== areaId) : [...prev, areaId]);
   }, [savedLocations]);
 
+  const handleRemoveSaved = useCallback((id: string) => {
+    setSavedLocations(prev => prev.filter(loc => loc !== id));
+  }, []);
+
   const searchResults = searchQuery ? searchAreas(searchQuery) : [];
   const showRightPanel = selectedArea && !isMobile;
   const showLeftSidebar = !isMobile;
@@ -89,7 +90,12 @@ const GridifyDashboard = memo(() => {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Header */}
-      <GridifyHeader />
+      <GridifyHeader
+        onNotifications={() => setNotificationsOpen(true)}
+        onAnalytics={() => setAnalyticsOpen(true)}
+        onProTools={() => setProToolsOpen(true)}
+        onRecommender={() => setRecommenderOpen(true)}
+      />
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden flex relative">
@@ -116,7 +122,7 @@ const GridifyDashboard = memo(() => {
                 <button onClick={() => setLeftCollapsed(false)} className="p-2 rounded-lg hover:bg-secondary" title="Layers">
                   <Layers className="w-4 h-4 text-muted-foreground" />
                 </button>
-                <button onClick={() => setLeftCollapsed(false)} className="p-2 rounded-lg hover:bg-secondary" title="Saved">
+                <button onClick={() => setSavedManagerOpen(true)} className="p-2 rounded-lg hover:bg-secondary" title="Saved Locations">
                   <Bookmark className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
@@ -141,7 +147,6 @@ const GridifyDashboard = memo(() => {
                       )}
                     </div>
 
-                    {/* Search results */}
                     {searchResults.length > 0 && (
                       <div className="mt-2 space-y-1">
                         {searchResults.slice(0, 5).map(area => (
@@ -185,13 +190,39 @@ const GridifyDashboard = memo(() => {
                     className="relative static w-full"
                   />
 
+                  {/* Elite Quick Actions */}
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      Elite Tools
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'Analytics', icon: BarChart3, onClick: () => setAnalyticsOpen(true) },
+                        { label: 'Pro Tools', icon: Briefcase, onClick: () => setProToolsOpen(true) },
+                        { label: 'Alerts', icon: Bell, onClick: () => setNotificationsOpen(true) },
+                        { label: 'Recommender', icon: Sparkles, onClick: () => setRecommenderOpen(true) },
+                      ].map(tool => (
+                        <button
+                          key={tool.label}
+                          onClick={tool.onClick}
+                          className="flex items-center gap-1.5 p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary transition-colors text-left"
+                        >
+                          <tool.icon className="w-3.5 h-3.5 text-elite-from" />
+                          <span className="text-xs font-medium text-foreground">{tool.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Saved Locations */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Saved Locations
                       </h3>
-                      <span className="text-[10px] text-muted-foreground">{savedLocations.length}/3 free</span>
+                      <button onClick={() => setSavedManagerOpen(true)} className="text-[10px] text-primary font-semibold hover:underline">
+                        Manage
+                      </button>
                     </div>
                     {savedLocations.length === 0 ? (
                       <p className="text-xs text-muted-foreground italic">No saved locations yet</p>
@@ -236,32 +267,30 @@ const GridifyDashboard = memo(() => {
 
         {/* CENTER — Map */}
         <main className="flex-1 relative overflow-hidden">
-          {/* Time of Day toggle — floating on map (mobile) */}
           {isMobile && (
             <div className="absolute top-3 left-3 right-3 z-[1001]">
               <TimeOfDayToggle value={timeOfDay} onChange={setTimeOfDay} />
             </div>
           )}
 
-          {/* Map */}
           <div className="absolute inset-0">
             <MapFirstView fullHeight onMapInteraction={handleCloseDetail} />
           </div>
 
-          {/* Bottom Explore Tabs */}
           <ExploreTabs
             timeOfDay={timeOfDay}
             onSelectArea={handleSelectArea}
           />
         </main>
 
-        {/* RIGHT PANEL — Area detail or alerts */}
+        {/* RIGHT PANEL — Area detail */}
         {showRightPanel && (
           <aside className="w-[300px] xl:w-[340px] shrink-0 z-20 overflow-hidden">
             <AreaDetailPanel
               area={selectedArea}
               timeOfDay={timeOfDay}
               onClose={handleCloseDetail}
+              onOpenAnalytics={() => setAnalyticsOpen(true)}
             />
           </aside>
         )}
@@ -274,6 +303,7 @@ const GridifyDashboard = memo(() => {
               area={selectedArea}
               timeOfDay={timeOfDay}
               onClose={handleCloseDetail}
+              onOpenAnalytics={() => setAnalyticsOpen(true)}
             />
           </div>
         )}
@@ -284,6 +314,19 @@ const GridifyDashboard = memo(() => {
         isOpen={upgradeModal.open}
         onClose={() => setUpgradeModal({ open: false })}
         trigger={upgradeModal.trigger}
+      />
+
+      {/* Phase 2 Panels */}
+      <AnalyticsPanel isOpen={analyticsOpen} onClose={() => setAnalyticsOpen(false)} area={selectedArea} />
+      <ProfessionalTools isOpen={proToolsOpen} onClose={() => setProToolsOpen(false)} />
+      <NotificationsHub isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      <ActivityRecommender isOpen={recommenderOpen} onClose={() => setRecommenderOpen(false)} onSelectArea={handleSelectArea} />
+      <SavedLocationsManager
+        isOpen={savedManagerOpen}
+        onClose={() => setSavedManagerOpen(false)}
+        savedLocationIds={savedLocations}
+        onRemove={handleRemoveSaved}
+        onSelectArea={handleSelectArea}
       />
 
       {/* Area Intelligence Drawer */}

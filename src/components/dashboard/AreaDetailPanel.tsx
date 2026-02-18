@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
-import { MapPin, Building2, Shield, Stethoscope, ChevronRight } from 'lucide-react';
+import { MapPin, Building2, Shield, Stethoscope, ChevronRight, BarChart3, Crown } from 'lucide-react';
 import SafetyScoreBadge from './SafetyScoreBadge';
 import { getScoreLabel } from './SafetyScoreBadge';
 import type { AreaSafetyData, TimeOfDay } from '@/data/capeTownSafetyData';
@@ -15,6 +15,7 @@ interface AreaDetailPanelProps {
   area: AreaSafetyData;
   timeOfDay: TimeOfDay;
   onClose: () => void;
+  onOpenAnalytics?: () => void;
   className?: string;
 }
 
@@ -24,7 +25,7 @@ const facilityIcons = {
   fire_station: Building2,
 };
 
-const AreaDetailPanel = memo(({ area, timeOfDay, onClose, className }: AreaDetailPanelProps) => {
+const AreaDetailPanel = memo(({ area, timeOfDay, onClose, onOpenAnalytics, className }: AreaDetailPanelProps) => {
   const currentTimeSafety = area.timeBasedSafety[timeOfDay];
   const statusColor = safetyLevelColors[currentTimeSafety.color];
 
@@ -181,7 +182,17 @@ const AreaDetailPanel = memo(({ area, timeOfDay, onClose, className }: AreaDetai
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border space-y-2">
+        {onOpenAnalytics && (
+          <button
+            onClick={onOpenAnalytics}
+            className="w-full py-2 px-4 rounded-lg bg-elite-gradient text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            <BarChart3 className="w-4 h-4" />
+            View Full Analytics
+            <Crown className="w-3 h-3" />
+          </button>
+        )}
         <button
           onClick={onClose}
           className="w-full py-2 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"

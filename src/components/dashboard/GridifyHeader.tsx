@@ -1,21 +1,20 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Shield, Search, MapPin, Bell, Crown, Menu, X, User } from 'lucide-react';
+import { Shield, Search, Bell, Crown, Menu, X, User, BarChart3, Briefcase, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-/**
- * GridifyHeader — Fixed top header (64px) for the freemium platform.
- * Logo, main nav, search, notifications (Elite), profile.
- */
-
 interface GridifyHeaderProps {
   onSearch?: () => void;
+  onNotifications?: () => void;
+  onAnalytics?: () => void;
+  onProTools?: () => void;
+  onRecommender?: () => void;
   className?: string;
 }
 
-const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
+const GridifyHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools, onRecommender, className }: GridifyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -52,8 +51,18 @@ const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
                 {item}
               </button>
             ))}
-            <button className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1">
-              Community
+            <button
+              onClick={onProTools}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1"
+            >
+              Pro Tools
+              <span className="text-[8px] bg-elite-gradient text-white px-1.5 py-0.5 rounded-full font-bold">ELITE</span>
+            </button>
+            <button
+              onClick={onAnalytics}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1"
+            >
+              Analytics
               <span className="text-[8px] bg-elite-gradient text-white px-1.5 py-0.5 rounded-full font-bold">ELITE</span>
             </button>
           </nav>
@@ -62,7 +71,6 @@ const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
-        {/* Search */}
         <button
           onClick={onSearch}
           className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
@@ -71,18 +79,30 @@ const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
           <Search className="w-4.5 h-4.5" />
         </button>
 
-        {/* Notifications (Elite teaser) */}
+        {/* Recommender */}
         <button
+          onClick={onRecommender}
+          className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+          aria-label="Smart Recommender"
+          title="Smart Activity Recommender"
+        >
+          <Sparkles className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Notifications */}
+        <button
+          onClick={onNotifications}
           className="relative p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
-          title="Upgrade to Elite for notifications"
+          title="Notifications Hub"
         >
           <Bell className="w-4.5 h-4.5" />
-          <Crown className="w-2.5 h-2.5 text-elite-from absolute -top-0.5 -right-0.5" />
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-safety-red text-white text-[8px] font-bold flex items-center justify-center">
+            6
+          </span>
         </button>
 
         <ThemeToggle />
 
-        {/* Profile / Auth */}
         <Link
           to="/auth"
           className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
@@ -90,7 +110,6 @@ const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
           <User className="w-4.5 h-4.5" />
         </Link>
 
-        {/* Mobile menu */}
         {isMobile && (
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -115,10 +134,24 @@ const GridifyHeader = memo(({ onSearch, className }: GridifyHeaderProps) => {
               </button>
             ))}
             <button
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => { setMobileMenuOpen(false); onAnalytics?.(); }}
               className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors flex items-center gap-2"
             >
-              Community
+              Analytics
+              <span className="text-[8px] bg-elite-gradient text-white px-1.5 py-0.5 rounded-full font-bold">ELITE</span>
+            </button>
+            <button
+              onClick={() => { setMobileMenuOpen(false); onProTools?.(); }}
+              className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors flex items-center gap-2"
+            >
+              Pro Tools
+              <span className="text-[8px] bg-elite-gradient text-white px-1.5 py-0.5 rounded-full font-bold">ELITE</span>
+            </button>
+            <button
+              onClick={() => { setMobileMenuOpen(false); onRecommender?.(); }}
+              className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors flex items-center gap-2"
+            >
+              Recommender
               <span className="text-[8px] bg-elite-gradient text-white px-1.5 py-0.5 rounded-full font-bold">ELITE</span>
             </button>
           </nav>
