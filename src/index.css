@@ -2,152 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gridfy - Military-Grade Dark Command Center Design System */
+/* Gridify — Freemium Urban Safety Intelligence Platform */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
-    /* Pure black / deep midnight background - Dark Mode (Dim) */
-    --background: 220 50% 3%;
-    --foreground: 210 40% 98%;
+    /* Clean white light mode */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
 
-    --card: 220 45% 6%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
 
-    --popover: 220 45% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
 
-    /* Primary - Electric Blue */
-    --primary: 217 91% 60%;
-    --primary-foreground: 220 50% 3%;
+    /* Primary — Emerald Safety Green */
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Slate */
-    --secondary: 215 28% 14%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 10%;
 
-    --muted: 215 28% 14%;
-    --muted-foreground: 215 20% 60%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 220 50% 3%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 30% 15%;
-    --input: 217 30% 15%;
-    --ring: 217 91% 60%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 39%;
 
     --radius: 0.75rem;
 
-    /* Safety colors - high visibility */
-    --safety-good: 160 84% 39%;
-    --safety-moderate: 38 92% 50%;
-    --safety-poor: 25 95% 53%;
-    --safety-critical: 0 84% 60%;
+    /* Safety zone colors */
+    --safety-green: 160 84% 39%;
+    --safety-yellow: 38 92% 50%;
+    --safety-orange: 25 95% 53%;
+    --safety-red: 0 84% 60%;
 
-    /* Tactical glow effects */
-    --glow-blue: 0 0 20px hsl(217 91% 60% / 0.4);
-    --glow-green: 0 0 20px hsl(160 84% 39% / 0.4);
-    --glow-red: 0 0 20px hsl(0 84% 60% / 0.4);
-    --glow-amber: 0 0 20px hsl(38 92% 50% / 0.4);
-    
+    /* Elite gold gradient stops */
+    --elite-gold-from: 51 100% 50%;
+    --elite-gold-to: 33 100% 50%;
+
     /* Sidebar */
-    --sidebar-background: 220 45% 5%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 220 50% 3%;
-    --sidebar-accent: 217 30% 15%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 30% 15%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-background: 220 14% 97%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 160 84% 39%;
   }
 
-  /* Light Mode - Professional Clean */
-  .light {
-    --background: 210 40% 98%;
-    --foreground: 220 50% 10%;
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 50% 10%;
+    --card: 220 18% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 50% 10%;
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Primary - Electric Blue */
-    --primary: 217 91% 50%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary */
-    --secondary: 215 25% 92%;
-    --secondary-foreground: 220 50% 10%;
-
-    --muted: 215 25% 92%;
-    --muted-foreground: 215 20% 45%;
-
-    --accent: 217 91% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 217 25% 85%;
-    --input: 217 25% 85%;
-    --ring: 217 91% 50%;
-
-    /* Safety colors - adjusted for light mode */
-    --safety-good: 160 84% 35%;
-    --safety-moderate: 38 92% 45%;
-    --safety-poor: 25 95% 48%;
-    --safety-critical: 0 84% 55%;
-
-    /* Tactical glow effects - softer for light mode */
-    --glow-blue: 0 0 15px hsl(217 91% 50% / 0.25);
-    --glow-green: 0 0 15px hsl(160 84% 35% / 0.25);
-    --glow-red: 0 0 15px hsl(0 84% 55% / 0.25);
-    --glow-amber: 0 0 15px hsl(38 92% 45% / 0.25);
-    
-    /* Sidebar */
-    --sidebar-background: 215 25% 96%;
-    --sidebar-foreground: 220 50% 10%;
-    --sidebar-primary: 217 91% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 90%;
-    --sidebar-accent-foreground: 220 50% 10%;
-    --sidebar-border: 217 25% 85%;
-    --sidebar-ring: 217 91% 50%;
-  }
-
-  /* Dark Mode (Dim) - Command Center */
-  .dark {
-    --background: 220 50% 3%;
-    --foreground: 210 40% 98%;
-    --card: 220 45% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 220 45% 6%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 220 50% 3%;
-    --secondary: 215 28% 14%;
+    --secondary: 220 14% 16%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 14%;
+
+    --muted: 220 14% 16%;
     --muted-foreground: 215 20% 60%;
-    --accent: 217 91% 60%;
-    --accent-foreground: 220 50% 3%;
-    --destructive: 0 62% 31%;
+
+    --accent: 220 14% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 30% 15%;
-    --input: 217 30% 15%;
-    --ring: 212 27% 84%;
-    --sidebar-background: 220 45% 5%;
+
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
+    --ring: 160 84% 39%;
+
+    --safety-green: 160 84% 45%;
+    --safety-yellow: 38 92% 55%;
+    --safety-orange: 25 95% 58%;
+    --safety-red: 0 84% 60%;
+
+    --elite-gold-from: 51 100% 50%;
+    --elite-gold-to: 33 100% 50%;
+
+    --sidebar-background: 220 18% 8%;
     --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 220 50% 3%;
-    --sidebar-accent: 217 30% 15%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 16%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 30% 15%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
@@ -160,270 +118,67 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-
-  .dark body,
-  body:has(.dark) {
-    background: linear-gradient(180deg, hsl(220 50% 2%) 0%, hsl(220 45% 4%) 50%, hsl(220 50% 2%) 100%);
-  }
-
-  .light body,
-  body:has(.light) {
-    background: linear-gradient(180deg, hsl(210 40% 98%) 0%, hsl(215 25% 95%) 50%, hsl(210 40% 98%) 100%);
-  }
 }
 
 @layer utilities {
-  /* Monospace font for tactical data */
-  .font-tactical {
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Safety score badge utilities */
+  .safety-green { color: hsl(var(--safety-green)); }
+  .safety-yellow { color: hsl(var(--safety-yellow)); }
+  .safety-orange { color: hsl(var(--safety-orange)); }
+  .safety-red { color: hsl(var(--safety-red)); }
+
+  .bg-safety-green { background-color: hsl(var(--safety-green)); }
+  .bg-safety-yellow { background-color: hsl(var(--safety-yellow)); }
+  .bg-safety-orange { background-color: hsl(var(--safety-orange)); }
+  .bg-safety-red { background-color: hsl(var(--safety-red)); }
+
+  /* Elite gold gradient */
+  .bg-elite-gradient {
+    background: linear-gradient(135deg, hsl(var(--elite-gold-from)), hsl(var(--elite-gold-to)));
   }
 
-  /* Gradient backgrounds - theme aware */
-  .bg-gradient-header {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 50%, hsl(var(--card)) 100%);
-    border-bottom: 1px solid hsl(var(--primary) / 0.3);
+  .text-elite-gradient {
+    background: linear-gradient(135deg, hsl(var(--elite-gold-from)), hsl(var(--elite-gold-to)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .light .bg-gradient-header {
-    background: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(215 25% 98%) 50%, hsl(0 0% 100%) 100%);
-    box-shadow: 0 1px 3px hsl(220 50% 10% / 0.1);
-  }
-
-  .bg-gradient-stats {
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 50%, hsl(var(--card)) 100%);
-  }
-
-  .bg-gradient-body {
-    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--card)) 50%, hsl(var(--background)) 100%);
-  }
-
-  /* Stat card gradients with tactical glow */
-  .bg-stat-green {
-    background: linear-gradient(135deg, hsl(160 84% 35%) 0%, hsl(160 70% 25%) 100%);
-    border-color: hsl(160 84% 45%);
-    box-shadow: 0 0 15px hsl(160 84% 39% / 0.3);
-  }
-
-  .bg-stat-red {
-    background: linear-gradient(135deg, hsl(0 72% 50%) 0%, hsl(0 65% 38%) 100%);
-    border-color: hsl(0 84% 55%);
-    box-shadow: 0 0 15px hsl(0 84% 60% / 0.3);
-  }
-
-  .bg-stat-blue {
-    background: linear-gradient(135deg, hsl(217 85% 55%) 0%, hsl(217 75% 42%) 100%);
-    border-color: hsl(217 91% 65%);
-    box-shadow: 0 0 15px hsl(217 91% 60% / 0.3);
-  }
-
-  .bg-stat-purple {
-    background: linear-gradient(135deg, hsl(270 70% 55%) 0%, hsl(270 60% 42%) 100%);
-    border-color: hsl(270 70% 65%);
-    box-shadow: 0 0 15px hsl(270 70% 55% / 0.3);
-  }
-
-  .bg-stat-yellow {
-    background: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 42%) 100%);
-    border-color: hsl(45 93% 55%);
-    box-shadow: 0 0 15px hsl(45 93% 47% / 0.3);
-  }
-
-  .bg-stat-orange {
-    background: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(25 85% 42%) 100%);
-    border-color: hsl(25 95% 60%);
-    box-shadow: 0 0 15px hsl(25 95% 53% / 0.3);
-  }
-
-  .bg-stat-teal {
-    background: linear-gradient(135deg, hsl(175 80% 40%) 0%, hsl(175 70% 30%) 100%);
-    border-color: hsl(175 80% 50%);
-    box-shadow: 0 0 15px hsl(175 80% 40% / 0.3);
-  }
-
-  .bg-stat-pink {
-    background: linear-gradient(135deg, hsl(340 82% 52%) 0%, hsl(340 72% 42%) 100%);
-    border-color: hsl(340 82% 60%);
-    box-shadow: 0 0 15px hsl(340 82% 52% / 0.3);
-  }
-
-  /* Status badges */
-  .badge-good {
-    @apply bg-emerald-500 text-white;
-  }
-
-  .badge-moderate {
-    @apply bg-yellow-500 text-gray-900;
-  }
-
-  .badge-poor {
-    @apply bg-orange-500 text-white;
-  }
-
-  .badge-critical {
-    @apply bg-red-500 text-white;
-  }
-
-  /* Card hover effects with tactical glow */
+  /* Card hover effects */
   .card-hover {
     @apply transition-all duration-300;
   }
 
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 40px -10px hsl(217 91% 60% / 0.25);
-    border-color: hsl(217 91% 60% / 0.6);
+    box-shadow: 0 8px 30px -12px hsl(var(--foreground) / 0.15);
   }
 
-  /* Enhanced glow effects */
-  .glow-blue {
-    box-shadow: var(--glow-blue);
-  }
-
-  .glow-green {
-    box-shadow: var(--glow-green);
-  }
-
-  .glow-red {
-    box-shadow: var(--glow-red);
-  }
-
-  .glow-amber {
-    box-shadow: var(--glow-amber);
-  }
-
-  /* Tactical marker glow */
-  .marker-glow {
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-  }
-
-  .marker-glow-danger {
-    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6));
-  }
-
-  .marker-glow-safe {
-    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
-  }
-
-  /* Progress bar gradients */
-  .progress-gradient {
-    background: linear-gradient(90deg, hsl(160 84% 39%) 0%, hsl(217 91% 60%) 100%);
-  }
-
-  /* Enhanced pulse animation for live indicator */
-  .pulse-live {
-    animation: pulse-glow 2s infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 1;
-      box-shadow: 0 0 10px hsl(160 84% 39% / 0.6);
-    }
-    50% {
-      opacity: 0.7;
-      box-shadow: 0 0 25px hsl(160 84% 39% / 0.9);
-    }
-  }
-
-  /* Danger pulse animation */
-  .pulse-danger {
-    animation: pulse-danger 1.5s infinite;
-  }
-
-  @keyframes pulse-danger {
-    0%, 100% {
-      opacity: 1;
-      box-shadow: 0 0 10px hsl(0 84% 60% / 0.6);
-    }
-    50% {
-      opacity: 0.8;
-      box-shadow: 0 0 25px hsl(0 84% 60% / 0.9);
-    }
-  }
-
-  /* Amber pulse for alerts */
-  .pulse-amber {
-    animation: pulse-amber 1.2s infinite;
-  }
-
-  @keyframes pulse-amber {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.1);
-    }
-  }
-
-  /* Text shadow for emphasis */
-  .text-glow {
-    text-shadow: 0 0 10px currentColor;
-  }
-
-  .text-glow-blue {
-    text-shadow: 0 0 15px hsl(217 91% 60% / 0.5);
-  }
-
-  /* Scrollbar styling - tactical */
+  /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(220 45% 5%);
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(217 91% 60% / 0.3);
+    background: hsl(var(--border));
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(217 91% 60% / 0.5);
+    background: hsl(var(--muted-foreground) / 0.3);
   }
 
-  /* Line clamp utility */
-  .line-clamp-1 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-  }
-
-  /* Tabular nums for consistent number widths */
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Always visible scrollbar - professional UX */
   .scrollbar-visible {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary) / 0.3) hsl(var(--muted) / 0.2);
-  }
-  
-  .scrollbar-visible::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  .scrollbar-visible::-webkit-scrollbar-track {
-    background: hsl(var(--muted) / 0.2);
-    border-radius: 4px;
-  }
-  
-  .scrollbar-visible::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 4px;
-  }
-  
-  .scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
-  /* Fade in animation */
+  /* Animations */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
@@ -433,43 +188,62 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Scale in animation */
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
   }
 
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Line clamp */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Tabular nums */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Safe area for mobile */
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 16px);
   }
-}
 
-/* Marquee animation for ticker */
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
+  /* Pulse animations */
+  .pulse-live {
+    animation: pulse-glow 2s infinite;
   }
-  100% {
-    transform: translateX(-50%);
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px hsl(var(--safety-green) / 0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 16px hsl(var(--safety-green) / 0.8); }
   }
 }
 
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-/* Leaflet map tactical styling */
+/* Leaflet map clean styling */
 .leaflet-container {
-  background: hsl(220 45% 4%);
+  background: hsl(var(--background));
 }
 
-.leaflet-tile {
-  filter: brightness(0.85) contrast(1.1);
+.dark .leaflet-container {
+  background: hsl(220 20% 5%);
+}
+
+.dark .leaflet-tile {
+  filter: brightness(0.85) contrast(1.05);
 }
 
 .custom-marker {
@@ -479,4 +253,14 @@
 .custom-marker:hover {
   transform: scale(1.15);
   z-index: 1000 !important;
+}
+
+/* Marquee for ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
 }
