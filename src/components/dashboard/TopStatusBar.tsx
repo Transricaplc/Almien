@@ -64,7 +64,7 @@ const TopStatusBar = memo(({
         </div>
         <div>
           <h1 className="text-sm font-black tracking-tight">
-            <span className={isTravelerMode ? "text-destructive" : "text-primary"}>Grid</span>
+            <span className={isTravelerMode ? "text-destructive" : "text-primary"}>Gridfy</span>
           </h1>
           <p className="text-[8px] text-muted-foreground font-mono uppercase tracking-wider">
             {isTravelerMode ? "EMERGENCY MODE" : "URBAN INTELLIGENCE"}

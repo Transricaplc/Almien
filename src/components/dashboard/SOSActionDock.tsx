@@ -47,7 +47,7 @@ const SOSActionDock = memo(({ isTravelerMode = false }: SOSActionDockProps) => {
           <CollapsibleContent className="py-2 border-b border-border/20">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[9px]">
               <LegalCard icon={Shield} title="POPIA Compliant" color="text-primary">
-                Grid complies with POPIA. No personally identifiable surveillance data stored.
+                Gridfy complies with POPIA. No personally identifiable surveillance data stored.
               </LegalCard>
               <LegalCard icon={Lock} title="CoCT CCTV By-Law" color="text-emerald-400">
                 Adheres to City of Cape Town's CCTV By-Law (2023) for third-party systems.
@@ -58,12 +58,12 @@ const SOSActionDock = memo(({ isTravelerMode = false }: SOSActionDockProps) => {
             </div>
             <div className="mt-2 p-1.5 bg-muted/20 rounded text-center">
               <p className="text-[8px] text-muted-foreground font-mono">
-                Grid provides aggregated safety intelligence for informational purposes. In emergencies, always contact official services directly.
+                Gridfy provides aggregated safety intelligence for informational purposes. In emergencies, always contact official services directly.
               </p>
             </div>
             <div className="mt-1 text-center">
               <p className="text-[8px] text-muted-foreground/70">
-                Grid is a product of <span className="font-semibold">Evenor Holdings (Pty) Ltd</span> © {new Date().getFullYear()}
+                Gridfy is a product of <span className="font-semibold">Evenor Holdings (Pty) Ltd</span> © {new Date().getFullYear()}
               </p>
             </div>
           </CollapsibleContent>

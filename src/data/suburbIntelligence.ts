@@ -1,4 +1,4 @@
-// Grid - Suburb Intelligence Database
+// Gridfy - Suburb Intelligence Database
 // Comprehensive Western Cape area data with emergency contacts
 
 export interface SuburbData {
