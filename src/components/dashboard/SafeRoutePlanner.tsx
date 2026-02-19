@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { 
   Navigation, MapPin, Shield, AlertTriangle, Clock, 
   Route, Car, PersonStanding, Bike, ChevronDown, ChevronUp,
-  Phone, Building
+  Phone, Building, ShieldCheck
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ const SafeRoutePlanner = () => {
   const [showRoute, setShowRoute] = useState(false);
   const [transportMode, setTransportMode] = useState<'car' | 'walk' | 'bike'>('car');
   const [expandedSegment, setExpandedSegment] = useState<number | null>(null);
+  const [tacticalRouting, setTacticalRouting] = useState(false);
 
   const { data: neighborhoods, isLoading: loadingNeighborhoods } = useNeighborhoodRatings();
   const { data: safeZones, isLoading: loadingZones } = useSafeZones();
@@ -58,8 +59,14 @@ const SafeRoutePlanner = () => {
     // Add intermediate neighborhoods based on safety score difference
     const middleNeighborhoods = neighborhoods
       .filter(n => n.neighborhood !== startMatch.neighborhood && n.neighborhood !== endMatch.neighborhood)
-      .sort((a, b) => Number(b.safety_score) - Number(a.safety_score))
-      .slice(0, 2);
+      .sort((a, b) => {
+        if (tacticalRouting) {
+          // Tactical: prefer highest safety scores (near police, low crime)
+          return Number(b.safety_score) - Number(a.safety_score);
+        }
+        return Number(b.safety_score) - Number(a.safety_score);
+      })
+      .slice(0, tacticalRouting ? 3 : 2);
 
     middleNeighborhoods.forEach((n, i) => {
       segments.push({
@@ -79,7 +86,7 @@ const SafeRoutePlanner = () => {
     });
 
     return segments;
-  }, [showRoute, neighborhoods, startLocation, endLocation]);
+  }, [showRoute, neighborhoods, startLocation, endLocation, tacticalRouting]);
 
   const routeStats = useMemo(() => {
     if (routeSegments.length === 0) return null;
@@ -149,6 +156,23 @@ const SafeRoutePlanner = () => {
             </button>
           ))}
         </div>
+
+        {/* Tactical Routing Toggle */}
+        <button
+          onClick={() => { setTacticalRouting(!tacticalRouting); setShowRoute(false); }}
+          className={cn(
+            'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border',
+            tacticalRouting
+              ? 'bg-primary/10 border-primary text-primary'
+              : 'bg-muted/30 border-border text-muted-foreground hover:bg-muted/50'
+          )}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          <span>Tactical Routing</span>
+          <span className="ml-auto text-[10px] opacity-70">
+            {tacticalRouting ? 'ON — Safest path' : 'OFF'}
+          </span>
+        </button>
 
         {/* Location Inputs */}
         <div className="space-y-2">
