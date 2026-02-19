@@ -7,6 +7,7 @@ import {
 import { cn } from '@/lib/utils';
 import { getSafetyColor } from '@/lib/utils';
 import { areasData, AreaData } from '@/data/emergencyContacts';
+import { getEmergencyContacts, searchDirectory, PROVINCE_WIDE, type EmergencyContactsResult } from '@/data/westernCapeEmergencyDirectory';
 import { useWeather, getWeatherIcon } from '@/hooks/useWeather';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -115,6 +116,58 @@ interface AreaIntelligenceDrawerProps {
   onClose: () => void;
 }
 
+// ── Emergency Contact Section (categorized) ──
+const EmergencyContactSection = memo(({ contacts }: { contacts: EmergencyContactsResult }) => (
+  <div className="rounded-lg border border-border/30 bg-card/60 backdrop-blur-sm p-3 space-y-3">
+    <div className="flex items-center gap-2 mb-1">
+      <Phone className="w-4 h-4 text-muted-foreground" />
+      <span className="text-[10px] font-mono uppercase tracking-[0.05em] text-muted-foreground font-semibold">
+        Emergency Contacts — {contacts.suburb}
+      </span>
+    </div>
+
+    {/* SAPS CONTACTS */}
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-[#2563eb]">
+        [SAPS CONTACTS]
+      </div>
+      <EmergencyChip name={contacts.saps.station} number={contacts.saps.phone} icon={Shield} color="text-[#2563eb]" />
+      {contacts.saps.clusterHQ && (
+        <EmergencyChip name={`Cluster HQ: ${contacts.saps.clusterHQ}`} number={contacts.saps.clusterPhone!} icon={Shield} color="text-blue-400" />
+      )}
+      {contacts.saps.sectorVehicles?.map((sv, i) => (
+        <EmergencyChip key={i} name={`Sector ${sv.sector}`} number={sv.phone} icon={Car} color="text-blue-300" />
+      ))}
+      <EmergencyChip name="National Crime Stop" number={contacts.saps.nationalCrimeStop} icon={Shield} color="text-blue-300" />
+    </div>
+
+    {/* FIRE & RESCUE */}
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-[#b91c1c]">
+        [FIRE & RESCUE]
+      </div>
+      <EmergencyChip name={contacts.fire.station} number={contacts.fire.phone} icon={Flame} color="text-[#b91c1c]" />
+      <EmergencyChip name="NSRI Sea Rescue" number={contacts.fire.nsri} icon={Flame} color="text-orange-400" />
+      <EmergencyChip name="WSAR Mountain Rescue" number={contacts.fire.wsar} icon={Flame} color="text-orange-300" />
+    </div>
+
+    {/* MEDICAL & EMS */}
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-emerald-500">
+        [MEDICAL & EMS]
+      </div>
+      <EmergencyChip name={`Public: ${contacts.medical.publicHospital}`} number={contacts.medical.publicPhone} icon={AlertTriangle} color="text-emerald-400" />
+      {contacts.medical.privateClinic && (
+        <EmergencyChip name={`Private: ${contacts.medical.privateClinic}`} number={contacts.medical.privatePhone!} icon={AlertTriangle} color="text-emerald-300" />
+      )}
+      <EmergencyChip name="Metro EMS Ambulance" number={contacts.medical.metroEMS} icon={Phone} color="text-emerald-300" />
+      <EmergencyChip name="ER24" number={contacts.medical.er24} icon={Phone} color="text-emerald-200" />
+      <EmergencyChip name="Netcare 911" number={contacts.medical.netcare911} icon={Phone} color="text-emerald-200" />
+    </div>
+  </div>
+));
+EmergencyContactSection.displayName = 'EmergencyContactSection';
+
 const AreaIntelligenceDrawer = ({ isOpen, onClose }: AreaIntelligenceDrawerProps) => {
   const { selectEntity } = useDashboard();
   const { weather, loading: weatherLoading } = useWeather();
@@ -124,11 +177,18 @@ const AreaIntelligenceDrawer = ({ isOpen, onClose }: AreaIntelligenceDrawerProps
   const [copied, setCopied] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
 
+  // Search both areasData and the emergency directory (by name + postal code)
   const filteredAreas = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
     return areasData.filter(a => a.name.toLowerCase().includes(q)).slice(0, 6);
   }, [searchQuery]);
+
+  // Derive emergency contacts from selected area name
+  const areaEmergencyContacts = useMemo<EmergencyContactsResult | null>(() => {
+    if (!selectedArea) return null;
+    return getEmergencyContacts(selectedArea.name);
+  }, [selectedArea]);
 
   const handleSelectArea = useCallback((area: AreaData) => {
     setDataLoading(true);
@@ -234,7 +294,7 @@ const AreaIntelligenceDrawer = ({ isOpen, onClose }: AreaIntelligenceDrawerProps
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-              placeholder="Search area (e.g., Sea Point)..."
+              placeholder="Search area or postal code..."
               className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/60 outline-none text-xs font-mono"
             />
             {searchQuery && (
@@ -400,33 +460,22 @@ const AreaIntelligenceDrawer = ({ isOpen, onClose }: AreaIntelligenceDrawerProps
               </button>
             </IntelCard>
 
-            {/* ── Emergency Contacts ── */}
-            <div className="rounded-lg border border-border/30 bg-card/60 backdrop-blur-sm p-3 space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Phone className="w-4 h-4 text-muted-foreground" />
-                <span className="text-[10px] font-mono uppercase tracking-[0.05em] text-muted-foreground font-semibold">
-                  Emergency Contacts
-                </span>
+            {/* ── Emergency Contacts (categorized) ── */}
+            {areaEmergencyContacts ? (
+              <EmergencyContactSection contacts={areaEmergencyContacts} />
+            ) : (
+              <div className="rounded-lg border border-border/30 bg-card/60 backdrop-blur-sm p-3 space-y-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-[10px] font-mono uppercase tracking-[0.05em] text-muted-foreground font-semibold">
+                    Emergency Contacts
+                  </span>
+                </div>
+                <EmergencyChip name="Police — SAPS" number={selectedArea.policeNumber} icon={Shield} color="text-blue-400" />
+                <EmergencyChip name={selectedArea.nearestHospital} number={selectedArea.hospitalNumber} icon={Flame} color="text-red-400" />
+                <EmergencyChip name="WC Emergency" number="107" icon={Flame} color="text-orange-400" />
               </div>
-              <EmergencyChip
-                name="Police — SAPS"
-                number={selectedArea.policeNumber}
-                icon={Shield}
-                color="text-blue-400"
-              />
-              <EmergencyChip
-                name={selectedArea.nearestHospital}
-                number={selectedArea.hospitalNumber}
-                icon={Flame}
-                color="text-red-400"
-              />
-              <EmergencyChip
-                name="Fire & Rescue"
-                number="021 480 7700"
-                icon={Flame}
-                color="text-orange-400"
-              />
-            </div>
+            )}
           </div>
         )}
       </div>

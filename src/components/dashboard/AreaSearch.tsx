@@ -129,7 +129,8 @@ const AreaSearch = () => {
     if (!searchQuery.trim()) return [];
     const query = searchQuery.toLowerCase();
     return areasData.filter(area => 
-      area.name.toLowerCase().includes(query)
+      area.name.toLowerCase().includes(query) ||
+      area.id.includes(query)
     ).slice(0, 5);
   }, [searchQuery]);
 
