@@ -16,6 +16,10 @@ import ProfessionalToolsView from './views/ProfessionalToolsView';
 import CommunityIntelView from './views/CommunityIntelView';
 import AlertsView from './views/AlertsView';
 import SettingsView from './views/SettingsView';
+import TrafficTransportView from './views/TrafficTransportView';
+import UtilitiesServicesView from './views/UtilitiesServicesView';
+import AirportInfoView from './views/AirportInfoView';
+import GovernmentServicesView from './views/GovernmentServicesView';
 
 export type ViewId =
   | 'dashboard'
@@ -29,6 +33,10 @@ export type ViewId =
   | 'pro-tools'
   | 'community'
   | 'alerts'
+  | 'traffic'
+  | 'utilities'
+  | 'airport'
+  | 'government'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
@@ -60,6 +68,10 @@ const GridifyDashboard = memo(() => {
       case 'pro-tools': return <ProfessionalToolsView {...props} />;
       case 'community': return <CommunityIntelView {...props} />;
       case 'alerts': return <AlertsView {...props} />;
+      case 'traffic': return <TrafficTransportView {...props} />;
+      case 'utilities': return <UtilitiesServicesView {...props} />;
+      case 'airport': return <AirportInfoView {...props} />;
+      case 'government': return <GovernmentServicesView {...props} />;
       case 'settings': return <SettingsView {...props} />;
       default: return <DashboardView {...props} />;
     }

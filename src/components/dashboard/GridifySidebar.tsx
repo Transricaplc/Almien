@@ -4,7 +4,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ThemeToggle from '@/components/ThemeToggle';
 import {
   Home, BarChart3, MapPin, Clock, Target, Car, Mountain,
-  Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X
+  Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
+  TrafficCone, Lightbulb, Plane, Landmark
 } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
@@ -29,6 +30,10 @@ const menuItems: { id: ViewId; label: string; icon: typeof Home; elite?: boolean
   { id: 'pro-tools', label: 'Professional Tools', icon: Briefcase, elite: true },
   { id: 'community', label: 'Community Intel', icon: Users },
   { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, elite: true },
+  { id: 'traffic', label: 'Traffic & Transport', icon: TrafficCone },
+  { id: 'utilities', label: 'Utilities & Services', icon: Lightbulb },
+  { id: 'airport', label: 'Airport Info', icon: Plane },
+  { id: 'government', label: 'Government Services', icon: Landmark },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
