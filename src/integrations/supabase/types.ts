@@ -1584,6 +1584,7 @@ export type Database = {
           area_code: string
           cctv_coverage: number
           created_at: string
+          esp_area_id: string | null
           fire_contact: string
           fire_station: string
           hospital_contact: string
@@ -1602,6 +1603,7 @@ export type Database = {
           area_code: string
           cctv_coverage?: number
           created_at?: string
+          esp_area_id?: string | null
           fire_contact: string
           fire_station: string
           hospital_contact: string
@@ -1620,6 +1622,7 @@ export type Database = {
           area_code?: string
           cctv_coverage?: number
           created_at?: string
+          esp_area_id?: string | null
           fire_contact?: string
           fire_station?: string
           hospital_contact?: string
