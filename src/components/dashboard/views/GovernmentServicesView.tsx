@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Landmark, Phone, MapPin, FileText, Wrench, BookOpen, Heart, Lock } from 'lucide-react';
+import { Landmark, Phone, MapPin, FileText, Wrench, BookOpen, Heart, Lock, GraduationCap, Car, Shield, Smartphone } from 'lucide-react';
 import type { ViewId } from '../GridifyDashboard';
 
 interface Props { onUpgrade: (trigger?: string) => void; onNavigate: (view: ViewId) => void; }
@@ -146,29 +146,38 @@ const GovernmentServicesView = memo(({ onUpgrade }: Props) => {
           </CardContent>
         </Card>
 
+        {/* Education Services */}
         <Card className="mb-3">
           <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-2">🏫 Education</h3>
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><GraduationCap className="w-4 h-4" /> Education Services</h3>
             <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>• School Finder by Area</li>
-              <li>• Admissions Information</li>
-              <li>• Bursary & Funding Programs</li>
-              <li>• School Safety Ratings</li>
+              <li>• School Admissions</li>
+              <li>• School Locations & Info</li>
+              <li>• School Term Dates</li>
+              <li>• Adult Education Programs</li>
             </ul>
-            <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent mt-3">Find Schools Near Me</button>
+            <div className="flex gap-2 mt-3">
+              <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">Find Schools</button>
+              <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Admission Info</button>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Traffic & Licensing */}
         <Card>
           <CardContent className="p-5">
-            <h3 className="font-semibold text-foreground mb-2">🚔 Law Enforcement</h3>
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><Car className="w-4 h-4" /> Traffic & Licensing</h3>
             <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>• SAPS Station Finder</li>
-              <li>• Case Status Tracking</li>
-              <li>• Community Policing Forums</li>
-              <li>• Emergency: <strong>10111</strong></li>
+              <li>• License Renewal</li>
+              <li>• Vehicle Registration</li>
+              <li>• Traffic Fines Payment</li>
+              <li>• Learner's License Booking</li>
             </ul>
-            <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent mt-3">Find Nearest Station</button>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">Renew Online</button>
+              <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Pay Fines</button>
+              <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Book Test</button>
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -176,26 +185,111 @@ const GovernmentServicesView = memo(({ onUpgrade }: Props) => {
       {/* National Government */}
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-3">National Government</h2>
-        <div className="space-y-2">
-          {[
-            { name: 'Home Affairs', desc: 'ID documents, passports, birth certificates', phone: '0800 601 190', addr: '56 Barrack St, Cape Town, 8001' },
-            { name: 'SARS (Tax)', desc: 'Tax returns, VAT, customs', phone: '0800 007 277', addr: 'Customs House, Heerengracht, Cape Town' },
-            { name: 'Labour Department', desc: 'UIF claims, labour disputes, workplace safety', phone: '012 309 4000', addr: 'Plein Park, Cape Town' },
-          ].map((svc, i) => (
-            <Card key={i}>
-              <CardContent className="p-4 text-sm">
-                <p className="font-semibold text-foreground">🏛️ {svc.name}</p>
-                <p className="text-muted-foreground">{svc.desc}</p>
-                <p className="mt-1">📞 {svc.phone}</p>
-                <p className="text-muted-foreground">📍 {svc.addr}</p>
-                <div className="flex gap-2 mt-2">
-                  <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Directions</button>
-                  <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Book Appointment</button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-3">
+          {/* Home Affairs */}
+          <Card>
+            <CardContent className="p-5">
+              <h3 className="font-semibold text-foreground mb-2">🆔 Home Affairs</h3>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• ID Document Application/Renewal</li>
+                <li>• Passport Application/Renewal</li>
+                <li>• Birth Certificates</li>
+                <li>• Marriage Certificates</li>
+              </ul>
+              <div className="text-sm mt-3 space-y-0.5">
+                <p className="font-medium text-foreground">Cape Town Offices:</p>
+                <p className="text-muted-foreground">• Barrack Street: <strong>021 462 4970</strong></p>
+                <p className="text-muted-foreground">• Bellville: <strong>021 957 3935</strong></p>
+                <p className="text-muted-foreground">• Mitchells Plain: <strong>021 377 2990</strong></p>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">Book Appointment</button>
+                <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Track Application</button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SARS */}
+          <Card>
+            <CardContent className="p-5">
+              <h3 className="font-semibold text-foreground mb-2">💼 SARS (Tax Services)</h3>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• Submit Tax Returns</li>
+                <li>• Pay Taxes</li>
+                <li>• Check Refund Status</li>
+                <li>• Register as Taxpayer</li>
+              </ul>
+              <p className="text-sm mt-2">SARS Cape Town: <strong>021 469 8100</strong></p>
+              <div className="flex gap-2 mt-3">
+                <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">eFiling Portal</button>
+                <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Contact SARS</button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Police Services */}
+          <Card>
+            <CardContent className="p-5">
+              <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><Shield className="w-4 h-4" /> Police Services</h3>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• Police Clearance Certificate</li>
+                <li>• Report Crime (Online)</li>
+                <li>• Crime Statistics</li>
+                <li>• Community Forums</li>
+              </ul>
+              <p className="text-sm mt-2">Emergency: <strong>10111</strong> · Crime Stop: <strong>08600 10111</strong></p>
+              <div className="flex gap-2 mt-3">
+                <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">Apply for Certificate</button>
+                <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Report Crime</button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Labour */}
+          <Card>
+            <CardContent className="p-4 text-sm">
+              <p className="font-semibold text-foreground">🏛️ Labour Department</p>
+              <p className="text-muted-foreground">UIF claims, labour disputes, workplace safety</p>
+              <p className="mt-1">📞 012 309 4000</p>
+              <p className="text-muted-foreground">📍 Plein Park, Cape Town</p>
+              <div className="flex gap-2 mt-2">
+                <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Directions</button>
+                <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent">Book Appointment</button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+      </section>
+
+      {/* Useful Resources */}
+      <section>
+        <h2 className="text-lg font-semibold text-foreground mb-3">Useful Resources</h2>
+
+        <Card className="mb-3">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><Smartphone className="w-4 h-4" /> Official Apps</h3>
+            <ul className="text-sm space-y-1 text-muted-foreground">
+              <li>• Cape Town City App (iOS/Android)</li>
+              <li>• SAPS Crime Stop App</li>
+              <li>• eHomeAffairs App</li>
+              <li>• SARS MobiApp</li>
+            </ul>
+            <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent mt-3">Download Links</button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><Phone className="w-4 h-4" /> Important Contacts</h3>
+            <div className="text-sm space-y-1">
+              <p>City of Cape Town: <strong>0860 103 089</strong></p>
+              <p>Western Cape Government: <strong>021 483 4589</strong></p>
+              <p>Presidential Hotline: <strong>17737</strong></p>
+              <p>Public Protector: <strong>0800 112 040</strong></p>
+            </div>
+            <button className="text-xs px-3 py-1.5 rounded-md bg-secondary text-foreground hover:bg-accent mt-3">View All Contacts</button>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Important Numbers */}
