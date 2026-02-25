@@ -20,6 +20,10 @@ import TrafficTransportView from './views/TrafficTransportView';
 import UtilitiesServicesView from './views/UtilitiesServicesView';
 import AirportInfoView from './views/AirportInfoView';
 import GovernmentServicesView from './views/GovernmentServicesView';
+import PredictiveAnalyticsView from './views/PredictiveAnalyticsView';
+import BiodiversityView from './views/BiodiversityView';
+import AccessibilityView from './views/AccessibilityView';
+import NightEconomyView from './views/NightEconomyView';
 
 export type ViewId =
   | 'dashboard'
@@ -37,6 +41,10 @@ export type ViewId =
   | 'utilities'
   | 'airport'
   | 'government'
+  | 'predictive'
+  | 'biodiversity'
+  | 'accessibility'
+  | 'night-economy'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
@@ -72,6 +80,10 @@ const GridifyDashboard = memo(() => {
       case 'utilities': return <UtilitiesServicesView {...props} />;
       case 'airport': return <AirportInfoView {...props} />;
       case 'government': return <GovernmentServicesView {...props} />;
+      case 'predictive': return <PredictiveAnalyticsView {...props} />;
+      case 'biodiversity': return <BiodiversityView {...props} />;
+      case 'accessibility': return <AccessibilityView {...props} />;
+      case 'night-economy': return <NightEconomyView {...props} />;
       case 'settings': return <SettingsView {...props} />;
       default: return <DashboardView {...props} />;
     }

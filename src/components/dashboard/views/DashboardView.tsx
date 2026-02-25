@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
 import MunicipalPerformance from '../MunicipalPerformance';
+import UrbanMetricsTiles from '../UrbanMetricsTiles';
 import type { ViewId } from '../GridifyDashboard';
 
 interface DashboardViewProps {
@@ -39,6 +40,9 @@ const DashboardView = memo(({ onUpgrade, onNavigate }: DashboardViewProps) => {
         <h1 className="text-3xl font-bold text-foreground">{greeting}! 👋</h1>
         <p className="text-muted-foreground mt-1">Your Cape Town Safety Intelligence</p>
       </div>
+
+      {/* Urban Pulse - Live Metrics */}
+      <UrbanMetricsTiles />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

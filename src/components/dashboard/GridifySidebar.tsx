@@ -5,7 +5,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import {
   Home, BarChart3, MapPin, Clock, Target, Car, Mountain,
   Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
-  TrafficCone, Lightbulb, Plane, Landmark
+  TrafficCone, Lightbulb, Plane, Landmark, TrendingUp, Leaf, Accessibility, Moon
 } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
@@ -34,6 +34,10 @@ const menuItems: { id: ViewId; label: string; icon: typeof Home; elite?: boolean
   { id: 'utilities', label: 'Utilities & Services', icon: Lightbulb },
   { id: 'airport', label: 'Airport Info', icon: Plane },
   { id: 'government', label: 'Government Services', icon: Landmark },
+  { id: 'predictive', label: 'Predictive Analytics', icon: TrendingUp },
+  { id: 'biodiversity', label: 'Biodiversity Monitor', icon: Leaf },
+  { id: 'accessibility', label: 'Accessibility Auditor', icon: Accessibility },
+  { id: 'night-economy', label: 'Night Economy', icon: Moon },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
