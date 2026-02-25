@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { ThumbsUp, MessageCircle, MapPin, Crown, Lock, Info } from 'lucide-react';
+import SafetyPulse from '../SafetyPulse';
 import type { ViewId } from '../GridifyDashboard';
 
 interface Props {
@@ -60,6 +61,9 @@ const CommunityIntelView = memo(({ onUpgrade }: Props) => {
         <h1 className="text-3xl font-bold text-foreground">Community Intel</h1>
         <p className="text-muted-foreground mt-1">Safety reports and tips from the community</p>
       </div>
+
+      {/* Safety Pulse — Crowdsourced Vibe Rating */}
+      <SafetyPulse />
 
       <div className="flex items-center gap-2 p-3 rounded-lg bg-accent text-sm text-muted-foreground">
         <Info className="w-4 h-4 shrink-0" />

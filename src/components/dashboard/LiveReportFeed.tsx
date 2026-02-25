@@ -2,6 +2,7 @@ import { useCitizenReports, CitizenReport } from '@/hooks/useCitizenReports';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { 
   Flame, 
   Car, 
@@ -43,9 +44,13 @@ const getStatusBadge = (status: string) => {
 
 const ReportItem = ({ report }: { report: CitizenReport }) => {
   const timeAgo = formatDistanceToNow(new Date(report.created_at), { addSuffix: true });
+  const isFresh = (Date.now() - new Date(report.created_at).getTime()) < 30 * 60 * 1000; // <30 min
   
   return (
-    <div className="p-3 border border-border/50 rounded-lg bg-card/50 hover:bg-card/80 transition-colors">
+    <div className={cn(
+      "p-3 border border-border/50 rounded-lg bg-card/50 hover:bg-card/80 transition-colors",
+      isFresh && "animate-pulse-fresh border-primary/40"
+    )}>
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-muted/50">
           {getReportIcon(report.infrastructure_type || report.report_type)}

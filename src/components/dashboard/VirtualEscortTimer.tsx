@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Shield, Play, Square, AlertTriangle, Clock, MapPin, Copy, Check } from 'lucide-react';
+import { Shield, Play, Square, AlertTriangle, Clock, MapPin, Copy, Check, Lock, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-type EscortStatus = 'idle' | 'active' | 'warning' | 'expired';
+type EscortStatus = 'idle' | 'active' | 'warning' | 'expired' | 'pin-entry';
 
 const PRESET_DURATIONS = [
   { label: '15 min', seconds: 15 * 60 },
@@ -18,6 +20,10 @@ const VirtualEscortTimer = () => {
   const [remaining, setRemaining] = useState(0);
   const [copied, setCopied] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [pin, setPin] = useState('');
+  const [savedPin, setSavedPin] = useState('');
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const formatTime = (secs: number) => {
@@ -27,6 +33,11 @@ const VirtualEscortTimer = () => {
   };
 
   const startEscort = useCallback(() => {
+    if (pin.length < 4) {
+      toast.error('Please set a 4-digit PIN first');
+      return;
+    }
+    setSavedPin(pin);
     // Get GPS
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -36,11 +47,34 @@ const VirtualEscortTimer = () => {
     }
     setRemaining(selectedDuration);
     setStatus('active');
-  }, [selectedDuration]);
+  }, [selectedDuration, pin]);
+
+  const attemptCheckIn = useCallback(() => {
+    setStatus('pin-entry');
+    setPinInput('');
+    setPinError(false);
+  }, []);
+
+  const verifyPin = useCallback(() => {
+    if (pinInput === savedPin) {
+      setStatus('idle');
+      setRemaining(0);
+      setPin('');
+      setSavedPin('');
+      setPinInput('');
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      toast.success('Session ended safely');
+    } else {
+      setPinError(true);
+      setTimeout(() => setPinError(false), 2000);
+    }
+  }, [pinInput, savedPin]);
 
   const checkIn = useCallback(() => {
     setStatus('idle');
     setRemaining(0);
+    setPin('');
+    setSavedPin('');
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
@@ -75,7 +109,7 @@ const VirtualEscortTimer = () => {
   }, [coords]);
 
   useEffect(() => {
-    if (status === 'active' || status === 'warning') {
+    if (status === 'active' || status === 'warning' || status === 'pin-entry') {
       intervalRef.current = setInterval(() => {
         setRemaining((prev) => {
           if (prev <= 1) {
@@ -149,11 +183,23 @@ const VirtualEscortTimer = () => {
       </div>
 
       <div className="p-4 space-y-4">
-        {status === 'idle' && (
+      {status === 'idle' && (
           <>
             <p className="text-xs text-muted-foreground">
-              Start a safety session. If you don't check in before the timer ends, your GPS and emergency contacts will be copied to your clipboard.
+              Set a PIN and start a safety session. If you don't deactivate with your PIN before the timer ends, a Silent SOS is triggered.
             </p>
+            {/* PIN Entry */}
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-muted-foreground shrink-0" />
+              <Input
+                type="password"
+                maxLength={6}
+                placeholder="Set 4-6 digit PIN"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                className="text-center font-mono tracking-widest h-9"
+              />
+            </div>
             {/* Duration Selector */}
             <div className="flex gap-2">
               {PRESET_DURATIONS.map((d) => (
@@ -171,9 +217,9 @@ const VirtualEscortTimer = () => {
                 </button>
               ))}
             </div>
-            <Button onClick={startEscort} className="w-full" size="sm">
+            <Button onClick={startEscort} className="w-full" size="sm" disabled={pin.length < 4}>
               <Play className="w-4 h-4 mr-2" />
-              Start Escort Session
+              Arm Shadow Timer
             </Button>
           </>
         )}
@@ -210,13 +256,53 @@ const VirtualEscortTimer = () => {
             )}
 
             <div className="flex gap-2">
-              <Button onClick={checkIn} className="flex-1" size="sm">
+              <Button onClick={attemptCheckIn} className="flex-1" size="sm">
+                <Lock className="w-4 h-4 mr-2" />
+                Deactivate (PIN)
+              </Button>
+            </div>
+          </>
+        )}
+
+        {status === 'pin-entry' && (
+          <>
+            <div className="text-center space-y-2">
+              <Lock className="w-8 h-8 text-primary mx-auto" />
+              <div className="text-sm font-bold text-foreground">Enter PIN to Deactivate</div>
+            </div>
+            <Input
+              type="password"
+              maxLength={6}
+              placeholder="Enter your PIN"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
+              onKeyDown={(e) => e.key === 'Enter' && verifyPin()}
+              className={cn(
+                "text-center font-mono tracking-widest h-10",
+                pinError && "border-destructive animate-shake"
+              )}
+              autoFocus
+            />
+            {pinError && (
+              <p className="text-xs text-destructive text-center font-medium">Incorrect PIN — try again</p>
+            )}
+            <div className="flex gap-2">
+              <Button onClick={verifyPin} className="flex-1" size="sm" disabled={pinInput.length < 4}>
                 <Check className="w-4 h-4 mr-2" />
-                I'm Safe
+                Confirm
               </Button>
-              <Button onClick={checkIn} variant="outline" size="sm">
-                <Square className="w-4 h-4" />
+              <Button onClick={() => setStatus('active')} variant="outline" size="sm">
+                Back
               </Button>
+            </div>
+            <div className="text-center">
+              <div className={cn(
+                "text-2xl font-mono font-black tabular-nums",
+                remaining <= 60 ? "text-destructive" : "text-muted-foreground"
+              )}>
+                {formatTime(remaining)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">still counting down</div>
             </div>
           </>
         )}

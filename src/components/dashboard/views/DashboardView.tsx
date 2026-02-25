@@ -5,6 +5,7 @@ import {
   ArrowRight, Clock, MapPin, Lock, Zap
 } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
+import MunicipalPerformance from '../MunicipalPerformance';
 import type { ViewId } from '../GridifyDashboard';
 
 interface DashboardViewProps {
@@ -115,6 +116,9 @@ const DashboardView = memo(({ onUpgrade, onNavigate }: DashboardViewProps) => {
           ))}
         </div>
       </div>
+
+      {/* Municipal Performance & Infrastructure Faults */}
+      <MunicipalPerformance />
 
       {/* Elite Preview */}
       <div className="p-6 rounded-xl border border-border bg-card">

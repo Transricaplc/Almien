@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { TrendingUp, Shield, AlertTriangle, ArrowRight } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
 import VirtualEscortTimer from '../VirtualEscortTimer';
+import ZeroVisibilityZones from '../ZeroVisibilityZones';
 import { capeTownAreas, getTopSafeAreas } from '@/data/capeTownSafetyData';
 import type { ViewId } from '../GridifyDashboard';
 
@@ -34,8 +35,11 @@ const SafetyOverviewView = memo(({ onUpgrade, onNavigate }: Props) => {
         <p className="text-muted-foreground mt-1">City-wide safety intelligence</p>
       </div>
 
-      {/* Virtual Escort Timer */}
+      {/* Shadow Safety Timer */}
       <VirtualEscortTimer />
+
+      {/* Zero-Visibility Zones */}
+      <ZeroVisibilityZones />
 
       {/* Main score */}
       <div className="p-6 rounded-xl border border-border bg-card flex items-center gap-6">
