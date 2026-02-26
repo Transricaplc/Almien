@@ -6,7 +6,8 @@ import {
   Home, BarChart3, MapPin, Clock, Target, Car, Mountain,
   Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
   TrafficCone, Lightbulb, Plane, Landmark, TrendingUp, Leaf, Accessibility, Moon,
-  Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, MessageCircle, HeartHandshake, Award
+  Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, MessageCircle, HeartHandshake, Award,
+  ShieldAlert, Code
 } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
@@ -72,6 +73,13 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
     label: 'Tourism',
     items: [
       { id: 'tourism-hub', label: 'Tourism Hub', icon: MapPin },
+    ],
+  },
+  {
+    label: 'National Expansion',
+    items: [
+      { id: 'resilience', label: 'Resilience', icon: ShieldAlert },
+      { id: 'api-hub', label: 'API Hub', icon: Code },
     ],
   },
   {

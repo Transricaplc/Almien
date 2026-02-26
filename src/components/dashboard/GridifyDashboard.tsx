@@ -34,6 +34,10 @@ import UtilityInsightsView from './views/UtilityInsightsView';
 import VolunteerMatchView from './views/VolunteerMatchView';
 import MunicipalScorecardView from './views/MunicipalScorecardView';
 import TourismHubView from './views/TourismHubView';
+import ResilienceView from './views/ResilienceView';
+import ApiHubView from './views/ApiHubView';
+import { RegionProvider } from '@/contexts/RegionContext';
+import RegionSwitcher from './RegionSwitcher';
 import CityChatbotWidget from './CityChatbotWidget';
 
 export type ViewId =
@@ -66,6 +70,8 @@ export type ViewId =
   | 'volunteer-match'
   | 'municipal-scorecard'
   | 'tourism-hub'
+  | 'resilience'
+  | 'api-hub'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
@@ -115,61 +121,69 @@ const GridifyDashboard = memo(() => {
       case 'volunteer-match': return <VolunteerMatchView />;
       case 'municipal-scorecard': return <MunicipalScorecardView />;
       case 'tourism-hub': return <TourismHubView />;
+      case 'resilience': return <ResilienceView />;
+      case 'api-hub': return <ApiHubView />;
       case 'settings': return <SettingsView {...props} />;
       default: return <DashboardView {...props} />;
     }
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background">
-      {/* Mobile overlay */}
-      {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
-      )}
+    <RegionProvider>
+      <div className="h-screen flex overflow-hidden bg-background">
+        {/* Mobile overlay */}
+        {isMobile && sidebarOpen && (
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
+        )}
 
-      {/* Sidebar */}
-      <GridifySidebar
-        activeView={activeView}
-        onNavigate={navigate}
-        onUpgrade={() => openUpgrade()}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-        isMobile={isMobile}
-      />
+        {/* Sidebar */}
+        <GridifySidebar
+          activeView={activeView}
+          onNavigate={navigate}
+          onUpgrade={() => openUpgrade()}
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+          isMobile={isMobile}
+        />
 
-      {/* Center workspace */}
-      <main className="flex-1 min-w-0 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className={cn(
-            "mx-auto w-full",
-            isMobile ? "px-4 py-6" : "px-12 py-10 max-w-[1200px]"
-          )}>
-            {renderView()}
+        {/* Center workspace */}
+        <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
+          {/* Region switcher bar */}
+          <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center justify-end px-4 gap-2">
+            <RegionSwitcher />
           </div>
-        </ScrollArea>
-      </main>
+          <ScrollArea className="flex-1">
+            <div className={cn(
+              "mx-auto w-full",
+              isMobile ? "px-4 py-6" : "px-12 py-10 max-w-[1200px]"
+            )}>
+              {renderView()}
+            </div>
+          </ScrollArea>
+        </main>
 
-      {/* City Chatbot */}
-      <CityChatbotWidget />
+        {/* City Chatbot */}
+        <CityChatbotWidget />
 
-      {/* Mobile hamburger */}
-      {isMobile && !sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2.5 rounded-lg bg-card border border-border shadow-md"
-        >
-          <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      )}
+        {/* Mobile hamburger */}
+        {isMobile && !sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="fixed top-4 left-4 z-50 p-2.5 rounded-lg bg-card border border-border shadow-md"
+          >
+            <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
 
-      <UpgradeModal
-        isOpen={upgradeModal.open}
-        onClose={() => setUpgradeModal({ open: false })}
-        trigger={upgradeModal.trigger}
-      />
-    </div>
+        <UpgradeModal
+          isOpen={upgradeModal.open}
+          onClose={() => setUpgradeModal({ open: false })}
+          trigger={upgradeModal.trigger}
+        />
+      </div>
+    </RegionProvider>
   );
 });
 
