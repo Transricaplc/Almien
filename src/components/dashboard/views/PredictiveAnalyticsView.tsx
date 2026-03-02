@@ -69,9 +69,9 @@ const PredictiveAnalyticsView = memo(({ onUpgrade, onNavigate }: Props) => {
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-              <Area type="monotone" dataKey="urban" stroke="#ef4444" fill="#ef444420" name="Urban Core" />
-              <Area type="monotone" dataKey="suburban" stroke="#f59e0b" fill="#f59e0b20" name="Suburban" />
-              <Area type="monotone" dataKey="rural" stroke="#10b981" fill="#10b98120" name="Rural" />
+              <Area type="monotone" dataKey="urban" stroke="#ef4444" fill="#ef444420" name="Urban Core" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="suburban" stroke="#f59e0b" fill="#f59e0b20" name="Suburban" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
+              <Area type="monotone" dataKey="rural" stroke="#10b981" fill="#10b98120" name="Rural" animationDuration={1000} animationBegin={400} animationEasing="ease-out" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -96,9 +96,9 @@ const PredictiveAnalyticsView = memo(({ onUpgrade, onNavigate }: Props) => {
               <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="bus" fill="#3b82f6" name="Bus/MyCiti" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="taxi" fill="#f59e0b" name="Minibus Taxi" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="bike" fill="#10b981" name="Cycling" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="bus" fill="#3b82f6" name="Bus/MyCiti" radius={[2, 2, 0, 0]} animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+              <Bar dataKey="taxi" fill="#f59e0b" name="Minibus Taxi" radius={[2, 2, 0, 0]} animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
+              <Bar dataKey="bike" fill="#10b981" name="Cycling" radius={[2, 2, 0, 0]} animationDuration={1200} animationBegin={400} animationEasing="ease-out" />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -60,9 +60,9 @@ export default function UtilityInsightsView() {
                 <XAxis dataKey="day" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="electricity" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Electricity" />
-                <Bar dataKey="water" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Water" />
-                <Bar dataKey="gas" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Gas" />
+                <Bar dataKey="electricity" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Electricity" animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+                <Bar dataKey="water" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Water" animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
+                <Bar dataKey="gas" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Gas" animationDuration={1200} animationBegin={400} animationEasing="ease-out" />
               </BarChart>
             </ResponsiveContainer>
           </div>

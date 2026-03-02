@@ -65,9 +65,9 @@ export default function CarbonDashboardView() {
                   <XAxis dataKey="sector" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="scope1" stackId="a" fill="hsl(var(--destructive))" radius={[0, 0, 0, 0]} name="Scope 1" />
-                  <Bar dataKey="scope2" stackId="a" fill="hsl(var(--primary))" name="Scope 2" />
-                  <Bar dataKey="scope3" stackId="a" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Scope 3" />
+                  <Bar dataKey="scope1" stackId="a" fill="hsl(var(--destructive))" radius={[0, 0, 0, 0]} name="Scope 1" animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+                  <Bar dataKey="scope2" stackId="a" fill="hsl(var(--primary))" name="Scope 2" animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
+                  <Bar dataKey="scope3" stackId="a" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Scope 3" animationDuration={1200} animationBegin={400} animationEasing="ease-out" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -80,7 +80,7 @@ export default function CarbonDashboardView() {
             <div className="h-56 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3} animationDuration={800} animationBegin={0} animationEasing="ease-out">
                     {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Pie>
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />

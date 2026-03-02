@@ -99,10 +99,10 @@ export default function PredictiveMaintenanceView() {
                 <XAxis dataKey="day" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} interval={6} />
                 <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                <Area type="monotone" dataKey="roads" stroke="hsl(var(--destructive))" fill="url(#roadG)" strokeWidth={2} name="Roads" />
-                <Area type="monotone" dataKey="pipes" stroke="hsl(var(--primary))" fill="url(#pipeG)" strokeWidth={2} name="Pipes" />
-                <Area type="monotone" dataKey="bridges" stroke="#f59e0b" fill="none" strokeWidth={1.5} strokeDasharray="4 4" name="Bridges" />
-                <Area type="monotone" dataKey="lights" stroke="#6366f1" fill="none" strokeWidth={1.5} name="Lights" />
+                <Area type="monotone" dataKey="roads" stroke="hsl(var(--destructive))" fill="url(#roadG)" strokeWidth={2} name="Roads" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="pipes" stroke="hsl(var(--primary))" fill="url(#pipeG)" strokeWidth={2} name="Pipes" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="bridges" stroke="#f59e0b" fill="none" strokeWidth={1.5} strokeDasharray="4 4" name="Bridges" animationDuration={1000} animationBegin={400} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="lights" stroke="#6366f1" fill="none" strokeWidth={1.5} name="Lights" animationDuration={1000} animationBegin={600} animationEasing="ease-out" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

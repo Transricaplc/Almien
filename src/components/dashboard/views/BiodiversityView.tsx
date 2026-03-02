@@ -73,7 +73,7 @@ const BiodiversityView = memo(({ onUpgrade, onNavigate }: Props) => {
               <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis domain={[25, 35]} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-              <Area type="monotone" dataKey="coverage" stroke="#10b981" fill="#10b98130" name="Coverage %" />
+              <Area type="monotone" dataKey="coverage" stroke="#10b981" fill="#10b98130" name="Coverage %" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
