@@ -96,8 +96,8 @@ const NightEconomyView = memo(({ onUpgrade, onNavigate }: Props) => {
               <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="pedestrians" fill="#6366f1" name="Pedestrians" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="incidents" fill="#ef4444" name="Incidents" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="pedestrians" fill="#6366f1" name="Pedestrians" radius={[2, 2, 0, 0]} animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+              <Bar dataKey="incidents" fill="#ef4444" name="Incidents" radius={[2, 2, 0, 0]} animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -72,9 +72,9 @@ export default function ExposureTrackerView() {
                   <XAxis dataKey="hour" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} interval={3} />
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="aqi" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} name="AQI" />
-                  <Area type="monotone" dataKey="noise" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} strokeWidth={1.5} name="Noise (dB)" />
-                  <Area type="monotone" dataKey="uv" stroke="#ef4444" fill="none" strokeWidth={1.5} strokeDasharray="4 4" name="UV Index" />
+                  <Area type="monotone" dataKey="aqi" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} name="AQI" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+                  <Area type="monotone" dataKey="noise" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.1} strokeWidth={1.5} name="Noise (dB)" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
+                  <Area type="monotone" dataKey="uv" stroke="#ef4444" fill="none" strokeWidth={1.5} strokeDasharray="4 4" name="UV Index" animationDuration={1000} animationBegin={400} animationEasing="ease-out" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -90,7 +90,7 @@ export default function ExposureTrackerView() {
                 <RadarChart data={weeklyReport} outerRadius="70%">
                   <PolarGrid stroke="hsl(var(--border))" />
                   <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-                  <Radar name="Exposure" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} />
+                  <Radar name="Exposure" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
                 </RadarChart>
               </ResponsiveContainer>
             </div>

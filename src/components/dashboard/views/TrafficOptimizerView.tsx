@@ -103,8 +103,8 @@ export default function TrafficOptimizerView() {
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} unit="s" />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="before" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Before" opacity={0.5} />
-                  <Bar dataKey="after" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="After" />
+                  <Bar dataKey="before" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Before" opacity={0.5} animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+                  <Bar dataKey="after" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="After" animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -121,8 +121,8 @@ export default function TrafficOptimizerView() {
                   <XAxis dataKey="hour" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} interval={3} />
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Line type="monotone" dataKey="baseline" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} dot={false} strokeDasharray="4 4" name="Baseline" />
-                  <Line type="monotone" dataKey="optimized" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Optimized" />
+                  <Line type="monotone" dataKey="baseline" stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} dot={false} strokeDasharray="4 4" name="Baseline" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+                  <Line type="monotone" dataKey="optimized" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Optimized" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

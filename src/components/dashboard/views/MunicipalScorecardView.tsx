@@ -78,9 +78,9 @@ export default function MunicipalScorecardView() {
                 <RadarChart data={radarData} outerRadius="70%">
                   <PolarGrid stroke="hsl(var(--border))" />
                   <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
-                  <Radar name="City" dataKey="city" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} />
-                  <Radar name="National" dataKey="national" stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={1} strokeDasharray="4 4" />
-                  <Radar name="Peer Avg" dataKey="peer" stroke="#f59e0b" fill="none" strokeWidth={1.5} />
+                  <Radar name="City" dataKey="city" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+                  <Radar name="National" dataKey="national" stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={1} strokeDasharray="4 4" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
+                  <Radar name="Peer Avg" dataKey="peer" stroke="#f59e0b" fill="none" strokeWidth={1.5} animationDuration={1000} animationBegin={400} animationEasing="ease-out" />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -96,9 +96,9 @@ export default function MunicipalScorecardView() {
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} domain={[0, 100]} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="city" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Cape Town" />
-                  <Bar dataKey="national" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="National" opacity={0.5} />
-                  <Bar dataKey="peer" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Peer Avg" opacity={0.7} />
+                  <Bar dataKey="city" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Cape Town" animationDuration={1200} animationBegin={0} animationEasing="ease-out" />
+                  <Bar dataKey="national" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="National" opacity={0.5} animationDuration={1200} animationBegin={200} animationEasing="ease-out" />
+                  <Bar dataKey="peer" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Peer Avg" opacity={0.7} animationDuration={1200} animationBegin={400} animationEasing="ease-out" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

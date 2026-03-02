@@ -54,9 +54,9 @@ export default function MicroclimateView() {
                 <XAxis dataKey="hour" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} interval={5} />
                 <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                <Area type="monotone" dataKey="floodRisk" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} name="Flood Risk %" />
-                <Area type="monotone" dataKey="heatStress" stroke="#f59e0b" fill="none" strokeWidth={1.5} name="Heat Stress" />
-                <Area type="monotone" dataKey="windTunnel" stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={1} strokeDasharray="4 4" name="Wind" />
+                <Area type="monotone" dataKey="floodRisk" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} name="Flood Risk %" animationDuration={1000} animationBegin={0} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="heatStress" stroke="#f59e0b" fill="none" strokeWidth={1.5} name="Heat Stress" animationDuration={1000} animationBegin={200} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="windTunnel" stroke="hsl(var(--muted-foreground))" fill="none" strokeWidth={1} strokeDasharray="4 4" name="Wind" animationDuration={1000} animationBegin={400} animationEasing="ease-out" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
