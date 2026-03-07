@@ -400,6 +400,24 @@ const SACrimeLayerView = memo(() => {
         <SafeEducationRetailDirectory />
       </div>
 
+      {/* Row 3b: Citizen Reporting (2col) + Live Alerts (1col) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <CitizenReportingCard />
+        <LiveAlertsCard />
+      </div>
+
+      {/* Row 3c: Heatmap (2col) + GBV Tracker (1col) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <HeatmapCard />
+        <GBVTrackerCard />
+      </div>
+
+      {/* Row 3d: SOS Panel (1col) + Response Leaderboard (1col) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <SOSPanelCard />
+        <ResponseLeaderboardCard />
+      </div>
+
       {/* Row 4: Route Risk Predictor (full width) */}
       <Card className="bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
         <CardHeader className="pb-2 px-4 pt-4">
