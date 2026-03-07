@@ -12,6 +12,7 @@ import {
   Legend, PolarAngleAxis
 } from 'recharts';
 import { useSAPSCrime } from '@/contexts/SAPSCrimeContext';
+import SafeEducationRetailDirectory from '@/components/dashboard/SafeEducationRetailDirectory';
 
 /* ── Static chart data (non-SAPS) ──────────────────────── */
 
