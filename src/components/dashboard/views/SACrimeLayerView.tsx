@@ -389,7 +389,12 @@ const SACrimeLayerView = memo(() => {
         </Card>
       </div>
 
-      {/* Row 3: Route Risk Predictor (full width) */}
+      {/* Row 3: Safe Education & Retail Directory (2col) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <SafeEducationRetailDirectory />
+      </div>
+
+      {/* Row 4: Route Risk Predictor (full width) */}
       <Card className="bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
         <CardHeader className="pb-2 px-4 pt-4">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
