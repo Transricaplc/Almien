@@ -103,10 +103,10 @@ const DashboardView = memo(({ onUpgrade, onNavigate }: DashboardViewProps) => {
         <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
+            { label: 'Plan Safe Route', view: 'safe-route' as ViewId, icon: Navigation },
             { label: 'Explore Safe Areas', view: 'areas' as ViewId, icon: MapPin },
             { label: 'Plan Your Day', view: 'activities' as ViewId, icon: Zap, elite: true },
             { label: 'View Analytics', view: 'safety-overview' as ViewId, icon: Shield, elite: true },
-            { label: 'Check Activities', view: 'activities' as ViewId, icon: MapPin },
           ].map(action => (
             <button
               key={action.label}

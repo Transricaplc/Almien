@@ -33,6 +33,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
       { id: 'trails', label: 'Trail Safety', icon: Mountain },
       { id: 'emergency', label: 'Emergency Contacts', icon: Phone },
       { id: 'safety-network', label: 'My Safety Network', icon: Shield },
+      { id: 'safe-route', label: 'Plan Safe Route', icon: MapPin },
       { id: 'pro-tools', label: 'Professional Tools', icon: Briefcase, elite: true },
       { id: 'community', label: 'Community Intel', icon: Users },
       { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, elite: true },
