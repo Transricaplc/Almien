@@ -5,6 +5,8 @@ import {
   Phone, ChevronDown, ChevronUp, Zap, ExternalLink, CheckCircle2, Map
 } from 'lucide-react';
 import type { ViewId } from '../GridifyDashboard';
+import TimeRiskStrip from '../widgets/TimeRiskStrip';
+import AreaIntelCard from '../widgets/AreaIntelCard';
 
 interface DashboardViewProps {
   onUpgrade: (trigger?: string) => void;
@@ -229,6 +231,18 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ═══ PANEL 7b — TIME-OF-DAY RISK ANALYSIS ═══ */}
+      <TimeRiskStrip variant="detail" />
+
+      {/* ═══ PANEL 7c — AREA INTELLIGENCE SEARCH ═══ */}
+      <div>
+        <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-primary" />
+          Area Intelligence
+        </h2>
+        <AreaIntelCard variant="inline" />
       </div>
 
       {/* ═══ PANEL 8 — COMMUNITY FEED PREVIEW ═══ */}

@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { Search, MapPin, Layers, Locate, Plus, Minus, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { ViewId } from '../GridifyDashboard';
+import TimeRiskStrip from '../widgets/TimeRiskStrip';
+import AreaIntelCard from '../widgets/AreaIntelCard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
@@ -98,6 +100,11 @@ const MapFullView = memo(({}: Props) => {
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="bg-card/95 backdrop-blur border-t border-border rounded-t-2xl px-4 pt-3 pb-4">
           <div className="w-10 h-1 rounded-full bg-border mx-auto mb-3" />
+
+          {/* Time-of-day risk pills */}
+          <TimeRiskStrip variant="compact" className="mb-3" />
+
+          {/* Crime type filter pills */}
           <div className="flex gap-2 overflow-x-auto pb-2">
             {crimeTypes.map(f => (
               <button
@@ -114,6 +121,12 @@ const MapFullView = memo(({}: Props) => {
               </button>
             ))}
           </div>
+
+          {/* Area intelligence search */}
+          <div className="mt-3 border-t border-border pt-3">
+            <AreaIntelCard variant="popover" />
+          </div>
+
           <p className="text-xs text-muted-foreground mt-2">Drag up to see incident list</p>
         </div>
       </div>

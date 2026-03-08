@@ -8,6 +8,7 @@ import {
   Footprints, Car, Bus, Bike, Share2, Check, X, Locate, Search
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import TimeRiskStrip from '../widgets/TimeRiskStrip';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -466,6 +467,12 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
             <><Shield className="w-4 h-4 mr-2" /> Calculate Safe Routes</>
           )}
         </Button>
+      </div>
+
+      {/* Time-of-day risk context for route planning */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <TimeRiskStrip variant="compact" />
+        <p className="text-[10px] text-muted-foreground mt-2">Risk levels along your route vary by time of day</p>
       </div>
 
       {/* Route results */}

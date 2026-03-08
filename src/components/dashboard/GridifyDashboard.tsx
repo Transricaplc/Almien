@@ -10,8 +10,7 @@ import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import DashboardView from './views/DashboardView';
 import MapFullView from './views/MapFullView';
 import SafetyOverviewView from './views/SafetyOverviewView';
-import AreasView from './views/AreasView';
-import TimeAnalyticsView from './views/TimeAnalyticsView';
+// AreasView and TimeAnalyticsView dissolved into contextual widgets
 import ActivitiesView from './views/ActivitiesView';
 import RideShareView from './views/RideShareView';
 import TrailSafetyView from './views/TrailSafetyView';
@@ -127,8 +126,8 @@ const GridifyDashboard = memo(() => {
       case 'dashboard': return <DashboardView {...props} />;
       case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
-      case 'areas': return <AreasView {...props} />;
-      case 'time-analytics': return <TimeAnalyticsView {...props} />;
+      case 'areas': return <DashboardView {...props} />;
+      case 'time-analytics': return <DashboardView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
       case 'rideshare': return <RideShareView {...props} />;
       case 'trails': return <TrailSafetyView {...props} />;
