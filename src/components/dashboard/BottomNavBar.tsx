@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
-import { Home, Map, Navigation, Users, ShieldHalf, User } from 'lucide-react';
+import { Home, Map, Navigation, Users, ShieldHalf } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
 interface BottomNavBarProps {
@@ -18,8 +18,7 @@ const tabs: { id: ViewId; label: string; icon: typeof Map }[] = [
 
 const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[90] border-t border-border safe-area-bottom"
-      style={{ backgroundColor: 'hsl(213 30% 3%)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-[90] bg-surface-base border-t border-border-subtle safe-area-bottom">
       <div className="flex items-stretch justify-around h-14 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
@@ -32,8 +31,8 @@ const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
                 'flex flex-col items-center justify-center gap-0.5 flex-1 min-w-[48px] min-h-[48px] transition-colors',
                 isActive
                   ? isSafeSpace
-                    ? 'text-[hsl(270,95%,75%)]'
-                    : 'text-primary'
+                    ? 'text-accent-gbv'
+                    : 'text-accent-safe'
                   : 'text-muted-foreground hover:text-foreground'
               )}
               aria-label={tab.label}

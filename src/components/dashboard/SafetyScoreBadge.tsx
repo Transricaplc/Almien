@@ -13,10 +13,10 @@ interface SafetyScoreBadgeProps {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 7.5) return { bg: 'bg-safety-green', text: 'text-white', ring: 'ring-safety-green/30' };
-  if (score >= 5.5) return { bg: 'bg-safety-yellow', text: 'text-white', ring: 'ring-safety-yellow/30' };
-  if (score >= 3.5) return { bg: 'bg-safety-orange', text: 'text-white', ring: 'ring-safety-orange/30' };
-  return { bg: 'bg-safety-red', text: 'text-white', ring: 'ring-safety-red/30' };
+  if (score >= 7.5) return { bg: 'bg-accent-safe', text: 'text-text-inverse', ring: 'ring-accent-safe/30' };
+  if (score >= 5.5) return { bg: 'bg-accent-warning', text: 'text-text-inverse', ring: 'ring-accent-warning/30' };
+  if (score >= 3.5) return { bg: 'bg-safety-orange', text: 'text-text-inverse', ring: 'ring-safety-orange/30' };
+  return { bg: 'bg-accent-threat', text: 'text-text-inverse', ring: 'ring-accent-threat/30' };
 }
 
 function getScoreLabel(score: number) {
@@ -38,7 +38,7 @@ const SafetyScoreBadge = memo(({ score, size = 'md', className }: SafetyScoreBad
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center font-bold ring-4 shadow-md",
+        "rounded-full flex items-center justify-center font-bold ring-4",
         sizes[size],
         colors.bg,
         colors.text,
