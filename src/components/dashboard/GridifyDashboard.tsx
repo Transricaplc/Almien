@@ -126,8 +126,8 @@ const GridifyDashboard = memo(() => {
       case 'dashboard': return <DashboardView {...props} />;
       case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
-      case 'areas': return <AreasView {...props} />;
-      case 'time-analytics': return <TimeAnalyticsView {...props} />;
+      case 'areas': return <DashboardView {...props} />;
+      case 'time-analytics': return <DashboardView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
       case 'rideshare': return <RideShareView {...props} />;
       case 'trails': return <TrailSafetyView {...props} />;
