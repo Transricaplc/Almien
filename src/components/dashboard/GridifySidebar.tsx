@@ -3,11 +3,11 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ThemeToggle from '@/components/ThemeToggle';
 import {
-  Home, BarChart3, MapPin, Clock, Target, Car, Mountain,
+  Home, BarChart3, MapPin, Target, Car, Mountain,
   Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
   TrafficCone, Lightbulb, Plane, Landmark, TrendingUp, Leaf, Accessibility, Moon,
-  Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, MessageCircle, HeartHandshake, Award,
-  ShieldAlert, Code, Heart, GraduationCap, Store
+  Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, HeartHandshake, Award,
+  ShieldAlert, Code, Heart, GraduationCap, Store, Map, Navigation
 } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
@@ -25,16 +25,22 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
     label: 'Core',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: Home },
+      { id: 'map-full', label: 'Map', icon: Map },
+      { id: 'safe-route', label: 'Routes', icon: Navigation },
+      { id: 'community', label: 'Community', icon: Users },
+      { id: 'safe-space', label: 'Safe Space', icon: Heart },
+    ],
+  },
+  {
+    label: 'Safety',
+    items: [
       { id: 'safety-overview', label: 'Safety Overview', icon: BarChart3 },
-      { id: 'activities', label: 'Safe Activities', icon: Target },
       { id: 'activities', label: 'Safe Activities', icon: Target },
       { id: 'rideshare', label: 'Ride Share Zones', icon: Car },
       { id: 'trails', label: 'Trail Safety', icon: Mountain },
       { id: 'emergency', label: 'Emergency Contacts', icon: Phone },
       { id: 'safety-network', label: 'My Safety Network', icon: Shield },
-      { id: 'safe-route', label: 'Plan Safe Route', icon: MapPin },
       { id: 'pro-tools', label: 'Professional Tools', icon: Briefcase, elite: true },
-      { id: 'community', label: 'Community Intel', icon: Users },
       { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, elite: true },
     ],
   },
@@ -83,7 +89,6 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
       { id: 'darkness-windows', label: 'Darkness Windows', icon: Zap },
       { id: 'vehicle-crime', label: 'Vehicle Crime Intel', icon: Car },
       { id: 'school-safety', label: 'School & Child Safety', icon: GraduationCap },
-      { id: 'safe-space', label: 'Safe Space (GBV)', icon: Heart },
       { id: 'business-safety', label: 'Business & Trader Intel', icon: Store },
     ],
   },
@@ -143,7 +148,7 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
                   const isActive = activeView === item.id;
                   return (
                     <button
-                      key={item.id}
+                      key={`${group.label}-${item.id}`}
                       onClick={() => onNavigate(item.id)}
                       className={cn(
                         "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors",
@@ -175,7 +180,6 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
 
       {/* Bottom section */}
       <div className="p-3 space-y-3 border-t border-border">
-        {/* Upgrade CTA */}
         <button
           onClick={onUpgrade}
           className="w-full p-4 rounded-xl bg-elite-gradient text-white text-left hover:opacity-90 transition-opacity"
@@ -187,7 +191,6 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
           <p className="text-xs text-white/80">Real-time alerts, unlimited access</p>
         </button>
 
-        {/* User profile */}
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary/50">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <User className="w-4 h-4 text-primary" />

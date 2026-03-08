@@ -7,10 +7,11 @@ import BottomNavBar from './BottomNavBar';
 import ThreatHeader from './ThreatHeader';
 import UpgradeModal from './UpgradeModal';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import ZoneDirectory from './widgets/ZoneDirectory';
 import DashboardView from './views/DashboardView';
 import MapFullView from './views/MapFullView';
 import SafetyOverviewView from './views/SafetyOverviewView';
-// AreasView and TimeAnalyticsView dissolved into contextual widgets
+// AreasView and TimeAnalyticsView dissolved into contextual widgets — data lives in Map, Dashboard, Routes
 import ActivitiesView from './views/ActivitiesView';
 import RideShareView from './views/RideShareView';
 import TrailSafetyView from './views/TrailSafetyView';
@@ -56,8 +57,8 @@ export type ViewId =
   | 'dashboard'
   | 'map-full'
   | 'safety-overview'
-  | 'areas'
-  | 'time-analytics'
+  | 'areas'          // legacy — redirects to dashboard
+  | 'time-analytics' // legacy — redirects to dashboard
   | 'activities'
   | 'rideshare'
   | 'trails'
@@ -100,6 +101,7 @@ const GridifyDashboard = memo(() => {
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger?: string }>({ open: false });
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [showZoneDirectory, setShowZoneDirectory] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('gridfy-onboarded');
   });
@@ -111,7 +113,12 @@ const GridifyDashboard = memo(() => {
   }, []);
 
   const navigate = useCallback((view: ViewId) => {
-    setActiveView(view);
+    // Legacy routes redirect to dashboard (data dissolved)
+    if (view === 'areas' || view === 'time-analytics') {
+      setActiveView('dashboard');
+    } else {
+      setActiveView(view);
+    }
     if (isMobile) setSidebarOpen(false);
   }, [isMobile]);
 
@@ -126,8 +133,6 @@ const GridifyDashboard = memo(() => {
       case 'dashboard': return <DashboardView {...props} />;
       case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
-      case 'areas': return <DashboardView {...props} />;
-      case 'time-analytics': return <DashboardView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
       case 'rideshare': return <RideShareView {...props} />;
       case 'trails': return <TrailSafetyView {...props} />;
@@ -210,8 +215,8 @@ const GridifyDashboard = memo(() => {
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {/* Persistent Threat Header — always visible */}
-          <ThreatHeader />
+          {/* Persistent Threat Header — always visible, with suburb switcher */}
+          <ThreatHeader onBrowseAllAreas={() => setShowZoneDirectory(true)} />
 
           {/* Mobile menu button */}
           {isMobile && (
@@ -253,6 +258,13 @@ const GridifyDashboard = memo(() => {
           onClose={() => setUpgradeModal({ open: false })}
           trigger={upgradeModal.trigger}
         />
+
+        {/* Full-screen Zone Directory — accessible from ThreatHeader "Browse All Areas" */}
+        {showZoneDirectory && (
+          <ZoneDirectory
+            onClose={() => setShowZoneDirectory(false)}
+          />
+        )}
       </div>
     </SAPSCrimeProvider>
     </RegionProvider>
