@@ -30,14 +30,7 @@ const incidents = [
   { id: '3', type: 'Suspicious Activity', icon: '🟡', time: '52 min ago', location: 'High Level Rd', distance: '0.8 km', verified: false },
 ];
 
-const riskWindows = [
-  { time: '17:00–18:30', risk: 'high', loadshedding: false },
-  { time: '18:30–20:00', risk: 'critical', loadshedding: true },
-  { time: '20:00–21:30', risk: 'high', loadshedding: true },
-  { time: '21:30–23:00', risk: 'elevated', loadshedding: false },
-  { time: '23:00–00:30', risk: 'elevated', loadshedding: false },
-];
-
+// Risk colors for rendering
 const riskColors: Record<string, string> = {
   low: 'bg-safety-green',
   elevated: 'bg-safety-yellow',
