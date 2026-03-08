@@ -175,6 +175,10 @@ const GridifyDashboard = memo(() => {
         {/* City Chatbot */}
         <CityChatbotWidget />
 
+        {/* Panic Button & Witness Report */}
+        <PanicButton />
+        <WitnessReportButton />
+
         {/* Mobile hamburger */}
         {isMobile && !sidebarOpen && (
           <button
