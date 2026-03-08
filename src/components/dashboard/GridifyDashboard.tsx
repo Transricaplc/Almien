@@ -43,6 +43,7 @@ import SafeSpaceView from './views/SafeSpaceView';
 import DarknessWindowView from './views/DarknessWindowView';
 import VehicleCrimeView from './views/VehicleCrimeView';
 import SchoolSafetyView from './views/SchoolSafetyView';
+import BusinessSafetyView from './views/BusinessSafetyView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import RegionSwitcher from './RegionSwitcher';
