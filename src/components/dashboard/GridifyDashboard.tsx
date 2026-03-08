@@ -37,10 +37,13 @@ import TourismHubView from './views/TourismHubView';
 import ResilienceView from './views/ResilienceView';
 import ApiHubView from './views/ApiHubView';
 import SACrimeLayerView from './views/SACrimeLayerView';
+import SafetyNetworkView from './views/SafetyNetworkView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import RegionSwitcher from './RegionSwitcher';
 import CityChatbotWidget from './CityChatbotWidget';
+import PanicButton from './PanicButton';
+import WitnessReportButton from './WitnessReportButton';
 
 export type ViewId =
   | 'dashboard'
