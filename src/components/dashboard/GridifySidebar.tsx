@@ -179,7 +179,7 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
       </ScrollArea>
 
       {/* Bottom section */}
-      <div className="p-3 space-y-3 border-t border-border">
+      <div className="p-3 space-y-3 border-t border-border-subtle">
         <button
           onClick={onUpgrade}
           className="w-full p-4 rounded-xl bg-elite-gradient text-white text-left hover:opacity-90 transition-opacity"

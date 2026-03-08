@@ -38,7 +38,7 @@ const SafetyScoreBadge = memo(({ score, size = 'md', className }: SafetyScoreBad
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center font-bold ring-4 shadow-md",
+        "rounded-full flex items-center justify-center font-bold ring-4",
         sizes[size],
         colors.bg,
         colors.text,
