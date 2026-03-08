@@ -2,7 +2,6 @@ import { useState, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Heart, MapPin, Phone, Shield, AlertTriangle, ChevronDown, ChevronUp,
   Clock, ExternalLink, Siren, Users, Scale, BookOpen, Building2, Search
@@ -78,19 +77,19 @@ const rightsGuide = [
   'Sexual offences have NO prescription period — you can report at any time.',
 ];
 
-// ── Severity colours (purple palette) ──────────────────────────────────
+// ── Severity styles using accent-gbv token ─────────────────────────────
 
 const severityStyles = {
-  critical: { bg: 'bg-purple-500/20', border: 'border-purple-500/40', text: 'text-purple-300', dot: 'bg-purple-500' },
-  high: { bg: 'bg-purple-400/15', border: 'border-purple-400/30', text: 'text-purple-300', dot: 'bg-purple-400' },
-  moderate: { bg: 'bg-purple-300/10', border: 'border-purple-300/20', text: 'text-purple-200', dot: 'bg-purple-300' },
-  low: { bg: 'bg-purple-200/10', border: 'border-purple-200/15', text: 'text-purple-200', dot: 'bg-purple-200' },
+  critical: { bg: 'bg-accent-gbv/20', border: 'border-accent-gbv/40', text: 'text-accent-gbv', dot: 'bg-accent-gbv' },
+  high: { bg: 'bg-accent-gbv/15', border: 'border-accent-gbv/30', text: 'text-accent-gbv', dot: 'bg-accent-gbv/80' },
+  moderate: { bg: 'bg-accent-gbv/10', border: 'border-accent-gbv/20', text: 'text-accent-gbv/80', dot: 'bg-accent-gbv/60' },
+  low: { bg: 'bg-accent-gbv/5', border: 'border-accent-gbv/15', text: 'text-accent-gbv/70', dot: 'bg-accent-gbv/40' },
 };
 
 const bedsBadge = {
-  'Available': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  'Full': 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-  'Call to Confirm': 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+  'Available': 'bg-accent-safe/15 text-accent-safe border-accent-safe/30',
+  'Full': 'bg-accent-threat/15 text-accent-threat border-accent-threat/30',
+  'Call to Confirm': 'bg-accent-warning/15 text-accent-warning border-accent-warning/30',
 };
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -100,7 +99,6 @@ const SafeSpaceView = memo(({ }: Props) => {
   const [filters, setFilters] = useState<Set<GBVFilter>>(new Set(['domestic', 'sexual-assault', 'stalking', 'child-abuse']));
   const [shelterSearch, setShelterSearch] = useState('');
   const [expandedLegal, setExpandedLegal] = useState<string | null>(null);
-  const [expandedRights, setExpandedRights] = useState(false);
 
   const toggleFilter = useCallback((f: GBVFilter) => {
     setFilters(prev => {
@@ -122,7 +120,6 @@ const SafeSpaceView = memo(({ }: Props) => {
         () => toast.error('GBV Panic Alert activated — could not get location', { duration: 5000 })
       );
     }
-    // Simulate calling TEARS
     window.open('tel:0800428428', '_self');
   }, []);
 
@@ -140,11 +137,11 @@ const SafeSpaceView = memo(({ }: Props) => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header — calming purple/rose palette */}
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-rose-500/5 to-purple-600/10 border border-purple-500/20">
+      {/* Header — accent-gbv themed */}
+      <div className="p-6 rounded-2xl bg-accent-gbv/10 border border-accent-gbv/20">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-            <Heart className="w-5 h-5 text-purple-400" />
+          <div className="w-10 h-10 rounded-full bg-accent-gbv/20 flex items-center justify-center">
+            <Heart className="w-5 h-5 text-accent-gbv" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Safe Space</h1>
@@ -152,10 +149,9 @@ const SafeSpaceView = memo(({ }: Props) => {
           </div>
         </div>
 
-        {/* GBV Panic Button */}
+        {/* GBV Panic Button — accent-gbv primary CTA */}
         <Button
-          variant="destructive"
-          className="w-full h-14 text-base font-bold mt-4 rounded-xl bg-rose-600 hover:bg-rose-700"
+          className="w-full h-14 text-base font-bold mt-4 rounded-xl bg-accent-gbv hover:bg-accent-gbv/90 text-surface-deep"
           onClick={triggerGBVPanic}
         >
           <Siren className="w-5 h-5 mr-2" />
@@ -166,8 +162,8 @@ const SafeSpaceView = memo(({ }: Props) => {
         </p>
       </div>
 
-      {/* Tab bar — purple accent */}
-      <div className="flex gap-1 p-1 rounded-xl bg-secondary/50 border border-border overflow-x-auto">
+      {/* Tab bar — accent-gbv active state */}
+      <div className="flex gap-1 p-1 rounded-xl bg-secondary/50 border border-border-subtle overflow-x-auto">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -175,7 +171,7 @@ const SafeSpaceView = memo(({ }: Props) => {
             className={cn(
               "flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all",
               tab === t.id
-                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                ? "bg-accent-gbv/20 text-accent-gbv border border-accent-gbv/30"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -202,8 +198,8 @@ const SafeSpaceView = memo(({ }: Props) => {
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
                   filters.has(f.id)
-                    ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                    : "bg-secondary/50 text-muted-foreground border-border hover:text-foreground"
+                    ? "bg-accent-gbv/20 text-accent-gbv border-accent-gbv/30"
+                    : "bg-secondary/50 text-muted-foreground border-border-subtle hover:text-foreground"
                 )}
               >
                 {f.label}
@@ -211,8 +207,8 @@ const SafeSpaceView = memo(({ }: Props) => {
             ))}
           </div>
 
-          {/* Simulated heatmap grid (purple tones) */}
-          <div className="rounded-xl border border-purple-500/20 overflow-hidden bg-secondary/30 p-4">
+          {/* Simulated heatmap grid */}
+          <div className="rounded-xl border border-accent-gbv/20 overflow-hidden bg-secondary/30 p-4">
             <div className="grid grid-cols-5 sm:grid-cols-10 gap-1">
               {Array.from({ length: 50 }).map((_, i) => {
                 const intensity = Math.random();
@@ -224,7 +220,7 @@ const SafeSpaceView = memo(({ }: Props) => {
                       "aspect-square rounded-sm transition-all duration-500",
                       intensity > 0.85 && "animate-pulse"
                     )}
-                    style={{ backgroundColor: `rgba(168, 85, 247, 0.${alpha})` }}
+                    style={{ backgroundColor: `hsl(270 95% 75% / 0.${alpha})` }}
                   />
                 );
               })}
@@ -233,7 +229,7 @@ const SafeSpaceView = memo(({ }: Props) => {
               <span className="text-[10px] text-muted-foreground">Low Density</span>
               <div className="flex gap-1">
                 {['20', '35', '50', '70'].map(a => (
-                  <div key={a} className="w-4 h-2 rounded-sm" style={{ backgroundColor: `rgba(168, 85, 247, 0.${a})` }} />
+                  <div key={a} className="w-4 h-2 rounded-sm" style={{ backgroundColor: `hsl(270 95% 75% / 0.${a})` }} />
                 ))}
               </div>
               <span className="text-[10px] text-muted-foreground">Critical</span>
@@ -295,9 +291,16 @@ const SafeSpaceView = memo(({ }: Props) => {
             />
           </div>
 
+          {filteredShelters.length === 0 && (
+            <div className="text-center py-8">
+              <Building2 className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No results found. Try a different search.</p>
+            </div>
+          )}
+
           <div className="space-y-3">
             {filteredShelters.map(s => (
-              <div key={s.name} className="p-4 rounded-xl border border-purple-500/15 bg-purple-500/5 hover:border-purple-500/30 transition-all">
+              <div key={s.name} className="p-4 rounded-xl border border-accent-gbv/15 bg-accent-gbv/5 hover:border-accent-gbv/30 transition-all">
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h4 className="text-sm font-bold text-foreground">{s.name}</h4>
@@ -324,7 +327,7 @@ const SafeSpaceView = memo(({ }: Props) => {
 
                 <Button
                   size="sm"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                  className="w-full bg-accent-gbv hover:bg-accent-gbv/90 text-surface-deep text-xs"
                   asChild
                 >
                   <a href={`tel:${s.phone}`}>
@@ -341,13 +344,13 @@ const SafeSpaceView = memo(({ }: Props) => {
       {tab === 'legal' && (
         <div className="space-y-4 animate-fade-in">
           {legalResources.map(res => (
-            <div key={res.title} className="p-4 rounded-xl border border-purple-500/15 bg-purple-500/5">
+            <div key={res.title} className="p-4 rounded-xl border border-accent-gbv/15 bg-accent-gbv/5">
               <button
                 className="w-full flex items-center justify-between text-left"
                 onClick={() => setExpandedLegal(expandedLegal === res.title ? null : res.title)}
               >
                 <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-purple-400" />
+                  <Scale className="w-4 h-4 text-accent-gbv" />
                   {res.title}
                 </h4>
                 {expandedLegal === res.title
@@ -366,7 +369,7 @@ const SafeSpaceView = memo(({ }: Props) => {
                       {res.items.map(item => (
                         <div key={item.name} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50">
                           <span className="text-xs font-medium text-foreground">{item.name}</span>
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-purple-400" asChild>
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-accent-gbv" asChild>
                             <a href={`tel:${item.phone}`}><Phone className="w-3 h-3 mr-1" /> {item.phone}</a>
                           </Button>
                         </div>
@@ -374,7 +377,7 @@ const SafeSpaceView = memo(({ }: Props) => {
                     </div>
                   )}
                   {res.phone && (
-                    <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs mt-2" asChild>
+                    <Button size="sm" className="w-full bg-accent-gbv hover:bg-accent-gbv/90 text-surface-deep text-xs mt-2" asChild>
                       <a href={`tel:${res.phone}`}>
                         <Phone className="w-3.5 h-3.5 mr-1.5" /> Call {res.phone}
                       </a>
@@ -386,9 +389,9 @@ const SafeSpaceView = memo(({ }: Props) => {
           ))}
 
           {/* Nearest Magistrate Courts */}
-          <div className="p-4 rounded-xl border border-purple-500/15 bg-purple-500/5">
+          <div className="p-4 rounded-xl border border-accent-gbv/15 bg-accent-gbv/5">
             <h4 className="text-sm font-bold text-foreground flex items-center gap-2 mb-3">
-              <Building2 className="w-4 h-4 text-purple-400" />
+              <Building2 className="w-4 h-4 text-accent-gbv" />
               Nearest Magistrate Courts
             </h4>
             <div className="space-y-2">
@@ -414,9 +417,9 @@ const SafeSpaceView = memo(({ }: Props) => {
       {/* ═══ TAB: YOUR RIGHTS ═══ */}
       {tab === 'resources' && (
         <div className="space-y-4 animate-fade-in">
-          <div className="p-5 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-rose-500/5">
+          <div className="p-5 rounded-xl border border-accent-gbv/20 bg-accent-gbv/10">
             <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-4">
-              <BookOpen className="w-5 h-5 text-purple-400" />
+              <BookOpen className="w-5 h-5 text-accent-gbv" />
               What Are My Rights?
             </h3>
             <p className="text-xs text-muted-foreground mb-4">
@@ -424,8 +427,8 @@ const SafeSpaceView = memo(({ }: Props) => {
             </p>
             <div className="space-y-2">
               {rightsGuide.map((right, i) => (
-                <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-card border border-border">
-                  <Shield className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
+                <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-card border border-border-subtle">
+                  <Shield className="w-4 h-4 text-accent-gbv mt-0.5 shrink-0" />
                   <p className="text-xs text-foreground leading-relaxed">{right}</p>
                 </div>
               ))}
@@ -434,44 +437,28 @@ const SafeSpaceView = memo(({ }: Props) => {
 
           {/* Quick links */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button variant="outline" className="h-auto py-4 justify-start border-purple-500/20 hover:bg-purple-500/5" asChild>
-              <a href="tel:0800428428">
-                <div className="text-left">
-                  <p className="text-xs font-bold text-foreground">TEARS Foundation</p>
-                  <p className="text-[10px] text-muted-foreground">0800 428 428 — 24/7</p>
-                </div>
-              </a>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 justify-start border-purple-500/20 hover:bg-purple-500/5" asChild>
-              <a href="tel:0800150150">
-                <div className="text-left">
-                  <p className="text-xs font-bold text-foreground">GBV Command Centre</p>
-                  <p className="text-[10px] text-muted-foreground">0800 150 150 — 24/7</p>
-                </div>
-              </a>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 justify-start border-purple-500/20 hover:bg-purple-500/5" asChild>
-              <a href="tel:0800055555">
-                <div className="text-left">
-                  <p className="text-xs font-bold text-foreground">Childline South Africa</p>
-                  <p className="text-[10px] text-muted-foreground">0800 055 555 — 24/7</p>
-                </div>
-              </a>
-            </Button>
-            <Button variant="outline" className="h-auto py-4 justify-start border-purple-500/20 hover:bg-purple-500/5" asChild>
-              <a href="tel:10111">
-                <div className="text-left">
-                  <p className="text-xs font-bold text-foreground">SAPS Emergency</p>
-                  <p className="text-[10px] text-muted-foreground">10111 — 24/7</p>
-                </div>
-              </a>
-            </Button>
+            {[
+              { name: 'TEARS Foundation', phone: '0800 428 428', tel: '0800428428' },
+              { name: 'GBV Command Centre', phone: '0800 150 150', tel: '0800150150' },
+              { name: 'Childline South Africa', phone: '0800 055 555', tel: '0800055555' },
+              { name: 'SAPS Emergency', phone: '10111', tel: '10111' },
+            ].map(link => (
+              <Button key={link.tel} variant="outline" className="h-auto py-4 justify-start border-accent-gbv/20 hover:bg-accent-gbv/5" asChild>
+                <a href={`tel:${link.tel}`}>
+                  <Phone className="w-4 h-4 text-accent-gbv mr-3 shrink-0" />
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-foreground">{link.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{link.phone} — 24/7</p>
+                  </div>
+                </a>
+              </Button>
+            ))}
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <div className="text-center pt-4 border-t border-purple-500/10">
+      <div className="text-center pt-4 border-t border-accent-gbv/10">
         <p className="text-[10px] text-muted-foreground">
           Safe Space by Gridfy · All information is confidential · If you are in immediate danger, call 10111
         </p>
