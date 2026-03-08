@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import TimeRiskStrip from '../widgets/TimeRiskStrip';
+import { getRouteTimeRiskLabel } from '@/data/timeAnalyticsData';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
