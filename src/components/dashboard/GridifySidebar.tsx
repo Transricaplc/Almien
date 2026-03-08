@@ -110,7 +110,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
 const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggle, isMobile }: GridifySidebarProps) => {
   return (
     <aside className={cn(
-      "flex flex-col bg-card border-r border-border h-full shrink-0",
+      "flex flex-col bg-surface-base border-r border-border-subtle h-full shrink-0",
       "transition-transform duration-200 ease-out",
       isMobile
         ? "fixed left-0 top-0 z-50 w-[280px] shadow-2xl"
