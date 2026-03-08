@@ -26,7 +26,6 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: Home },
       { id: 'safety-overview', label: 'Safety Overview', icon: BarChart3 },
-      { id: 'areas', label: 'Areas & Zones', icon: MapPin },
       { id: 'time-analytics', label: 'Time Analytics', icon: Clock },
       { id: 'activities', label: 'Safe Activities', icon: Target },
       { id: 'rideshare', label: 'Ride Share Zones', icon: Car },
