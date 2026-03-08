@@ -39,6 +39,7 @@ import ApiHubView from './views/ApiHubView';
 import SACrimeLayerView from './views/SACrimeLayerView';
 import SafetyNetworkView from './views/SafetyNetworkView';
 import SafeRouteView from './views/SafeRouteView';
+import SafeSpaceView from './views/SafeSpaceView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import RegionSwitcher from './RegionSwitcher';
