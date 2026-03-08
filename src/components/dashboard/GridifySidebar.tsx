@@ -32,6 +32,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
       { id: 'rideshare', label: 'Ride Share Zones', icon: Car },
       { id: 'trails', label: 'Trail Safety', icon: Mountain },
       { id: 'emergency', label: 'Emergency Contacts', icon: Phone },
+      { id: 'safety-network', label: 'My Safety Network', icon: Shield },
       { id: 'pro-tools', label: 'Professional Tools', icon: Briefcase, elite: true },
       { id: 'community', label: 'Community Intel', icon: Users },
       { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, elite: true },

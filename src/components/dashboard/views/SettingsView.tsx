@@ -77,6 +77,28 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
         <p className="text-sm text-muted-foreground">Full notification settings available for Elite members</p>
       </div>
 
+      {/* SMS Fallback */}
+      <div className="p-6 rounded-xl border border-border bg-card">
+        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+          <MessageSquare className="w-5 h-5" /> Offline / SMS Fallback
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          When enabled, if no internet is detected during a panic trigger, the system auto-sends an SMS to all trusted contacts with your GPS coordinates and a timestamped emergency message.
+        </p>
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+          <div>
+            <span className="text-sm font-medium text-foreground">Enable SMS Fallback</span>
+            <p className="text-xs text-muted-foreground mt-0.5">Requires mobile network signal</p>
+          </div>
+          <Switch checked={smsFallback} onCheckedChange={setSmsFallback} />
+        </div>
+        {smsFallback && (
+          <p className="mt-3 text-xs text-muted-foreground p-3 rounded-lg bg-secondary/50">
+            📱 SMS template: "GRIDIFY PANIC ALERT — [Name] needs help at [GPS coordinates]. Time: [timestamp]."
+          </p>
+        )}
+      </div>
+
       {/* Privacy */}
       <div className="p-6 rounded-xl border border-border bg-card">
         <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2"><Shield className="w-5 h-5" /> Privacy & Security</h2>
