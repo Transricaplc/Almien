@@ -78,6 +78,7 @@ export type ViewId =
   | 'resilience'
   | 'api-hub'
   | 'sa-crime-layer'
+  | 'safety-network'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
