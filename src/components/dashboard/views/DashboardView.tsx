@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Shield, AlertTriangle, Bookmark, TrendingDown, Crown,
-  ArrowRight, Clock, MapPin, Lock, Zap
+  ArrowRight, Clock, MapPin, Lock, Zap, Navigation
 } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
 import MunicipalPerformance from '../MunicipalPerformance';
