@@ -111,7 +111,6 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
               ))}
             </div>
           </div>
-        </div>
 
           {/* High Contrast Mode */}
           <div className="flex items-center justify-between pt-2">
