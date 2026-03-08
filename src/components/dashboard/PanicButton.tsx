@@ -262,7 +262,7 @@ const PanicButton = memo(() => {
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]">
+    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] sm:bottom-6">
       <button
         onMouseDown={handleHoldStart}
         onMouseUp={handleHoldEnd}

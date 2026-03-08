@@ -1,9 +1,11 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import GridifySidebar from './GridifySidebar';
+import BottomNavBar from './BottomNavBar';
 import UpgradeModal from './UpgradeModal';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import DashboardView from './views/DashboardView';
 import SafetyOverviewView from './views/SafetyOverviewView';
 import AreasView from './views/AreasView';
@@ -98,6 +100,11 @@ const GridifyDashboard = memo(() => {
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger?: string }>({ open: false });
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('gridfy-onboarded');
+  });
+
+  const isSafeSpaceView = activeView === 'safe-space';
 
   const openUpgrade = useCallback((trigger?: string) => {
     setUpgradeModal({ open: true, trigger });
@@ -107,6 +114,11 @@ const GridifyDashboard = memo(() => {
     setActiveView(view);
     if (isMobile) setSidebarOpen(false);
   }, [isMobile]);
+
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem('gridfy-onboarded', 'true');
+    setShowOnboarding(false);
+  }, []);
 
   const renderView = () => {
     const props = { onUpgrade: openUpgrade, onNavigate: navigate };
@@ -155,35 +167,69 @@ const GridifyDashboard = memo(() => {
     }
   };
 
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
   return (
     <RegionProvider>
     <SAPSCrimeProvider>
-      <div className="h-screen flex overflow-hidden bg-background">
+      <div className={cn(
+        "h-screen flex overflow-hidden bg-background",
+        isSafeSpaceView && "safe-space-theme"
+      )}>
         {/* Mobile overlay */}
         {isMobile && sidebarOpen && (
           <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
         )}
 
-        {/* Sidebar */}
-        <GridifySidebar
-          activeView={activeView}
-          onNavigate={navigate}
-          onUpgrade={() => openUpgrade()}
-          isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-          isMobile={isMobile}
-        />
+        {/* Sidebar — desktop only */}
+        {!isMobile && (
+          <GridifySidebar
+            activeView={activeView}
+            onNavigate={navigate}
+            onUpgrade={() => openUpgrade()}
+            isOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            isMobile={false}
+          />
+        )}
+
+        {/* Mobile sidebar drawer */}
+        {isMobile && sidebarOpen && (
+          <GridifySidebar
+            activeView={activeView}
+            onNavigate={navigate}
+            onUpgrade={() => openUpgrade()}
+            isOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            isMobile={true}
+          />
+        )}
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
           {/* Region switcher bar */}
-          <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center justify-end px-4 gap-2">
-            <RegionSwitcher />
+          <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center justify-between px-4 gap-2">
+            {isMobile && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg hover:bg-secondary min-w-[48px] min-h-[48px] flex items-center justify-center"
+                aria-label="Open menu"
+              >
+                <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+            <div className="ml-auto">
+              <RegionSwitcher />
+            </div>
           </div>
           <ScrollArea className="flex-1">
             <div className={cn(
               "mx-auto w-full",
-              isMobile ? "px-4 py-6" : "px-12 py-10 max-w-[1200px]"
+              isMobile ? "px-4 py-6 pb-36" : "px-12 py-10 max-w-[1200px]"
             )}>
               {renderView()}
             </div>
@@ -193,20 +239,13 @@ const GridifyDashboard = memo(() => {
         {/* City Chatbot */}
         <CityChatbotWidget />
 
-        {/* Panic Button & Witness Report */}
+        {/* Panic Button — always floats above bottom nav */}
         <PanicButton />
         <WitnessReportButton />
 
-        {/* Mobile hamburger */}
-        {isMobile && !sidebarOpen && (
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="fixed top-4 left-4 z-50 p-2.5 rounded-lg bg-card border border-border shadow-md"
-          >
-            <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+        {/* Mobile bottom navigation */}
+        {isMobile && (
+          <BottomNavBar activeView={activeView} onNavigate={navigate} />
         )}
 
         <UpgradeModal
