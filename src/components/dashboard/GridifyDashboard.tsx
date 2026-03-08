@@ -80,6 +80,7 @@ export type ViewId =
   | 'api-hub'
   | 'sa-crime-layer'
   | 'safety-network'
+  | 'safe-route'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
