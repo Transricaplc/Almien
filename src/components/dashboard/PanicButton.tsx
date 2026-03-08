@@ -50,31 +50,27 @@ const PanicButton = memo(() => {
     setProgress(100);
     setHolding(false);
 
-    // Get GPS
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setCoords({ lat: -33.9249, lng: 18.4241 }) // fallback Cape Town
+        () => setCoords({ lat: -33.9249, lng: 18.4241 })
       );
     } else {
       setCoords({ lat: -33.9249, lng: 18.4241 });
     }
 
-    // Simulate notifying contacts sequentially
     mockContacts.forEach((_, i) => {
       setTimeout(() => {
         setContacts(prev => prev.map((c, j) => j <= i ? { ...c, notified: true } : c));
       }, 800 * (i + 1));
     });
 
-    // Simulate notifying stewards
     mockStewards.forEach((_, i) => {
       setTimeout(() => {
         setStewards(prev => prev.map((s, j) => j <= i ? { ...s, notified: true } : s));
       }, 1200 * (i + 1) + 2000);
     });
 
-    // Simulate recording
     recordingInterval.current = setInterval(() => {
       setRecordingSeconds(prev => {
         if (prev >= 60) {
@@ -85,7 +81,6 @@ const PanicButton = memo(() => {
       });
     }, 1000);
 
-    // Simulate photos
     photoInterval.current = setInterval(() => {
       setPhotosTaken(prev => prev + 1);
     }, 10000);
@@ -122,7 +117,6 @@ const PanicButton = memo(() => {
     setCancelTaps(prev => {
       const next = prev + 1;
       if (next >= 3) {
-        // Cancel panic
         setPanicActive(false);
         setProgress(0);
         setContacts(mockContacts);
@@ -153,7 +147,6 @@ const PanicButton = memo(() => {
   if (panicActive) {
     return (
       <div className="fixed inset-0 z-[9999] bg-background/95 backdrop-blur-sm flex flex-col animate-fade-in">
-        {/* Header */}
         <div className="bg-destructive text-destructive-foreground p-4 flex items-center gap-3">
           <Siren className="w-6 h-6 animate-pulse" />
           <div>
@@ -165,7 +158,6 @@ const PanicButton = memo(() => {
         </div>
 
         <div className="flex-1 overflow-auto p-4 space-y-4">
-          {/* Contacts status */}
           <div className="rounded-xl border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-destructive" />
@@ -190,7 +182,6 @@ const PanicButton = memo(() => {
             </div>
           </div>
 
-          {/* Stewards */}
           <div className="rounded-xl border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-3">
               <ShieldCheck className="w-4 h-4 text-primary" />
@@ -215,29 +206,28 @@ const PanicButton = memo(() => {
             </div>
           </div>
 
-          {/* Evidence collection */}
           <div className="rounded-xl border border-border bg-card p-4">
             <h3 className="text-sm font-bold text-foreground mb-3">Evidence Collection</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <Mic className="w-4 h-4 text-destructive" />
                 <div>
-                  <p className="text-xs font-semibold text-foreground">Audio Recording</p>
-                  <p className="text-xs text-muted-foreground">{recordingSeconds}s / 60s</p>
+                  <p className="text-xs font-semibold text-foreground">Audio</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">{recordingSeconds}s / 60s</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <Camera className="w-4 h-4 text-destructive" />
                 <div>
-                  <p className="text-xs font-semibold text-foreground">Photo Capture</p>
-                  <p className="text-xs text-muted-foreground">{photosTaken} photos taken</p>
+                  <p className="text-xs font-semibold text-foreground">Photos</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">{photosTaken} taken</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 col-span-2">
                 <MapPin className="w-4 h-4 text-destructive" />
                 <div>
-                  <p className="text-xs font-semibold text-foreground">Live Location Sharing</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs font-semibold text-foreground">Live Location</p>
+                  <p className="text-xs text-muted-foreground tabular-nums">
                     {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : 'Acquiring...'}
                   </p>
                 </div>
@@ -246,7 +236,6 @@ const PanicButton = memo(() => {
           </div>
         </div>
 
-        {/* Cancel button */}
         <div className="p-4 border-t border-border bg-card">
           <Button
             variant="outline"
@@ -261,8 +250,9 @@ const PanicButton = memo(() => {
     );
   }
 
+  // Floating SOS button — always above bottom nav
   return (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] sm:bottom-6">
+    <div className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-[95] sm:bottom-6">
       <button
         onMouseDown={handleHoldStart}
         onMouseUp={handleHoldEnd}
@@ -270,27 +260,28 @@ const PanicButton = memo(() => {
         onTouchStart={handleHoldStart}
         onTouchEnd={handleHoldEnd}
         className={cn(
-          "relative w-16 h-16 rounded-full bg-destructive text-destructive-foreground",
-          "flex items-center justify-center shadow-lg shadow-destructive/30",
+          "relative w-[64px] h-[64px] rounded-full bg-destructive text-destructive-foreground",
+          "flex items-center justify-center",
+          "shadow-lg shadow-destructive/30",
           "transition-transform duration-150",
           holding ? "scale-110" : "hover:scale-105",
-          !holding && "animate-[pulse_2s_ease-in-out_infinite]"
+          !holding && "pulse-sos"
         )}
         aria-label="SOS Panic Button — hold for 1.5 seconds"
       >
         {/* Progress ring */}
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
           <circle
-            cx="32" cy="32" r="30"
+            cx="32" cy="32" r="29"
             fill="none"
             stroke="hsl(var(--destructive-foreground))"
             strokeWidth="3"
-            strokeDasharray={`${(progress / 100) * 188.5} 188.5`}
+            strokeDasharray={`${(progress / 100) * 182.2} 182.2`}
             opacity={holding ? 0.9 : 0}
             className="transition-opacity duration-150"
           />
         </svg>
-        <Siren className="w-6 h-6 relative z-10" />
+        <span className="relative z-10 text-sm font-bold">SOS</span>
       </button>
       {holding && (
         <p className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-destructive bg-card/90 px-2 py-1 rounded-full border border-destructive/30">

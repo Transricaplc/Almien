@@ -1,12 +1,9 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  Shield, AlertTriangle, Bookmark, TrendingDown, Crown,
-  ArrowRight, Clock, MapPin, Lock, Zap, Navigation
+  Shield, AlertTriangle, Navigation, Heart, MapPin, Clock,
+  Phone, ChevronDown, ChevronUp, Zap, ExternalLink, CheckCircle2, Map
 } from 'lucide-react';
-import SafetyScoreBadge from '../SafetyScoreBadge';
-import MunicipalPerformance from '../MunicipalPerformance';
-import UrbanMetricsTiles from '../UrbanMetricsTiles';
 import type { ViewId } from '../GridifyDashboard';
 
 interface DashboardViewProps {
@@ -14,137 +11,271 @@ interface DashboardViewProps {
   onNavigate: (view: ViewId) => void;
 }
 
-const recentActivity = [
-  { type: 'red' as const, text: 'Theft reported in Camps Bay', time: '15 min ago', area: 'Camps Bay' },
-  { type: 'orange' as const, text: 'Vehicle break-in at Sea Point parking', time: '42 min ago', area: 'Sea Point' },
-  { type: 'yellow' as const, text: 'Suspicious activity near City Centre station', time: '1 hr ago', area: 'City Centre' },
-  { type: 'green' as const, text: 'Safety patrol completed in Waterfront', time: '2 hrs ago', area: 'V&A Waterfront' },
-  { type: 'red' as const, text: 'Robbery reported on Long Street', time: '3 hrs ago', area: 'City Centre' },
-];
+// ── Mock data ──────────────────────────────────────────────
+const crimeFilters = ['All', 'Theft', 'Robbery', 'Assault', 'GBV', 'Drugs', 'Hijacking', 'Housebreaking'];
 
-const typeColors = {
-  red: 'bg-safety-red',
-  orange: 'bg-safety-orange',
-  yellow: 'bg-safety-yellow',
-  green: 'bg-safety-green',
+const briefing = {
+  suburb: 'Sea Point',
+  line1: '3 vehicle break-ins reported overnight — highest in 7 days',
+  line2: 'Risk elevated 17:00–20:00 today',
+  line3: 'Avoid Beach Road near Queens after dark',
 };
 
-const DashboardView = memo(({ onUpgrade, onNavigate }: DashboardViewProps) => {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+const incidents = [
+  { id: '1', type: 'Theft', icon: '🔴', time: '14 min ago', location: 'Beach Rd, Sea Point', distance: '0.4 km', verified: true },
+  { id: '2', type: 'Robbery', icon: '🔴', time: '28 min ago', location: 'Main Rd, Green Point', distance: '1.2 km', verified: true },
+  { id: '3', type: 'Suspicious Activity', icon: '🟡', time: '52 min ago', location: 'High Level Rd', distance: '0.8 km', verified: false },
+];
+
+const riskWindows = [
+  { time: '17:00–18:30', risk: 'high', loadshedding: false },
+  { time: '18:30–20:00', risk: 'critical', loadshedding: true },
+  { time: '20:00–21:30', risk: 'high', loadshedding: true },
+  { time: '21:30–23:00', risk: 'elevated', loadshedding: false },
+  { time: '23:00–00:30', risk: 'elevated', loadshedding: false },
+];
+
+const riskColors: Record<string, string> = {
+  low: 'bg-safety-green',
+  elevated: 'bg-safety-yellow',
+  high: 'bg-safety-orange',
+  critical: 'bg-safety-red',
+};
+
+const communityReports = [
+  { user: '🛡️ @WatchdogCPT', text: 'Pickpocket active near Greenmarket Square', time: '1 hr ago', suburb: 'City Centre' },
+  { user: '⭐ @SafetyWatcher', text: 'Vehicle circling block on High Level Rd', time: '2 hrs ago', suburb: 'Sea Point' },
+];
+
+const emergencyContacts = [
+  { label: 'SAPS Emergency', number: '10111', icon: Phone },
+  { label: 'CT Law Enforcement', number: '021 480 7700', icon: Phone },
+  { label: 'Ambulance (WC)', number: '10177', icon: Phone },
+  { label: 'GBV Helpline', number: '0800 428 428', icon: Heart },
+];
+
+const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [briefingExpanded, setBriefingExpanded] = useState(false);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Welcome */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">{greeting}! 👋</h1>
-        <p className="text-muted-foreground mt-1">Your Cape Town Safety Intelligence</p>
+    <div className="space-y-6 animate-fade-in">
+
+      {/* ═══ PANEL 3 — LIVE THREAT MAP TILE ═══ */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="relative h-[45vh] min-h-[240px] bg-secondary/30 flex items-center justify-center">
+          {/* Simulated map */}
+          <div className="absolute inset-0 opacity-20" style={{
+            background: 'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.3), transparent 60%)'
+          }} />
+          <div className="relative text-center z-10">
+            <Map className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Tap to view full map</p>
+          </div>
+          {/* LIVE badge */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/20 border border-primary/30">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
+          </div>
+          {/* Expand button */}
+          <button
+            onClick={() => onNavigate('map-full')}
+            className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur border border-border text-xs font-semibold text-foreground hover:bg-card transition-colors"
+          >
+            Expand Map
+          </button>
+        </div>
+
+        {/* Crime type filter pills */}
+        <div className="p-3 border-t border-border">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-visible">
+            {crimeFilters.map(f => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(f)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0",
+                  activeFilter === f
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Urban Pulse - Live Metrics */}
-      <UrbanMetricsTiles />
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { label: 'Cape Town Safety', value: '7.8 / 10', sub: 'Generally Safe', icon: Shield, color: 'text-safety-green' },
-          { label: 'Active Alerts', value: '12', sub: '3 High Risk', icon: AlertTriangle, color: 'text-safety-orange' },
-          { label: 'Your Locations', value: '3 / 3', sub: 'Upgrade for ∞', icon: Bookmark, color: 'text-primary' },
-          { label: 'Incidents Today', value: '45', sub: 'Below average', icon: Clock, color: 'text-muted-foreground' },
-          { label: 'Trend vs Yesterday', value: '↓ 12%', sub: 'Improving', icon: TrendingDown, color: 'text-safety-green' },
-          { label: 'Elite Features', value: 'Locked', sub: '', icon: Lock, color: 'text-muted-foreground', isUpgrade: true },
-        ].map(card => (
-          <div
-            key={card.label}
-            className={cn(
-              "p-5 rounded-xl border border-border bg-card card-hover",
-              card.isUpgrade && "cursor-pointer"
-            )}
-            onClick={card.isUpgrade ? () => onUpgrade() : undefined}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</span>
-              <card.icon className={cn("w-5 h-5", card.color)} />
+      {/* ═══ PANEL 4 — TODAY'S SAFETY BRIEFING ═══ */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex">
+          <div className="w-1 shrink-0 bg-safety-yellow" />
+          <div className="flex-1 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-bold text-foreground">
+                Today's Briefing — {briefing.suburb}
+              </h2>
+              <span className="text-[10px] text-muted-foreground">
+                {new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}
+              </span>
             </div>
-            <div className={cn("text-2xl font-bold", card.color === 'text-muted-foreground' ? 'text-foreground' : card.color)}>
-              {card.value}
+            <div className="space-y-1.5 text-sm text-muted-foreground">
+              <p>• {briefing.line1}</p>
+              <p>• <span className="text-safety-yellow font-medium">{briefing.line2}</span></p>
+              <p>• {briefing.line3}</p>
             </div>
-            {card.sub && <p className="text-sm text-muted-foreground mt-1">{card.sub}</p>}
-            {card.isUpgrade && (
-              <button
-                className="mt-3 text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-              >
-                Upgrade Now <ArrowRight className="w-3 h-3" />
-              </button>
+            {briefingExpanded && (
+              <div className="mt-3 pt-3 border-t border-border text-xs text-muted-foreground space-y-1 animate-fade-in">
+                <p>🔹 SAPS patrol active on Beach Road until 22:00</p>
+                <p>🔹 Community night watch deployed from 19:00</p>
+                <p>🔹 3 CCTV cameras operational in immediate area</p>
+              </div>
             )}
+            <button
+              onClick={() => setBriefingExpanded(!briefingExpanded)}
+              className="mt-2 text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              {briefingExpanded ? 'Less' : 'Full Briefing'}
+              {briefingExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
           </div>
+        </div>
+      </div>
+
+      {/* ═══ PANEL 5 — ACTIVE ALERTS FEED ═══ */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            Active Nearby — Last 2 Hours
+            <span className="px-2 py-0.5 rounded-full bg-destructive/15 text-destructive text-[10px] font-bold tabular-nums">
+              {incidents.length}
+            </span>
+          </h2>
+        </div>
+        <div className="space-y-2">
+          {incidents.map(inc => (
+            <div key={inc.id} className="p-3 rounded-xl border border-border bg-card flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+                <AlertTriangle className={cn(
+                  "w-4 h-4",
+                  inc.verified ? "text-destructive" : "text-safety-yellow"
+                )} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-sm font-semibold text-foreground">{inc.type}</span>
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase",
+                    inc.verified
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  )}>
+                    {inc.verified ? 'Verified' : 'Community'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">{inc.location}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-[10px] text-muted-foreground">{inc.time}</p>
+                <p className="text-[10px] text-muted-foreground tabular-nums">{inc.distance}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="w-full mt-2 py-2.5 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors">
+          See All Incidents
+        </button>
+      </div>
+
+      {/* ═══ PANEL 6 — QUICK ACTION ROW ═══ */}
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { label: 'Safe Route', icon: Navigation, view: 'safe-route' as ViewId, desc: 'Plan your journey' },
+          { label: 'Report Incident', icon: AlertTriangle, view: 'community' as ViewId, desc: 'Alert your area' },
+          { label: 'Share Journey', icon: MapPin, view: 'safe-route' as ViewId, desc: 'Live tracking' },
+          { label: 'Safe Space', icon: Heart, view: 'safe-space' as ViewId, desc: 'GBV support' },
+        ].map(action => (
+          <button
+            key={action.label}
+            onClick={() => onNavigate(action.view)}
+            className="p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-all text-left min-h-[80px]"
+          >
+            <action.icon className="w-5 h-5 text-primary mb-2" />
+            <p className="text-sm font-semibold text-foreground">{action.label}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{action.desc}</p>
+          </button>
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* ═══ PANEL 7 — RISK PLANNER STRIP ═══ */}
       <div>
-        <h2 className="text-lg font-bold text-foreground mb-4">Recent Activity</h2>
-        <div className="space-y-3">
-          {recentActivity.map((item, i) => (
-            <div key={i} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card card-hover">
-              <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", typeColors[item.type])} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">{item.text}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{item.area} · {item.time}</p>
+        <h2 className="text-sm font-bold text-foreground mb-3">Tonight's Risk Windows</h2>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-visible">
+          {riskWindows.map((w, i) => (
+            <div key={i} className={cn(
+              "p-3 rounded-xl border bg-card shrink-0 w-[140px]",
+              w.loadshedding ? "border-safety-orange/30" : "border-border"
+            )}>
+              <p className="text-xs font-bold text-foreground tabular-nums">{w.time}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className={cn("h-1.5 flex-1 rounded-full", riskColors[w.risk])} />
+                {w.loadshedding && <Zap className="w-3.5 h-3.5 text-safety-yellow shrink-0" />}
               </div>
-              <button className="text-xs text-primary font-semibold hover:underline shrink-0">View</button>
+              <p className="text-[10px] text-muted-foreground mt-1.5 capitalize">{w.risk} risk</p>
+              {w.loadshedding && (
+                <p className="text-[10px] text-safety-yellow font-medium">Load-shedding</p>
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* ═══ PANEL 8 — COMMUNITY FEED PREVIEW ═══ */}
       <div>
-        <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Plan Safe Route', view: 'safe-route' as ViewId, icon: Navigation },
-            { label: 'Explore Safe Areas', view: 'areas' as ViewId, icon: MapPin },
-            { label: 'Plan Your Day', view: 'activities' as ViewId, icon: Zap, elite: true },
-            { label: 'View Analytics', view: 'safety-overview' as ViewId, icon: Shield, elite: true },
-          ].map(action => (
-            <button
-              key={action.label}
-              onClick={() => action.elite ? onUpgrade(`Unlock ${action.label} with Elite`) : onNavigate(action.view)}
-              className="p-4 rounded-xl border border-border bg-card hover:bg-accent transition-colors text-left"
-            >
-              <action.icon className="w-5 h-5 text-primary mb-2" />
-              <span className="text-sm font-medium text-foreground">{action.label}</span>
-              {action.elite && <span className="ml-1 text-[9px] font-bold bg-elite-gradient text-white px-1.5 py-0.5 rounded-full">👑</span>}
-            </button>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-foreground">Your Neighbourhood</h2>
+          <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">Connected</span>
+        </div>
+        <div className="space-y-2">
+          {communityReports.map((r, i) => (
+            <div key={i} className="p-3 rounded-xl border border-border bg-card">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <span className="font-medium">{r.user}</span>
+                <span>·</span>
+                <span>{r.time}</span>
+              </div>
+              <p className="text-sm text-foreground">{r.text}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{r.suburb}</p>
+            </div>
           ))}
         </div>
+        <button
+          onClick={() => onNavigate('community')}
+          className="w-full mt-2 py-2.5 rounded-xl border border-border text-xs font-medium text-primary hover:bg-secondary transition-colors"
+        >
+          See All Community Reports
+        </button>
       </div>
 
-      {/* Municipal Performance & Infrastructure Faults */}
-      <MunicipalPerformance />
-
-      {/* Elite Preview */}
-      <div className="p-6 rounded-xl border border-border bg-card">
-        <div className="flex items-center gap-2 mb-3">
-          <Lock className="w-5 h-5 text-elite-from" />
-          <h3 className="text-lg font-bold text-foreground">Unlock Real-Time Intelligence</h3>
-        </div>
-        <ul className="space-y-2 mb-4">
-          {['Real-time safety alerts', '5-year historical data', 'AI-powered recommendations', 'Professional tools suite', 'Unlimited saved locations'].map(f => (
-            <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Zap className="w-3.5 h-3.5 text-elite-from shrink-0" />
-              {f}
-            </li>
+      {/* ═══ PANEL 9 — EMERGENCY CONTACTS STRIP ═══ */}
+      <div>
+        <h2 className="text-sm font-bold text-foreground mb-3">Emergency Contacts</h2>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-visible">
+          {emergencyContacts.map(c => (
+            <a
+              key={c.label}
+              href={`tel:${c.number.replace(/\s/g, '')}`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border bg-card hover:border-primary/30 transition-colors shrink-0 min-h-[48px]"
+            >
+              <c.icon className="w-4 h-4 text-primary shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-foreground whitespace-nowrap">{c.label}</p>
+                <p className="text-[10px] text-muted-foreground tabular-nums">{c.number}</p>
+              </div>
+            </a>
           ))}
-        </ul>
-        <button
-          onClick={() => onUpgrade()}
-          className="px-6 py-3 rounded-xl bg-elite-gradient text-white font-bold text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
-        >
-          <Crown className="w-4 h-4" />
-          START FREE 7-DAY TRIAL
-        </button>
+        </div>
       </div>
     </div>
   );

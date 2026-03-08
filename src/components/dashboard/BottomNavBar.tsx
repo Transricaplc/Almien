@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
-import { Map, Route, Users, ShieldHalf, User } from 'lucide-react';
+import { Home, Map, Navigation, Users, ShieldHalf, User } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
 interface BottomNavBarProps {
@@ -9,16 +9,17 @@ interface BottomNavBarProps {
 }
 
 const tabs: { id: ViewId; label: string; icon: typeof Map }[] = [
-  { id: 'dashboard', label: 'Map', icon: Map },
-  { id: 'safe-route', label: 'Routes', icon: Route },
+  { id: 'dashboard', label: 'Home', icon: Home },
+  { id: 'map-full', label: 'Map', icon: Map },
+  { id: 'safe-route', label: 'Routes', icon: Navigation },
   { id: 'community', label: 'Community', icon: Users },
   { id: 'safe-space', label: 'Safe Space', icon: ShieldHalf },
-  { id: 'settings', label: 'Profile', icon: User },
 ];
 
 const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[90] bg-card/95 backdrop-blur-md border-t border-border safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-[90] border-t border-border safe-area-bottom"
+      style={{ backgroundColor: 'hsl(213 30% 3%)' }}>
       <div className="flex items-stretch justify-around h-14 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;

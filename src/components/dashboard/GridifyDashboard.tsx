@@ -1,12 +1,14 @@
-import { useState, useCallback, memo, useEffect } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import GridifySidebar from './GridifySidebar';
 import BottomNavBar from './BottomNavBar';
+import ThreatHeader from './ThreatHeader';
 import UpgradeModal from './UpgradeModal';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import DashboardView from './views/DashboardView';
+import MapFullView from './views/MapFullView';
 import SafetyOverviewView from './views/SafetyOverviewView';
 import AreasView from './views/AreasView';
 import TimeAnalyticsView from './views/TimeAnalyticsView';
@@ -48,13 +50,12 @@ import SchoolSafetyView from './views/SchoolSafetyView';
 import BusinessSafetyView from './views/BusinessSafetyView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
-import RegionSwitcher from './RegionSwitcher';
-import CityChatbotWidget from './CityChatbotWidget';
 import PanicButton from './PanicButton';
 import WitnessReportButton from './WitnessReportButton';
 
 export type ViewId =
   | 'dashboard'
+  | 'map-full'
   | 'safety-overview'
   | 'areas'
   | 'time-analytics'
@@ -124,6 +125,7 @@ const GridifyDashboard = memo(() => {
     const props = { onUpgrade: openUpgrade, onNavigate: navigate };
     switch (activeView) {
       case 'dashboard': return <DashboardView {...props} />;
+      case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
       case 'areas': return <AreasView {...props} />;
       case 'time-analytics': return <TimeAnalyticsView {...props} />;
@@ -209,9 +211,12 @@ const GridifyDashboard = memo(() => {
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {/* Region switcher bar */}
-          <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center justify-between px-4 gap-2">
-            {isMobile && (
+          {/* Persistent Threat Header — always visible */}
+          <ThreatHeader />
+
+          {/* Mobile menu button */}
+          {isMobile && (
+            <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center px-4">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="p-2 rounded-lg hover:bg-secondary min-w-[48px] min-h-[48px] flex items-center justify-center"
@@ -221,23 +226,19 @@ const GridifyDashboard = memo(() => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-            )}
-            <div className="ml-auto">
-              <RegionSwitcher />
+              <span className="ml-2 text-sm font-semibold text-foreground">Menu</span>
             </div>
-          </div>
+          )}
+
           <ScrollArea className="flex-1">
             <div className={cn(
               "mx-auto w-full",
-              isMobile ? "px-4 py-6 pb-36" : "px-12 py-10 max-w-[1200px]"
+              isMobile ? "px-4 py-6 pb-36" : "px-12 py-8 max-w-[720px]"
             )}>
               {renderView()}
             </div>
           </ScrollArea>
         </main>
-
-        {/* City Chatbot */}
-        <CityChatbotWidget />
 
         {/* Panic Button — always floats above bottom nav */}
         <PanicButton />

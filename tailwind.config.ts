@@ -68,6 +68,10 @@ export default {
           from: "hsl(var(--elite-gold-from))",
           to: "hsl(var(--elite-gold-to))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          border: "hsl(var(--surface-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -75,7 +79,11 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
+      },
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
       },
       keyframes: {
         "accordion-down": {
@@ -87,7 +95,7 @@ export default {
           to: { height: "0" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(10px)" },
+          from: { opacity: "0", transform: "translateY(8px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
