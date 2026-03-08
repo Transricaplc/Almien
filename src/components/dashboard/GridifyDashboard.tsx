@@ -39,6 +39,7 @@ import ApiHubView from './views/ApiHubView';
 import SACrimeLayerView from './views/SACrimeLayerView';
 import SafetyNetworkView from './views/SafetyNetworkView';
 import SafeRouteView from './views/SafeRouteView';
+import SafeSpaceView from './views/SafeSpaceView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import RegionSwitcher from './RegionSwitcher';
@@ -81,6 +82,7 @@ export type ViewId =
   | 'sa-crime-layer'
   | 'safety-network'
   | 'safe-route'
+  | 'safe-space'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
@@ -135,6 +137,7 @@ const GridifyDashboard = memo(() => {
       case 'sa-crime-layer': return <SACrimeLayerView />;
       case 'safety-network': return <SafetyNetworkView {...props} />;
       case 'safe-route': return <SafeRouteView {...props} />;
+      case 'safe-space': return <SafeSpaceView {...props} />;
       case 'settings': return <SettingsView {...props} />;
       default: return <DashboardView {...props} />;
     }

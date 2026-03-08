@@ -7,7 +7,7 @@ import {
   Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
   TrafficCone, Lightbulb, Plane, Landmark, TrendingUp, Leaf, Accessibility, Moon,
   Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, MessageCircle, HeartHandshake, Award,
-  ShieldAlert, Code
+  ShieldAlert, Code, Heart
 } from 'lucide-react';
 import type { ViewId } from './GridifyDashboard';
 
@@ -81,6 +81,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
     label: 'SA Crime Layer',
     items: [
       { id: 'sa-crime-layer', label: 'Crime & Loadshedding', icon: ShieldAlert },
+      { id: 'safe-space', label: 'Safe Space (GBV)', icon: Heart },
     ],
   },
   {

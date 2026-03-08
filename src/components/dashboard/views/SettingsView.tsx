@@ -1,7 +1,8 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { User, Shield, Bell, CreditCard, HelpCircle, Info, Crown, Lock, MessageSquare } from 'lucide-react';
+import { User, Shield, Bell, CreditCard, HelpCircle, Info, Crown, Lock, MessageSquare, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import type { ViewId } from '../GridifyDashboard';
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 
 const SettingsView = memo(({ onUpgrade }: Props) => {
   const [smsFallback, setSmsFallback] = useState(false);
+  const [discreetMode, setDiscreetMode] = useState(false);
+  const [showDiscreetWizard, setShowDiscreetWizard] = useState(false);
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -96,6 +99,53 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           <p className="mt-3 text-xs text-muted-foreground p-3 rounded-lg bg-secondary/50">
             📱 SMS template: "GRIDIFY PANIC ALERT — [Name] needs help at [GPS coordinates]. Time: [timestamp]."
           </p>
+        )}
+      </div>
+
+      {/* Discreet Mode */}
+      <div className="p-6 rounded-xl border border-purple-500/20 bg-purple-500/5">
+        <h2 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
+          <EyeOff className="w-5 h-5 text-purple-400" /> Discreet Mode
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          When enabled, the Gridfy app disguises itself as a generic utility app.
+          A hidden gesture is required to access the real app.
+        </p>
+        <div className="flex items-center justify-between p-4 rounded-lg border border-purple-500/15 bg-card mb-3">
+          <div>
+            <span className="text-sm font-medium text-foreground">Enable Discreet Mode</span>
+            <p className="text-xs text-muted-foreground mt-0.5">Disguises app as "Weather" utility</p>
+          </div>
+          <Switch
+            checked={discreetMode}
+            onCheckedChange={(checked) => {
+              setDiscreetMode(checked);
+              if (checked) setShowDiscreetWizard(true);
+            }}
+          />
+        </div>
+        {showDiscreetWizard && (
+          <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/10 space-y-3 animate-fade-in">
+            <h4 className="text-sm font-bold text-foreground">Setup Guide</h4>
+            <div className="space-y-2">
+              {[
+                '1. The app icon will change to a generic "Weather" icon on your home screen.',
+                '2. Opening the app will show a convincing weather forecast screen.',
+                '3. To unlock Gridfy: long-press the bottom-left corner for 2 seconds, then swipe up.',
+                '4. The real app will open. Your data remains fully secure.',
+                '5. To disable: return to Settings → Discreet Mode → toggle off.',
+              ].map(step => (
+                <p key={step} className="text-xs text-muted-foreground leading-relaxed">{step}</p>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+              onClick={() => setShowDiscreetWizard(false)}
+            >
+              I Understand — Activate
+            </Button>
+          </div>
         )}
       </div>
 
