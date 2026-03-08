@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Shield, AlertTriangle, Navigation, Heart, MapPin, Clock,
@@ -7,6 +7,7 @@ import {
 import type { ViewId } from '../GridifyDashboard';
 import TimeRiskStrip from '../widgets/TimeRiskStrip';
 import AreaIntelCard from '../widgets/AreaIntelCard';
+import { getTimeWindows } from '@/data/timeAnalyticsData';
 
 interface DashboardViewProps {
   onUpgrade: (trigger?: string) => void;
