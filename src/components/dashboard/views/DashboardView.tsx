@@ -209,9 +209,9 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
       <div>
         <h2 className="text-sm font-bold text-foreground mb-3">Tonight's Risk Windows</h2>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-visible">
-          {riskWindows.map((w, i) => (
-            <div key={i} className={cn(
-              "p-3 rounded-xl border bg-card shrink-0 w-[140px]",
+          {riskWindows.map(w => (
+            <div key={w.id} className={cn(
+              "p-3 rounded-xl border bg-card shrink-0 w-[150px]",
               w.loadshedding ? "border-safety-orange/30" : "border-border"
             )}>
               <p className="text-xs font-bold text-foreground tabular-nums">{w.time}</p>
@@ -220,6 +220,7 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
                 {w.loadshedding && <Zap className="w-3.5 h-3.5 text-safety-yellow shrink-0" />}
               </div>
               <p className="text-[10px] text-muted-foreground mt-1.5 capitalize">{w.risk} risk</p>
+              <p className="text-[10px] text-foreground font-medium mt-0.5">{w.dominantCrime}</p>
               {w.loadshedding && (
                 <p className="text-[10px] text-safety-yellow font-medium">Load-shedding</p>
               )}
