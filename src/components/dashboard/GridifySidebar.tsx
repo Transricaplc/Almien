@@ -85,6 +85,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
       { id: 'vehicle-crime', label: 'Vehicle Crime Intel', icon: Car },
       { id: 'school-safety', label: 'School & Child Safety', icon: GraduationCap },
       { id: 'safe-space', label: 'Safe Space (GBV)', icon: Heart },
+      { id: 'business-safety', label: 'Business & Trader Intel', icon: Store },
     ],
   },
   {
