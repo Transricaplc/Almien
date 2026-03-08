@@ -258,6 +258,9 @@ const SACrimeLayerView = memo(() => {
         {/* ── TODAY / NOW ── */}
         {activeTab === 'now' && (
           <div className="space-y-4">
+            {/* Real-Time Threat Grid */}
+            <ThreatGridCard />
+
             {/* Live Alerts + Heatmap */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
