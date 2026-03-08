@@ -560,6 +560,22 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
                 </div>
               </div>
 
+              {/* ═══ TIME-SENSITIVE RISK LABEL ═══ */}
+              <div className={cn(
+                "p-2.5 rounded-lg border mb-3 flex items-start gap-2",
+                route.safetyScore >= 7
+                  ? "bg-safety-green/5 border-safety-green/20"
+                  : "bg-safety-orange/5 border-safety-orange/20"
+              )}>
+                <Clock className={cn(
+                  "w-3.5 h-3.5 mt-0.5 shrink-0",
+                  route.safetyScore >= 7 ? "text-safety-green" : "text-safety-orange"
+                )} />
+                <p className="text-[11px] text-foreground leading-relaxed">
+                  {getRouteTimeRiskLabel()}
+                </p>
+              </div>
+
               {/* Stats row */}
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50">
