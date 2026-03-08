@@ -8,7 +8,7 @@ interface SavedZone {
   id: string;
   name: string;
   threatLevel: ThreatLevel;
-  label?: string; // e.g. "Home", "Work"
+  label?: string;
 }
 
 interface ThreatHeaderProps {
@@ -18,21 +18,38 @@ interface ThreatHeaderProps {
   onBrowseAllAreas?: () => void;
 }
 
-const levelConfig: Record<ThreatLevel, { label: string; color: string; bg: string; pulse?: boolean }> = {
-  low: { label: 'LOW', color: 'bg-safety-green text-primary-foreground', bg: 'bg-[hsl(var(--threat-low))]' },
-  elevated: { label: 'ELEVATED', color: 'bg-safety-yellow text-primary-foreground', bg: 'bg-[hsl(var(--threat-elevated))]' },
-  high: { label: 'HIGH', color: 'bg-safety-red text-destructive-foreground', bg: 'bg-[hsl(var(--threat-high))]' },
-  critical: { label: 'CRITICAL', color: 'bg-safety-red text-destructive-foreground', bg: 'bg-[hsl(var(--threat-critical))]', pulse: true },
+const levelConfig: Record<ThreatLevel, { label: string; pillBg: string; pillText: string; headerBg: string; barColor: string; pulse?: boolean }> = {
+  low: {
+    label: 'LOW',
+    pillBg: 'bg-accent-safe/15',
+    pillText: 'text-accent-safe',
+    headerBg: 'bg-surface-base',
+    barColor: 'bg-accent-safe',
+  },
+  elevated: {
+    label: 'ELEVATED',
+    pillBg: 'bg-accent-warning/15',
+    pillText: 'text-accent-warning',
+    headerBg: 'bg-surface-base',
+    barColor: 'bg-accent-warning',
+  },
+  high: {
+    label: 'HIGH',
+    pillBg: 'bg-accent-threat/15',
+    pillText: 'text-accent-threat',
+    headerBg: 'bg-surface-base',
+    barColor: 'bg-accent-threat',
+  },
+  critical: {
+    label: 'CRITICAL',
+    pillBg: 'bg-accent-threat/15',
+    pillText: 'text-accent-threat',
+    headerBg: 'bg-surface-deep',
+    barColor: 'bg-accent-threat',
+    pulse: true,
+  },
 };
 
-const pillCls: Record<ThreatLevel, string> = {
-  low: 'bg-safety-green/15 text-safety-green',
-  elevated: 'bg-safety-yellow/15 text-safety-yellow',
-  high: 'bg-safety-orange/15 text-safety-orange',
-  critical: 'bg-safety-red/15 text-safety-red',
-};
-
-// Mock saved zones
 const defaultSavedZones: SavedZone[] = [
   { id: '1', name: 'Sea Point', threatLevel: 'elevated', label: 'Home' },
   { id: '2', name: 'Cape Town CBD', threatLevel: 'high', label: 'Work' },
@@ -50,7 +67,6 @@ const ThreatHeader = memo(({
   const [activeZone, setActiveZone] = useState(suburb);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e: MouseEvent) => {
@@ -69,11 +85,14 @@ const ThreatHeader = memo(({
 
   return (
     <div className={cn(
-      "h-10 shrink-0 flex items-center justify-between px-4 border-b border-border z-50 relative",
-      config.bg
+      "h-10 shrink-0 flex items-center justify-between px-4 border-b border-border-subtle z-50 relative",
+      config.headerBg
     )}>
+      {/* Left accent bar */}
+      <div className={cn("absolute left-0 top-0 bottom-0 w-[3px] rounded-r", config.barColor, config.pulse && "animate-pulse")} />
+
       {/* Left — tappable suburb switcher */}
-      <div className="flex items-center gap-2 min-w-0 relative" ref={dropdownRef}>
+      <div className="flex items-center gap-2 min-w-0 relative pl-2" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="flex items-center gap-1.5 min-w-0 hover:opacity-80 transition-opacity"
@@ -85,27 +104,28 @@ const ThreatHeader = memo(({
           )} />
         </button>
         <span className={cn(
-          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0",
-          config.color,
+          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-system shrink-0",
+          config.pillBg,
+          config.pillText,
           config.pulse && "animate-pulse"
         )}>
           {config.label}
         </span>
 
-        {/* Inline dropdown — not a modal */}
+        {/* Inline dropdown */}
         {dropdownOpen && (
-          <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-xl shadow-lg z-50 animate-fade-in overflow-hidden">
+          <div className="absolute top-full left-0 mt-1 w-64 bg-surface-02 border border-border-subtle rounded-xl z-50 animate-fade-in overflow-hidden">
             <div className="p-1.5 space-y-0.5">
               {defaultSavedZones.map(z => {
                 const isActive = z.name === activeZone;
-                const pl = pillCls[z.threatLevel];
+                const zConfig = levelConfig[z.threatLevel];
                 return (
                   <button
                     key={z.id}
                     onClick={() => handleZoneSelect(z)}
                     className={cn(
                       "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors",
-                      isActive ? "bg-primary/10" : "hover:bg-secondary"
+                      isActive ? "bg-accent-safe/10" : "hover:bg-secondary"
                     )}
                   >
                     <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -113,20 +133,24 @@ const ThreatHeader = memo(({
                       <p className="text-xs font-semibold text-foreground truncate">{z.name}</p>
                       {z.label && <p className="text-[9px] text-muted-foreground">{z.label}</p>}
                     </div>
-                    <span className={cn("px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase shrink-0", pl)}>
-                      {levelConfig[z.threatLevel].label}
+                    <span className={cn(
+                      "px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-system shrink-0",
+                      zConfig.pillBg,
+                      zConfig.pillText
+                    )}>
+                      {zConfig.label}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <div className="border-t border-border p-1.5">
+            <div className="border-t border-border-subtle p-1.5">
               <button
                 onClick={() => { setDropdownOpen(false); onBrowseAllAreas?.(); }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left hover:bg-secondary transition-colors"
               >
-                <Plus className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="text-xs font-medium text-primary">Browse All Areas</span>
+                <Plus className="w-3.5 h-3.5 text-accent-safe shrink-0" />
+                <span className="text-xs font-medium text-accent-safe">Browse All Areas</span>
               </button>
             </div>
           </div>

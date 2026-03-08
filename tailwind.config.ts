@@ -57,21 +57,38 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Safety semantic colors
+        // Semantic safety colors
         safety: {
-          green: "hsl(var(--safety-green))",
-          yellow: "hsl(var(--safety-yellow))",
+          green: "hsl(var(--accent-safe))",
+          yellow: "hsl(var(--accent-warning))",
           orange: "hsl(var(--safety-orange))",
-          red: "hsl(var(--safety-red))",
+          red: "hsl(var(--accent-threat))",
+        },
+        // Charcoal surface system
+        surface: {
+          base: "hsl(var(--surface-base))",
+          "01": "hsl(var(--surface-01))",
+          "02": "hsl(var(--surface-02))",
+          deep: "hsl(var(--surface-deep))",
         },
         elite: {
           from: "hsl(var(--elite-gold-from))",
           to: "hsl(var(--elite-gold-to))",
         },
-        surface: {
-          DEFAULT: "hsl(var(--surface))",
-          border: "hsl(var(--surface-border))",
-        },
+        // Semantic accent tokens
+        "accent-safe": "hsl(var(--accent-safe))",
+        "accent-warning": "hsl(var(--accent-warning))",
+        "accent-threat": "hsl(var(--accent-threat))",
+        "accent-gbv": "hsl(var(--accent-gbv))",
+        "accent-info": "hsl(var(--accent-info))",
+        // Border tokens
+        "border-subtle": "hsl(var(--border-subtle))",
+        "border-active": "hsl(var(--border-active))",
+        // Text tokens
+        "text-primary": "hsl(var(--text-primary))",
+        "text-secondary": "hsl(var(--text-secondary))",
+        "text-muted": "hsl(var(--text-muted))",
+        "text-inverse": "hsl(var(--text-inverse))",
       },
       borderRadius: {
         lg: "var(--radius)",
