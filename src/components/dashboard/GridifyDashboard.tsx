@@ -82,6 +82,7 @@ export type ViewId =
   | 'sa-crime-layer'
   | 'safety-network'
   | 'safe-route'
+  | 'safe-space'
   | 'settings';
 
 const GridifyDashboard = memo(() => {
