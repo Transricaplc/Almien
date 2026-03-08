@@ -468,6 +468,12 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
         </Button>
       </div>
 
+      {/* Time-of-day risk context for route planning */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <TimeRiskStrip variant="compact" />
+        <p className="text-[10px] text-muted-foreground mt-2">Risk levels along your route vary by time of day</p>
+      </div>
+
       {/* Route results */}
       {routes && (
         <div className="space-y-3 animate-fade-in">
