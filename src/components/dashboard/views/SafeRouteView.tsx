@@ -8,6 +8,7 @@ import {
   Footprints, Car, Bus, Bike, Share2, Check, X, Locate, Search
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import TimeRiskStrip from '../widgets/TimeRiskStrip';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
