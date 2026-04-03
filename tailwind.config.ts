@@ -97,6 +97,7 @@ export default {
       },
       fontFamily: {
         sans: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
       },
       spacing: {
         '18': '4.5rem',
