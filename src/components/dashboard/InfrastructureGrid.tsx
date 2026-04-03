@@ -62,7 +62,7 @@ const InfrastructureGrid = () => {
           <div className="flex items-center gap-4 text-[10px] font-mono text-muted-foreground overflow-hidden">
             <span className="shrink-0 text-primary">ALERTS:</span>
             <div className="flex items-center gap-6 animate-marquee">
-              <span className="text-yellow-400">⚡ Stage 4 loadshedding in effect until 22:00</span>
+              <span className="text-yellow-400">⚡ Stage 4 load-shedding in effect until 22:00</span>
               <span className="text-muted-foreground">•</span>
               <span className="text-blue-400">💧 Planned maintenance: Camps Bay 14:00-17:00</span>
               <span className="text-muted-foreground">•</span>

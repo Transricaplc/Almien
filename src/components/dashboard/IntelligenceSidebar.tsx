@@ -128,7 +128,7 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
 
   const tabConfig = {
     executive: { icon: <Activity className="w-4 h-4 text-primary" />, title: 'City KPIs & Executive Summary', component: <ExecutiveSummary /> },
-    neighborhoods: { icon: <Building className="w-4 h-4 text-primary" />, title: 'Neighborhood Explorer', component: <NeighborhoodExplorer /> },
+    neighborhoods: { icon: <Building className="w-4 h-4 text-primary" />, title: 'Neighbourhood Explorer', component: <NeighborhoodExplorer /> },
     routes: { icon: <Navigation className="w-4 h-4 text-primary" />, title: 'Safe Route Planner', component: <SafeRoutePlanner /> },
     ontology: { icon: <Network className="w-4 h-4 text-primary" />, title: 'Entity Graph & Relationships', component: <OntologyViewer /> },
     reports: { icon: <Radio className="w-4 h-4 text-primary" />, title: 'Live Report Feed', component: <LiveReportFeed /> },

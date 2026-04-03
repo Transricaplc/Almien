@@ -32,7 +32,7 @@ const GridifyHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools
           </div>
           <div>
             <h1 className="text-base font-extrabold tracking-tight text-foreground leading-none">
-              GRIDIFY
+              GRIDFY
             </h1>
             <p className="text-[9px] text-muted-foreground font-medium tracking-wider uppercase leading-none mt-0.5">
               Cape Town Safety
