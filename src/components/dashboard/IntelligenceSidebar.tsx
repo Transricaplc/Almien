@@ -308,6 +308,16 @@ const IntelligenceSidebar = ({ onSuburbSelect }: IntelligenceSidebarProps) => {
         </div>
       </div>
 
+      {/* Surveillance Health Gauge */}
+      <div className="flex-shrink-0">
+        <SurveillanceHealthGauge areaCode={selectedSuburb?.area_code} />
+      </div>
+
+      {/* Compound Risk Alerts (Guardian Engine) */}
+      <div className="flex-shrink-0">
+        <CompoundRiskAlert />
+      </div>
+
       {/* Environmental Context Cluster */}
       <div className="flex-shrink-0">
         <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2.5 px-1">
