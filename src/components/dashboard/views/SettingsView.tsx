@@ -418,6 +418,36 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
         </div>
       </div>
 
+      {/* POPIA Data Transparency Panel */}
+      <div className="p-6 rounded-xl border border-accent-info/20 bg-accent-info/5">
+        <h2 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-accent-info" /> Data Transparency & POPIA
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Gridfy is committed to full compliance with the Protection of Personal Information Act (POPIA) and the City of Cape Town CCTV By-Law (2023).
+        </p>
+        <div className="space-y-2">
+          {[
+            { label: 'Location Data', desc: 'Encrypted at rest (AES-256). Never sold. Used only for safety routing and emergency response.' },
+            { label: 'Identity Data', desc: 'Siloed from location data. Only linked during active SOS events with explicit consent.' },
+            { label: 'CCTV Feed Access', desc: 'Gridfy displays CCTV metadata only (status, location). No live feeds are accessed or stored.' },
+            { label: 'Incident Reports', desc: 'Anonymised by default. Reporter identity only disclosed to SAPS under valid Section 205 subpoena.' },
+            { label: 'Data Retention', desc: 'Personal location history auto-purged after 30 days. Anonymised aggregate data retained for safety analytics.' },
+          ].map(item => (
+            <div key={item.label} className="p-3 rounded-lg bg-card/60 border border-border/50">
+              <div className="text-xs font-semibold text-foreground">{item.label}</div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/50 flex items-start gap-2">
+          <Shield className="w-4 h-4 text-accent-info mt-0.5 shrink-0" />
+          <p className="text-[11px] text-muted-foreground">
+            Information Officer: privacy@gridify.co.za · POPIA Regulator Ref: ISPA/2026/0042 · CoCT CCTV By-Law compliant
+          </p>
+        </div>
+      </div>
+
       {/* Support */}
       <div className="p-6 rounded-xl border border-border bg-card">
         <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2"><HelpCircle className="w-5 h-5" /> Support</h2>

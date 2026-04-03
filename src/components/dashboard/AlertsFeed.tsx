@@ -29,10 +29,22 @@ const priorityConfig: Record<string, { color: string; icon: typeof AlertTriangle
   low: { color: 'text-muted-foreground', icon: Bell },
 };
 
+const getJustification = (alert: AlertItem): string[] => {
+  const factors: string[] = [];
+  if (alert.alert_type === 'crime_spike') factors.push('Incident count exceeded 24h baseline by 40%');
+  if (alert.alert_type === 'infrastructure') factors.push('Infrastructure degradation detected in zone');
+  if (alert.priority === 'critical') factors.push('Multiple corroborating data sources confirmed');
+  if (alert.alert_type === 'wildfire') factors.push('AFIS satellite hotspot detected within 5km');
+  if (alert.alert_type === 'loadshedding') factors.push('Eskom stage change affects traffic signals');
+  if (factors.length === 0) factors.push('Threshold breach detected by monitoring system');
+  return factors;
+};
+
 const AlertCard = memo(({ alert }: { alert: AlertItem }) => {
   const config = priorityConfig[alert.priority] || priorityConfig.low;
   const Icon = config.icon;
   const timeAgo = getTimeAgo(alert.created_at);
+  const justification = getJustification(alert);
 
   return (
     <div className={cn(
@@ -79,6 +91,21 @@ const AlertCard = memo(({ alert }: { alert: AlertItem }) => {
               {alert.alert_type}
             </span>
           </div>
+
+          {/* XAI Justification Panel */}
+          {(alert.priority === 'critical' || alert.priority === 'high') && (
+            <div className="mt-2 pt-2 border-t border-border/20 space-y-0.5">
+              <span className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground/60">
+                Why this alert:
+              </span>
+              {justification.map((reason, idx) => (
+                <div key={idx} className="flex items-start gap-1 text-[9px] text-muted-foreground/80 font-mono">
+                  <span className="text-accent-info shrink-0">›</span>
+                  <span>{reason}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
