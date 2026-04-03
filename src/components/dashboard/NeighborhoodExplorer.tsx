@@ -54,7 +54,7 @@ const NeighborhoodExplorer = ({ onSelectNeighborhood }: NeighborhoodExplorerProp
       <div className="bg-gradient-to-r from-primary/10 to-transparent px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-primary" />
-          <h3 className="font-bold text-foreground">Neighborhood Explorer</h3>
+          <h3 className="font-bold text-foreground">Neighbourhood Explorer</h3>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           Search and explore Cape Town neighborhoods with safety data
@@ -75,7 +75,7 @@ const NeighborhoodExplorer = ({ onSelectNeighborhood }: NeighborhoodExplorerProp
       </div>
 
       <div className="flex-1 flex min-h-0">
-        {/* Neighborhood List */}
+        {/* Neighbourhood List */}
         <div className="w-1/2 border-r border-border overflow-auto">
           <div className="divide-y divide-border">
             {filteredNeighborhoods.map((n) => (

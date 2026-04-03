@@ -168,10 +168,10 @@ const GovernmentServicesView = memo(({ onUpgrade }: Props) => {
           <CardContent className="p-5">
             <h3 className="font-semibold text-foreground flex items-center gap-2 mb-2"><Car className="w-4 h-4" /> Traffic & Licensing</h3>
             <ul className="text-sm space-y-1 text-muted-foreground">
-              <li>• License Renewal</li>
+              <li>• Licence Renewal</li>
               <li>• Vehicle Registration</li>
               <li>• Traffic Fines Payment</li>
-              <li>• Learner's License Booking</li>
+              <li>• Learner's Licence Booking</li>
             </ul>
             <div className="flex flex-wrap gap-2 mt-3">
               <button className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90">Renew Online</button>

@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Code, Key, BarChart3, Lock, Copy, Check } from 'lucide-react';
 
 const endpoints = [
-  { method: 'GET', path: '/v1/safety/scores', desc: 'Neighborhood safety scores', tier: 'Free' },
+  { method: 'GET', path: '/v1/safety/scores', desc: 'Neighbourhood safety scores', tier: 'Free' },
   { method: 'GET', path: '/v1/alerts/active', desc: 'Active city alerts', tier: 'Free' },
   { method: 'GET', path: '/v1/infrastructure/status', desc: 'Infrastructure health', tier: 'Pro' },
   { method: 'GET', path: '/v1/tourism/attractions', desc: 'Tourism attraction data', tier: 'Free' },

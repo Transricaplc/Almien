@@ -48,7 +48,7 @@ const LoadsheddingPanel = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="w-3.5 h-3.5 text-yellow-400" />
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Loadshedding</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Load-shedding</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono text-muted-foreground">STAGE</span>

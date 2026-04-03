@@ -36,14 +36,14 @@ const Welcome = () => {
           Gridfy
         </h1>
         <p className="mt-4 text-lg sm:text-xl md:text-2xl font-medium text-white/90 tracking-wide" style={{ textShadow: '0 0 20px hsl(174 60% 50% / 0.15)' }}>
-          Safety Intelligence on Your Hands
+          Safety Intelligence at Your Fingertips
         </p>
 
         <button
           onClick={handleEnter}
           className="mt-10 px-10 py-4 sm:px-14 sm:py-5 rounded-full text-lg sm:text-xl font-bold text-white bg-[hsl(174,60%,42%)] hover:bg-[hsl(174,60%,48%)] active:scale-[0.97] transition-all shadow-lg shadow-[hsl(174,60%,30%)/0.4] hover:shadow-xl"
         >
-          Click Here to Enter
+          Enter
         </button>
       </main>
 

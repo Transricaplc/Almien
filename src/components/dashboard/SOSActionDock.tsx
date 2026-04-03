@@ -25,7 +25,7 @@ const sosButtons: SOSButton[] = [
   { id: 'saps', label: 'SAPS', number: '10111', icon: Shield, bgColor: 'bg-blue-600/90', hoverColor: 'hover:bg-blue-500' },
   { id: 'fire', label: 'FIRE', number: '021 480 7700', icon: Flame, bgColor: 'bg-red-600/90', hoverColor: 'hover:bg-red-500' },
   { id: 'sea-rescue', label: 'SEA', number: '087 094 9774', icon: Waves, bgColor: 'bg-cyan-600/90', hoverColor: 'hover:bg-cyan-500' },
-  { id: 'mtn-rescue', label: 'MTN', number: '021 937 0300', icon: Mountain, bgColor: 'bg-emerald-600/90', hoverColor: 'hover:bg-emerald-500' },
+  { id: 'mtn-rescue', label: 'RESCUE', number: '021 937 0300', icon: Mountain, bgColor: 'bg-emerald-600/90', hoverColor: 'hover:bg-emerald-500' },
 ];
 
 interface SOSActionDockProps {
