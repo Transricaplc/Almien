@@ -301,6 +301,20 @@
   .tracking-system {
     letter-spacing: 0.1em;
   }
+
+  /* Mobile tap feedback — scale-down for native feel */
+  @media (max-width: 767px) {
+    .card-hover {
+      @apply active:scale-[0.98] transition-transform duration-150;
+    }
+    .card-hover:hover {
+      background-color: inherit;
+      border-color: inherit;
+    }
+    .card-hover:active {
+      background-color: hsl(var(--surface-02));
+    }
+  }
 }
 
 /* Leaflet map — charcoal background */

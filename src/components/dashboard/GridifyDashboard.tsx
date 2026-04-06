@@ -249,6 +249,9 @@ const GridifyDashboard = memo(() => {
         <PanicButton />
         <WitnessReportButton />
 
+        {/* Mobile Command Pill — floating quick-action launcher */}
+        {isMobile && <CommandPill onNavigate={navigate} />}
+
         {/* Mobile bottom navigation */}
         {isMobile && (
           <BottomNavBar activeView={activeView} onNavigate={navigate} />
