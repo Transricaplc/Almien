@@ -250,6 +250,9 @@ const GridifyDashboard = memo(() => {
         <PanicButton />
         <WitnessReportButton />
 
+        {/* Mobile SOS Dock — sits above bottom nav */}
+        {isMobile && <SOSActionDock />}
+
         {/* Mobile Command Pill — floating quick-action launcher */}
         {isMobile && <CommandPill onNavigate={navigate} />}
 
