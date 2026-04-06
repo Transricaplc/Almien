@@ -1,15 +1,45 @@
-import { Camera } from 'lucide-react';
+import { memo } from 'react';
+import { type LucideIcon, Inbox } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const EmptyState = () => {
+interface EmptyStateProps {
+  icon?: LucideIcon;
+  title?: string;
+  description?: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  className?: string;
+}
+
+const EmptyState = memo(({
+  icon: Icon = Inbox,
+  title = 'No data yet',
+  description = 'Information will appear here once available.',
+  actionLabel,
+  onAction,
+  className,
+}: EmptyStateProps) => {
   return (
-    <div className="bg-card rounded-xl p-8 lg:p-12 border-2 border-border text-center animate-fade-in">
-      <Camera className="w-12 h-12 lg:w-16 lg:h-16 text-muted-foreground mx-auto mb-4" />
-      <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-2">Select a Route</h3>
-      <p className="text-muted-foreground text-sm lg:text-base">
-        Click on any route card in the Overview tab to view detailed camera coverage
-      </p>
+    <div className={cn(
+      'flex flex-col items-center justify-center py-12 px-6 text-center animate-fade-in',
+      className
+    )}>
+      <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-muted-foreground" />
+      </div>
+      <h3 className="text-base font-bold text-foreground mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-[240px]">{description}</p>
+      {actionLabel && onAction && (
+        <button
+          onClick={onAction}
+          className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
+        >
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
-};
+});
 
+EmptyState.displayName = 'EmptyState';
 export default EmptyState;

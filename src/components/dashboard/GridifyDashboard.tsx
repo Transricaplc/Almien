@@ -52,6 +52,7 @@ import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import PanicButton from './PanicButton';
 import WitnessReportButton from './WitnessReportButton';
+import CommandPill from './CommandPill';
 
 export type ViewId =
   | 'dashboard'
@@ -247,6 +248,9 @@ const GridifyDashboard = memo(() => {
         {/* Panic Button — always floats above bottom nav */}
         <PanicButton />
         <WitnessReportButton />
+
+        {/* Mobile Command Pill — floating quick-action launcher */}
+        {isMobile && <CommandPill onNavigate={navigate} />}
 
         {/* Mobile bottom navigation */}
         {isMobile && (

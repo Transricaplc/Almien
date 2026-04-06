@@ -4,6 +4,8 @@ import {
   Shield, AlertTriangle, Navigation, Heart, MapPin, Clock,
   Phone, ChevronDown, ChevronUp, Zap, ExternalLink, CheckCircle2, Map
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileHeroHeader from '../MobileHeroHeader';
 import type { ViewId } from '../GridifyDashboard';
 import TimeRiskStrip from '../widgets/TimeRiskStrip';
 import AreaIntelCard from '../widgets/AreaIntelCard';
@@ -54,9 +56,15 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [briefingExpanded, setBriefingExpanded] = useState(false);
   const riskWindows = useMemo(() => getTimeWindows(), []);
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-6 animate-fade-in">
+
+      {/* ═══ MOBILE HERO — Apple Health-style north star metric ═══ */}
+      {isMobile && (
+        <MobileHeroHeader score={7.8} changePercent={3} suburb={briefing.suburb} />
+      )}
 
       {/* ═══ PANEL 3 — LIVE THREAT MAP TILE ═══ */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -152,16 +160,22 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
         </div>
         <div className="space-y-2">
           {incidents.map(inc => (
-            <div key={inc.id} className="p-3 rounded-xl border border-border bg-card flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+            <div key={inc.id} className={cn(
+              "p-3 border border-border bg-card flex items-center gap-3 active:scale-[0.98] transition-all duration-150",
+              isMobile ? "rounded-3xl p-5" : "rounded-xl"
+            )}>
+              <div className={cn(
+                "flex items-center justify-center shrink-0 bg-secondary",
+                isMobile ? "w-11 h-11 rounded-2xl" : "w-9 h-9 rounded-lg"
+              )}>
                 <AlertTriangle className={cn(
-                  "w-4 h-4",
+                  isMobile ? "w-5 h-5" : "w-4 h-4",
                   inc.verified ? "text-destructive" : "text-safety-yellow"
                 )} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-foreground">{inc.type}</span>
+                  <span className={cn("font-semibold text-foreground", isMobile ? "text-base" : "text-sm")}>{inc.type}</span>
                   <span className={cn(
                     "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase",
                     inc.verified
@@ -175,7 +189,7 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-[10px] text-muted-foreground">{inc.time}</p>
-                <p className="text-[10px] text-muted-foreground tabular-nums">{inc.distance}</p>
+                <p className="text-[10px] text-muted-foreground tabular-nums font-mono">{inc.distance}</p>
               </div>
             </div>
           ))}
