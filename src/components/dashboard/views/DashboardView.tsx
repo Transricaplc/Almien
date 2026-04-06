@@ -56,9 +56,15 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [briefingExpanded, setBriefingExpanded] = useState(false);
   const riskWindows = useMemo(() => getTimeWindows(), []);
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-6 animate-fade-in">
+
+      {/* ═══ MOBILE HERO — Apple Health-style north star metric ═══ */}
+      {isMobile && (
+        <MobileHeroHeader score={7.8} changePercent={3} suburb={briefing.suburb} />
+      )}
 
       {/* ═══ PANEL 3 — LIVE THREAT MAP TILE ═══ */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
