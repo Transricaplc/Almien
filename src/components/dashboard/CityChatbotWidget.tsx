@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
