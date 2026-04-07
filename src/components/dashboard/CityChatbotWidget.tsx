@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ function getBotResponse(input: string): string {
 }
 
 export default function CityChatbotWidget() {
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { id: '0', role: 'assistant', content: '👋 Hi! I\'m GridBot, your 24/7 city services assistant. I can help with reports, transport, permits, utilities, and safety info. How can I help?', timestamp: new Date() }
@@ -64,6 +66,9 @@ export default function CityChatbotWidget() {
       setIsTyping(false);
     }, 800 + Math.random() * 700);
   };
+
+  // FIX 2: Hide FAB entirely on mobile
+  if (isMobile) return null;
 
   if (!isOpen) {
     return (

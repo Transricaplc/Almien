@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,7 +12,6 @@ import ZoneDirectory from './widgets/ZoneDirectory';
 import DashboardView from './views/DashboardView';
 import MapFullView from './views/MapFullView';
 import SafetyOverviewView from './views/SafetyOverviewView';
-// AreasView and TimeAnalyticsView dissolved into contextual widgets — data lives in Map, Dashboard, Routes
 import ActivitiesView from './views/ActivitiesView';
 import RideShareView from './views/RideShareView';
 import TrailSafetyView from './views/TrailSafetyView';
@@ -59,8 +58,8 @@ export type ViewId =
   | 'dashboard'
   | 'map-full'
   | 'safety-overview'
-  | 'areas'          // legacy — redirects to dashboard
-  | 'time-analytics' // legacy — redirects to dashboard
+  | 'areas'
+  | 'time-analytics'
   | 'activities'
   | 'rideshare'
   | 'trails'
@@ -110,12 +109,21 @@ const GridifyDashboard = memo(() => {
 
   const isSafeSpaceView = activeView === 'safe-space';
 
+  // FIX 8: Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobile, sidebarOpen]);
+
   const openUpgrade = useCallback((trigger?: string) => {
     setUpgradeModal({ open: true, trigger });
   }, []);
 
   const navigate = useCallback((view: ViewId) => {
-    // Legacy routes redirect to dashboard (data dissolved)
     if (view === 'areas' || view === 'time-analytics') {
       setActiveView('dashboard');
     } else {
@@ -186,9 +194,9 @@ const GridifyDashboard = memo(() => {
         "h-screen flex overflow-hidden bg-background",
         isSafeSpaceView && "safe-space-theme"
       )}>
-        {/* Mobile overlay */}
+        {/* Mobile overlay — FIX 8: z-[85] above ThreatHeader */}
         {isMobile && sidebarOpen && (
-          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 z-[85] bg-black/40" onClick={() => setSidebarOpen(false)} />
         )}
 
         {/* Sidebar — desktop only */}
@@ -217,29 +225,18 @@ const GridifyDashboard = memo(() => {
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {/* Persistent Threat Header — always visible, with suburb switcher */}
-          <ThreatHeader onBrowseAllAreas={() => setShowZoneDirectory(true)} />
+          {/* Persistent Threat Header — FIX 3: menu button integrated via onMenuOpen */}
+          <ThreatHeader
+            onBrowseAllAreas={() => setShowZoneDirectory(true)}
+            onMenuOpen={isMobile ? () => setSidebarOpen(true) : undefined}
+          />
 
-          {/* Mobile menu button */}
-          {isMobile && (
-            <div className="h-10 shrink-0 border-b border-border bg-card/80 backdrop-blur flex items-center px-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg hover:bg-secondary min-w-[48px] min-h-[48px] flex items-center justify-center"
-                aria-label="Open menu"
-              >
-                <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              <span className="ml-2 text-sm font-semibold text-foreground">Menu</span>
-            </div>
-          )}
+          {/* FIX 3: Removed redundant mobile menu bar */}
 
           <ScrollArea className="flex-1">
             <div className={cn(
               "mx-auto w-full",
-              isMobile ? "px-4 py-6 pb-36" : "px-12 py-8 max-w-[720px]"
+              isMobile ? "px-4 py-6 pb-[200px]" : "px-12 py-8 max-w-[720px]"
             )}>
               {renderView()}
             </div>
@@ -250,10 +247,10 @@ const GridifyDashboard = memo(() => {
         <PanicButton />
         <WitnessReportButton />
 
-        {/* Mobile SOS Dock — sits above bottom nav */}
-        {isMobile && <SOSActionDock />}
+        {/* SOS Dock — FIX 1: desktop only */}
+        {!isMobile && <SOSActionDock />}
 
-        {/* Mobile Command Pill — floating quick-action launcher */}
+        {/* Mobile Command Pill */}
         {isMobile && <CommandPill onNavigate={navigate} />}
 
         {/* Mobile bottom navigation */}
@@ -267,7 +264,6 @@ const GridifyDashboard = memo(() => {
           trigger={upgradeModal.trigger}
         />
 
-        {/* Full-screen Zone Directory — accessible from ThreatHeader "Browse All Areas" */}
         {showZoneDirectory && (
           <ZoneDirectory
             onClose={() => setShowZoneDirectory(false)}

@@ -40,13 +40,14 @@ const WitnessReportButton = memo(() => {
     <>
       {/* Floating eye icon */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { setOpen(true); try { navigator.vibrate?.([15]); } catch {} }}
         className={cn(
-          "fixed bottom-6 right-6 z-[90] w-11 h-11 rounded-full",
+          "fixed z-[93] w-11 h-11 rounded-full right-4 md:right-6 md:bottom-6",
           "bg-card border border-border shadow-lg",
           "flex items-center justify-center",
           "hover:scale-105 transition-transform text-muted-foreground hover:text-foreground"
         )}
+        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 16px)' }}
         aria-label="Report an incident anonymously"
       >
         <Eye className="w-5 h-5" />

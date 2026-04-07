@@ -113,7 +113,7 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
       "flex flex-col bg-surface-base border-r border-border-subtle h-full shrink-0",
       "transition-transform duration-200 ease-out",
       isMobile
-        ? "fixed left-0 top-0 z-50 w-[280px] shadow-2xl"
+        ? "fixed left-0 top-0 z-[86] w-[280px] shadow-2xl"
         : "w-[280px]",
       isMobile && !isOpen && "-translate-x-full"
     )}>

@@ -68,7 +68,7 @@ const TravelerModeView = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black px-4 py-6 pb-52">
+    <div className="min-h-screen bg-black px-4 py-6 pb-[200px]">
       <div className="max-w-lg mx-auto space-y-5">
         {/* Emergency Header */}
         <div className="text-center space-y-2">

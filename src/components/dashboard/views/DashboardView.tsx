@@ -125,9 +125,11 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
         </div>
         <div className="divide-y divide-[hsl(var(--border-subtle)/0.3)]">
           {incidents.map(inc => (
-            <div
+            <button
               key={inc.id}
-              className="flex items-center gap-3 py-3 active:bg-[hsl(var(--surface-02))] transition-colors duration-100 cursor-pointer"
+              onClick={() => {}}
+              className="w-full text-left flex items-center gap-3 py-3 active:bg-[hsl(var(--surface-02))] transition-colors duration-100 cursor-pointer min-h-[48px]"
+              aria-label={`${inc.type} at ${inc.location}, ${inc.time}`}
             >
               {/* Icon cell */}
               <div className={cn(
@@ -151,10 +153,10 @@ const DashboardView = memo(({ onNavigate }: DashboardViewProps) => {
                 <p className="text-[10px] font-mono text-muted-foreground">{inc.time}</p>
                 <p className="text-[10px] font-mono text-accent-safe">{inc.distance}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
-        <button className="w-full mt-2 py-2.5 rounded-xl border border-[hsl(var(--border-subtle))] text-xs font-medium text-muted-foreground hover:bg-[hsl(var(--surface-02))] transition-colors min-h-[44px]">
+        <button className="w-full mt-2 py-3 rounded-xl border border-[hsl(var(--border-subtle))] text-xs font-medium text-muted-foreground hover:bg-[hsl(var(--surface-02))] transition-colors min-h-[48px]">
           See All Incidents
         </button>
       </div>

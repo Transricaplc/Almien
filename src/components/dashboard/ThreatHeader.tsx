@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, MapPin, Plus } from 'lucide-react';
+import { ChevronDown, MapPin, Plus, Menu } from 'lucide-react';
 
 type ThreatLevel = 'low' | 'elevated' | 'high' | 'critical';
 
@@ -16,6 +16,7 @@ interface ThreatHeaderProps {
   threatLevel?: ThreatLevel;
   incidentCount?: number;
   onBrowseAllAreas?: () => void;
+  onMenuOpen?: () => void;
 }
 
 const levelConfig: Record<ThreatLevel, { label: string; pillBg: string; pillText: string; headerBg: string; barColor: string; pulse?: boolean }> = {
@@ -61,6 +62,7 @@ const ThreatHeader = memo(({
   threatLevel = 'elevated',
   incidentCount = 7,
   onBrowseAllAreas,
+  onMenuOpen,
 }: ThreatHeaderProps) => {
   const config = levelConfig[threatLevel];
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -91,8 +93,17 @@ const ThreatHeader = memo(({
       {/* Left accent bar */}
       <div className={cn("absolute left-0 top-0 bottom-0 w-[3px] rounded-r", config.barColor, config.pulse && "animate-pulse")} />
 
-      {/* Left — tappable suburb switcher */}
+      {/* Left — menu button + tappable suburb switcher */}
       <div className="flex items-center gap-2 min-w-0 relative pl-2" ref={dropdownRef}>
+        {onMenuOpen && (
+          <button
+            onClick={onMenuOpen}
+            className="p-1.5 -ml-1 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
+        )}
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="flex items-center gap-1.5 min-w-0 hover:opacity-80 transition-opacity"

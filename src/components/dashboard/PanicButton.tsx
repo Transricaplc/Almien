@@ -92,6 +92,7 @@ const PanicButton = memo(() => {
     if (panicActive) return;
     setHolding(true);
     setProgress(0);
+    try { navigator.vibrate?.([20]); } catch {}
 
     const startTime = Date.now();
     progressInterval.current = setInterval(() => {
@@ -100,6 +101,7 @@ const PanicButton = memo(() => {
       setProgress(pct);
       if (pct >= 100) {
         clearTimers();
+        try { navigator.vibrate?.([100, 50, 100, 50, 200]); } catch {}
         triggerPanic();
       }
     }, 30);
@@ -252,7 +254,7 @@ const PanicButton = memo(() => {
 
   // Floating SOS button — the ONLY element with a shadow
   return (
-    <div className="fixed bottom-[76px] left-1/2 -translate-x-1/2 z-[95] sm:bottom-6">
+    <div className="fixed z-[95] left-4 md:left-auto md:right-6 md:bottom-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 16px)' }}>
       <button
         onMouseDown={handleHoldStart}
         onMouseUp={handleHoldEnd}

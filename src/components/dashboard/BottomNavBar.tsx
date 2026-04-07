@@ -18,7 +18,8 @@ const tabs: { id: ViewId; label: string; icon: typeof Shield }[] = [
 
 const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[90] bg-[hsl(210_30%_3%)] border-t border-[hsl(var(--border-subtle))]"
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-[90] bg-[hsl(210_30%_3%/0.95)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))]"
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-stretch justify-around h-16 max-w-lg mx-auto relative">
@@ -27,9 +28,12 @@ const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
           return (
             <button
               key={tab.id}
-              onClick={() => onNavigate(tab.id)}
+              onClick={() => {
+                onNavigate(tab.id);
+                try { navigator.vibrate?.([10]); } catch {}
+              }}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 flex-1 min-w-[48px] min-h-[48px] relative',
+                'relative flex flex-col items-center justify-center gap-1 flex-1 min-w-[48px] min-h-[48px]',
                 'transition-colors duration-100',
                 isActive
                   ? 'text-accent-safe'
@@ -38,12 +42,12 @@ const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
               aria-label={tab.label}
               aria-current={isActive ? 'page' : undefined}
             >
-              {/* Top indicator bar */}
+              {/* FIX 4b: Top indicator bar */}
               {isActive && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-accent-safe" />
               )}
               <tab.icon
-                className="w-5 h-5"
+                className={cn("w-5 h-5 transition-transform", isActive && "scale-110")}
                 strokeWidth={isActive ? 2.5 : 2}
               />
               <span className={cn(
