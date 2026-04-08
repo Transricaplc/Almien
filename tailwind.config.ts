@@ -96,8 +96,21 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
-        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
+      fontSize: {
+        'hero': ['2.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'hero-sm': ['2rem', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'metric': ['1.75rem', { lineHeight: '1.2', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'section': ['1.25rem', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'section-sm': ['1.125rem', { lineHeight: '1.35', letterSpacing: '-0.005em', fontWeight: '600' }],
+        'body': ['1rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'body-md': ['0.9375rem', { lineHeight: '1.5', fontWeight: '500' }],
+        'label': ['0.875rem', { lineHeight: '1.4', fontWeight: '500' }],
+        'small': ['0.8125rem', { lineHeight: '1.4', fontWeight: '400' }],
+        'tiny': ['0.75rem', { lineHeight: '1.35', fontWeight: '400' }],
+        'cta': ['0.9375rem', { lineHeight: '1', letterSpacing: '0.01em', fontWeight: '500' }],
       },
       spacing: {
         '18': '4.5rem',
