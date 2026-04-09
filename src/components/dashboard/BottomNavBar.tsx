@@ -19,7 +19,7 @@ const tabs: { id: ViewId; label: string; icon: typeof Shield }[] = [
 const BottomNavBar = memo(({ activeView, onNavigate }: BottomNavBarProps) => {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[90] bg-[hsl(210_30%_3%/0.95)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))]"
+      className="fixed bottom-0 left-0 right-0 z-[90] bg-[hsl(210_30%_3%/0.95)] backdrop-blur-xl border-t border-[hsl(var(--border-subtle))] w-full max-w-full"
       style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
     >
       <div className="flex items-stretch justify-around h-16 max-w-lg mx-auto relative">

@@ -169,6 +169,15 @@
     @apply border-border;
   }
 
+  html, body, #root {
+    @apply w-full max-w-full overflow-x-hidden;
+  }
+
+  html {
+    height: 100dvh;
+    height: 100vh; /* fallback */
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -176,6 +185,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
 }
 

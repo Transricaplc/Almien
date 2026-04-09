@@ -191,7 +191,7 @@ const GridifyDashboard = memo(() => {
     <RegionProvider>
     <SAPSCrimeProvider>
       <div className={cn(
-        "h-screen flex overflow-hidden bg-background",
+        "h-dvh h-screen flex flex-col sm:flex-row w-full max-w-full overflow-x-hidden overflow-y-hidden bg-background",
         isSafeSpaceView && "safe-space-theme"
       )}>
         {/* Mobile overlay — FIX 8: z-[85] above ThreatHeader */}
@@ -224,19 +224,17 @@ const GridifyDashboard = memo(() => {
         )}
 
         {/* Center workspace */}
-        <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
-          {/* Persistent Threat Header — FIX 3: menu button integrated via onMenuOpen */}
+        <main className="flex-1 min-w-0 overflow-hidden flex flex-col w-full max-w-full">
+          {/* Persistent Threat Header */}
           <ThreatHeader
             onBrowseAllAreas={() => setShowZoneDirectory(true)}
             onMenuOpen={isMobile ? () => setSidebarOpen(true) : undefined}
           />
 
-          {/* FIX 3: Removed redundant mobile menu bar */}
-
           <ScrollArea className="flex-1">
             <div className={cn(
-              "mx-auto w-full",
-              isMobile ? "px-4 py-6 pb-[200px]" : "px-12 py-8 max-w-[720px]"
+              "mx-auto w-full max-w-full",
+              isMobile ? "px-3 py-4 pb-[200px]" : "px-8 py-8 max-w-[720px]"
             )}>
               {renderView()}
             </div>
