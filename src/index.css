@@ -167,6 +167,7 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
   html, body, #root {
@@ -187,6 +188,20 @@
     text-rendering: optimizeLegibility;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  /* Force all images, videos, iframes to respect container width */
+  img, video, iframe, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Prevent tables from blowing out containers */
+  table {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
   }
 }
 
@@ -339,6 +354,12 @@
     }
     .card-hover:active {
       background-color: hsl(var(--surface-02));
+    }
+
+    /* Prevent any child from overflowing on mobile */
+    .content-panel > * {
+      max-width: 100%;
+      overflow-x: hidden;
     }
   }
 }

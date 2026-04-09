@@ -38,7 +38,7 @@ const CommandPill = memo(({ onNavigate }: CommandPillProps) => {
         <button
           className={cn(
             'fixed bottom-24 left-1/2 -translate-x-1/2 z-[85]',
-            'flex items-center gap-2 px-5 py-2.5 rounded-full',
+            'flex items-center gap-2 px-5 py-2.5 rounded-full min-h-[44px]',
             'bg-card/90 backdrop-blur-xl border border-border-subtle',
             'text-sm font-semibold text-muted-foreground',
             'active:scale-[0.96] transition-all duration-150',
@@ -68,7 +68,7 @@ const CommandPill = memo(({ onNavigate }: CommandPillProps) => {
               <button
                 key={action.label}
                 onClick={() => handleSelect(action.view)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-secondary active:scale-[0.98] transition-all text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-secondary active:scale-[0.98] transition-all text-left min-h-[48px]"
               >
                 <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
                   <action.icon className={cn('w-4 h-4', action.color)} />
