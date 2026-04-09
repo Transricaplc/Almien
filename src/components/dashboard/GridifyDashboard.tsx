@@ -191,7 +191,7 @@ const GridifyDashboard = memo(() => {
     <RegionProvider>
     <SAPSCrimeProvider>
       <div className={cn(
-        "h-screen flex overflow-hidden bg-background",
+        "h-dvh h-screen flex flex-col sm:flex-row w-full max-w-full overflow-x-hidden overflow-y-hidden bg-background",
         isSafeSpaceView && "safe-space-theme"
       )}>
         {/* Mobile overlay — FIX 8: z-[85] above ThreatHeader */}
