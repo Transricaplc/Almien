@@ -32,16 +32,16 @@ const Welcome = () => {
 
       {/* Centered content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 0 40px hsl(174 60% 50% / 0.25)' }}>
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 0 40px hsl(263 70% 58% / 0.35)' }}>
           Almien
         </h1>
-        <p className="mt-4 text-lg sm:text-xl md:text-2xl font-medium text-white/90 tracking-wide" style={{ textShadow: '0 0 20px hsl(174 60% 50% / 0.15)' }}>
-          Safety Intelligence at Your Fingertips
+        <p className="mt-4 text-lg sm:text-xl md:text-2xl font-medium text-white/90 tracking-wide" style={{ textShadow: '0 0 20px hsl(263 70% 58% / 0.2)' }}>
+          Your Safety, Always Near
         </p>
 
         <button
           onClick={handleEnter}
-          className="mt-10 px-10 py-4 sm:px-14 sm:py-5 rounded-full text-lg sm:text-xl font-bold text-white bg-[hsl(174,60%,42%)] hover:bg-[hsl(174,60%,48%)] active:scale-[0.97] transition-all shadow-lg shadow-[hsl(174,60%,30%)/0.4] hover:shadow-xl"
+          className="mt-10 px-10 py-4 sm:px-14 sm:py-5 rounded-full text-lg sm:text-xl font-bold text-white bg-primary hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-primary/30 hover:shadow-xl"
         >
           Enter
         </button>
