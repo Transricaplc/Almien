@@ -445,7 +445,7 @@ const SAPSLinkTab = () => {
             </Button>
           </div>
           <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-            <p className="text-[11px] text-muted-foreground">Enter your SAPS case reference number to check status and log follow-up notes. Your case history is stored securely in your Gridfy profile.</p>
+            <p className="text-[11px] text-muted-foreground">Enter your SAPS case reference number to check status and log follow-up notes. Your case history is stored securely in your Almien profile.</p>
           </div>
         </CardContent>
       </Card>

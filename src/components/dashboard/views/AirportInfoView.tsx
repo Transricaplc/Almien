@@ -7,7 +7,7 @@ import { Plane, Phone, Lock, MapPin, Clock, Info, Shield, Zap, Wind, AlertTriang
 import { useFlights } from '@/hooks/useFlights';
 import { useWeather, getWeatherIcon } from '@/hooks/useWeather';
 import { useESPStatus, useESPArea, useProxyWeather } from '@/hooks/useApiProxy';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props { onUpgrade: (trigger?: string) => void; onNavigate: (view: ViewId) => void; }
 

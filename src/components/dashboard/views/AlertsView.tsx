@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Bell, Crown, Lock, AlertTriangle, MapPin, Clock, Shield } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

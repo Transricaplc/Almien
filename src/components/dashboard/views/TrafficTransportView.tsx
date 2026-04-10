@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { TrafficCone, AlertTriangle, TrainFront, Bus, Clock, Lock } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

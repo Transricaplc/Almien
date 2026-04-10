@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Mountain, Clock, AlertTriangle, Crown, Lock, ArrowRight, CheckCircle } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

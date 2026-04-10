@@ -23,7 +23,7 @@ export interface UserProfile {
   subscriptionTier: 'free' | 'elite';
 }
 
-interface GridifyStore {
+interface AlmienStore {
   crimeAlerts: CrimeAlert[];
   userProfile: UserProfile | null;
   isLoading: boolean;
@@ -75,7 +75,7 @@ function generateMockCrimeAlerts(): CrimeAlert[] {
   }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
-export const useGridifyStore = create<GridifyStore>()(
+export const useAlmienStore = create<AlmienStore>()(
   persist(
     (set) => ({
       crimeAlerts: generateMockCrimeAlerts(),
@@ -132,7 +132,7 @@ export const useGridifyStore = create<GridifyStore>()(
       },
     }),
     {
-      name: 'gridify-storage',
+      name: 'almien-storage',
       partialize: (state) => ({
         userProfile: state.userProfile,
         crimeAlerts: state.crimeAlerts.slice(0, 15),

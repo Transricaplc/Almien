@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Building2, Shield, Truck, Plane, Lock, Crown, Star, ArrowRight } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
@@ -14,7 +14,7 @@ const tools = [
     title: '🏢 Real Estate Intelligence',
     desc: 'Neighbourhood safety reports, investment scores, and trend analysis for property professionals.',
     features: ['Property safety report generator', '3-year trend analysis', 'Investment safety scoring', 'Comparable area analysis'],
-    testimonial: '"Gridfy has transformed how I present neighborhood data to buyers." — Sarah M., Realtor',
+    testimonial: '"Almien has transformed how I present neighborhood data to buyers." — Sarah M., Realtor',
   },
   {
     icon: Shield,
@@ -28,14 +28,14 @@ const tools = [
     title: '🚚 Logistics & Fleet Management',
     desc: 'Multi-stop route optimization with safety scoring and delivery zone analysis.',
     features: ['Multi-stop route planner (20+ stops)', 'Delivery zone analyzer', 'Time-window safety recommendations', 'Fleet tracking integration'],
-    testimonial: '"Reduced delivery incidents by 40% using Gridfy routes." — Pieter V., Ops Manager',
+    testimonial: '"Reduced delivery incidents by 40% using Almien routes." — Pieter V., Ops Manager',
   },
   {
     icon: Plane,
     title: '✈️ Tourism & Hospitality',
     desc: 'Venue safety analysis, itinerary checking, and guest safety guide generation.',
     features: ['Venue safety analysis (500m radius)', 'Multi-day itinerary safety checker', 'Guest safety guide generator', 'Walking safety radius maps'],
-    testimonial: '"Our guests feel safer with Gridfy reports at check-in." — Lisa T., Hotel GM',
+    testimonial: '"Our guests feel safer with Almien reports at check-in." — Lisa T., Hotel GM',
   },
 ];
 

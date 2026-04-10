@@ -2,7 +2,7 @@ import { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Search, MapPin, Layers, Locate, Plus, Minus, Map, Clock, X, Shield, Flame, Phone, AlertTriangle, Share2, FileWarning, Navigation, WifiOff, Info, LogIn, User } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 import ZoneBottomSheet, { type ZoneData } from '../widgets/ZoneBottomSheet';
 import { getHourlyRisk, getRiskAtSlot, getCurrentSlotIndex, getMapInsightText } from '@/data/timeAnalyticsData';
 import { areasData, type AreaData } from '@/data/emergencyContacts';
@@ -91,12 +91,12 @@ const FirstVisitModal = memo(({ onClose }: { onClose: () => void }) => (
           <Shield className="w-6 h-6 text-accent-safe" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-foreground">Welcome to Gridfy</h2>
+          <h2 className="text-lg font-black text-foreground">Welcome to Almien</h2>
           <p className="text-xs text-muted-foreground">Urban Safety Intelligence</p>
         </div>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-        Gridfy helps you navigate safer in South African cities — powered by 
+        Almien helps you navigate safer in South African cities — powered by 
         <span className="text-foreground font-semibold"> SAPS crime statistics</span> and 
         <span className="text-foreground font-semibold"> verified community reports</span>.
       </p>
@@ -238,7 +238,7 @@ const MapSOSDock = memo(({ onReport, onSafeRoute }: { onReport: () => void; onSa
         (pos) => {
           const url = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
           if (navigator.share) {
-            navigator.share({ title: 'My Live Location — Gridfy SOS', url });
+            navigator.share({ title: 'My Live Location — Almien SOS', url });
           } else {
             navigator.clipboard.writeText(url);
             toast.success('Location link copied to clipboard');
@@ -465,7 +465,7 @@ const DataSourcesFooter = memo(() => (
   <div className="flex items-center justify-center gap-1.5 py-1.5 px-3">
     <Info className="w-3 h-3 text-muted-foreground/50 shrink-0" />
     <span className="text-[8px] text-muted-foreground/60 font-mono">
-      Data: SAPS crime stats + verified community reports | Privacy protected | © Gridfy {new Date().getFullYear()}
+      Data: SAPS crime stats + verified community reports | Privacy protected | © Almien {new Date().getFullYear()}
     </span>
   </div>
 ));
@@ -488,7 +488,7 @@ const MapFullView = memo(({ onNavigate }: Props) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [riskPopupArea, setRiskPopupArea] = useState<AreaData | null>(null);
   const [showFirstVisit, setShowFirstVisit] = useState(() => {
-    return !localStorage.getItem('gridfy-map-visited');
+    return !localStorage.getItem('almien-map-visited');
   });
 
   // Simulate map data loading
@@ -563,7 +563,7 @@ const MapFullView = memo(({ onNavigate }: Props) => {
   }, []);
 
   const handleCloseFirstVisit = useCallback(() => {
-    localStorage.setItem('gridfy-map-visited', 'true');
+    localStorage.setItem('almien-map-visited', 'true');
     setShowFirstVisit(false);
   }, []);
 

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-interface GridifyHeaderProps {
+interface AlmienHeaderProps {
   onSearch?: () => void;
   onNotifications?: () => void;
   onAnalytics?: () => void;
@@ -14,7 +14,7 @@ interface GridifyHeaderProps {
   className?: string;
 }
 
-const GridifyHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools, onRecommender, className }: GridifyHeaderProps) => {
+const AlmienHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools, onRecommender, className }: AlmienHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -32,7 +32,7 @@ const GridifyHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools
           </div>
           <div>
             <h1 className="text-base font-extrabold tracking-tight text-foreground leading-none">
-              GRIDFY
+              ALMIEN
             </h1>
             <p className="text-[9px] text-muted-foreground font-medium tracking-wider uppercase leading-none mt-0.5">
               Cape Town Safety
@@ -158,5 +158,5 @@ const GridifyHeader = memo(({ onSearch, onNotifications, onAnalytics, onProTools
   );
 });
 
-GridifyHeader.displayName = 'GridifyHeader';
-export default GridifyHeader;
+AlmienHeader.displayName = 'AlmienHeader';
+export default AlmienHeader;

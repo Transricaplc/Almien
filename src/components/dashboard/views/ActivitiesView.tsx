@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, MapPin, Clock, Star, Crown, Lock } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
 import { capeTownAreas, type ActivityCategory } from '@/data/capeTownSafetyData';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

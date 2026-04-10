@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import SafetyPulse from '../SafetyPulse';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
@@ -409,8 +409,8 @@ const CommunityIntelView = memo(({ onUpgrade }: Props) => {
             <div className="p-3 rounded-lg bg-accent text-sm text-muted-foreground mb-4">
               <p className="font-semibold text-foreground mb-1">How it works:</p>
               <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Add Gridfy as an admin to your community WhatsApp group</li>
-                <li>Gridfy passively monitors for safety keywords</li>
+                <li>Add Almien as an admin to your community WhatsApp group</li>
+                <li>Almien passively monitors for safety keywords</li>
                 <li>Matching messages appear on the map as "WhatsApp Source — Unverified"</li>
                 <li>You can revoke access at any time</li>
               </ol>
@@ -432,7 +432,7 @@ const CommunityIntelView = memo(({ onUpgrade }: Props) => {
               <h3 className="font-semibold text-foreground text-sm">Privacy Notice</h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Gridfy only processes messages containing safety-related keywords. Personal messages are never stored.
+              Almien only processes messages containing safety-related keywords. Personal messages are never stored.
               All ingested data is anonymised — no phone numbers or personal identifiers are captured.
               You must explicitly authorise this connection and can revoke it at any time.
             </p>
@@ -468,7 +468,7 @@ const CommunityIntelView = memo(({ onUpgrade }: Props) => {
           <div className="p-5 rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-bold text-foreground">Your Gridfy Points</h2>
+                <h2 className="font-bold text-foreground">Your Almien Points</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">Earn points for keeping your community safe</p>
               </div>
               <div className="text-right">
@@ -624,7 +624,7 @@ const CommunityIntelView = memo(({ onUpgrade }: Props) => {
           <h3 className="font-bold text-foreground">Elite Community Features</h3>
         </div>
         <ul className="space-y-1.5 mb-4">
-          {['Create and post new reports', 'Comment and upvote reports', 'WhatsApp group auto-ingestion', 'Earn and redeem Gridfy Points', 'Daily AI briefing notifications'].map(f => (
+          {['Create and post new reports', 'Comment and upvote reports', 'WhatsApp group auto-ingestion', 'Earn and redeem Almien Points', 'Daily AI briefing notifications'].map(f => (
             <li key={f} className="text-sm text-muted-foreground flex items-center gap-2">
               <Crown className="w-3 h-3 text-primary shrink-0" /> {f}
             </li>

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { X, Shield, MapPin, Clock, Navigation, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 export interface ZoneData {
   id: string;

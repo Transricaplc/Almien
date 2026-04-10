@@ -128,11 +128,11 @@ export default function AttractionCard({ a }: { a: Attraction }) {
           </div>
         </div>
 
-        {/* Earn with Gridfy badge for sponsored */}
+        {/* Earn with Almien badge for sponsored */}
         {a.isSponsored && (
           <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
             <Sparkles className="w-2.5 h-2.5" />
-            <span>Earn with Gridfy</span>
+            <span>Earn with Almien</span>
           </div>
         )}
 

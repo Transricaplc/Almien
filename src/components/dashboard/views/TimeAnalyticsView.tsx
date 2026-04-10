@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp, TrendingDown, Lock, ArrowRight } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

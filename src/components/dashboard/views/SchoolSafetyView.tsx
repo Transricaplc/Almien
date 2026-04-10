@@ -422,7 +422,7 @@ const MissingTab = () => {
             <Megaphone className="w-4 h-4 text-destructive" />
             Report Missing Child
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Triggers an Amber-Alert style broadcast to all Gridfy users within 10km. Alert remains active until cancelled.</p>
+          <p className="text-xs text-muted-foreground">Triggers an Amber-Alert style broadcast to all Almien users within 10km. Alert remains active until cancelled.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
@@ -445,7 +445,7 @@ const MissingTab = () => {
           </Button>
           {broadcast && (
             <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
-              <p className="text-xs text-destructive font-medium">🚨 MISSING CHILD ALERT broadcast to all Gridfy users within 10km of last-seen location. SAPS has been notified. Do NOT cancel unless the child is found.</p>
+              <p className="text-xs text-destructive font-medium">🚨 MISSING CHILD ALERT broadcast to all Almien users within 10km of last-seen location. SAPS has been notified. Do NOT cancel unless the child is found.</p>
             </div>
           )}
         </CardContent>

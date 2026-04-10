@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
@@ -460,7 +460,7 @@ const SafeSpaceView = memo(({ }: Props) => {
       {/* Footer */}
       <div className="text-center pt-4 border-t border-accent-gbv/10">
         <p className="text-[10px] text-muted-foreground">
-          Safe Space by Gridfy · All information is confidential · If you are in immediate danger, call 10111
+          Safe Space by Almien · All information is confidential · If you are in immediate danger, call 10111
         </p>
       </div>
     </div>

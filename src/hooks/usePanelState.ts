@@ -19,7 +19,7 @@ export interface PanelState {
   mode: PanelMode;
 }
 
-const STORAGE_KEY = 'gridfy-panel-states';
+const STORAGE_KEY = 'almien-panel-states';
 
 const defaultPanelState: PanelState = {
   position: { x: 0, y: 16 },

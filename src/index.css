@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gridfy — Charcoal Design System v1.0 */
+/* Almien — Charcoal Design System v1.0 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
@@ -58,10 +58,10 @@
     --safety-orange: 27 96% 55%;
     --safety-red: var(--accent-threat);
 
-    /* Gridfy tactical palette aliases */
-    --gridfy-green: var(--accent-safe);
-    --gridfy-red: var(--accent-threat);
-    --gridfy-amber: var(--accent-warning);
+    /* Almien tactical palette aliases */
+    --almien-green: var(--accent-safe);
+    --almien-red: var(--accent-threat);
+    --almien-amber: var(--accent-warning);
 
     /* Text tokens */
     --text-primary: 204 30% 93%;

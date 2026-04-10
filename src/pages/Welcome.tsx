@@ -33,7 +33,7 @@ const Welcome = () => {
       {/* Centered content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 0 40px hsl(174 60% 50% / 0.25)' }}>
-          Gridfy
+          Almien
         </h1>
         <p className="mt-4 text-lg sm:text-xl md:text-2xl font-medium text-white/90 tracking-wide" style={{ textShadow: '0 0 20px hsl(174 60% 50% / 0.15)' }}>
           Safety Intelligence at Your Fingertips
@@ -58,10 +58,10 @@ const Welcome = () => {
           ))}
         </nav>
         <p className="mt-2 text-[11px] sm:text-xs text-white/50">
-          © 2026 Gridfy • Cape Town, Western Cape
+          © 2026 Almien • Cape Town, Western Cape
         </p>
         <p className="mt-1 text-[10px] sm:text-[11px] text-white/40 max-w-xl mx-auto leading-relaxed">
-          Gridfy is fully compliant with the Protection of Personal Information Act (POPIA). We respect your privacy and protect all personal data. By entering you agree to our Terms &amp; Conditions.
+          Almien is fully compliant with the Protection of Personal Information Act (POPIA). We respect your privacy and protect all personal data. By entering you agree to our Terms &amp; Conditions.
         </p>
       </footer>
     </div>

@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, X, ChevronDown, ChevronUp, Zap, Moon, Car, Shield } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface GuardianAlertProps {
   onNavigate: (view: ViewId) => void;

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Shield, MapPin, Navigation, Users, User } from 'lucide-react';
-import type { ViewId } from './GridifyDashboard';
+import type { ViewId } from './AlmienDashboard';
 
 interface BottomNavBarProps {
   activeView: ViewId;
