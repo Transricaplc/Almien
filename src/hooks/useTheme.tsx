@@ -22,7 +22,7 @@ const getSystemTheme = (): ResolvedTheme => {
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('gridfy-theme') as Theme;
+      const stored = localStorage.getItem('almien-theme') as Theme;
       return stored || 'system';
     }
     return 'system';
@@ -64,7 +64,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       applyTheme(theme as ResolvedTheme);
     }
     
-    localStorage.setItem('gridfy-theme', theme);
+    localStorage.setItem('almien-theme', theme);
   }, [theme]);
 
   const cycleTheme = () => {

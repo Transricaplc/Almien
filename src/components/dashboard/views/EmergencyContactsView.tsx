@@ -8,7 +8,7 @@ import {
   westernCapeDirectory, getEmergencyContacts, searchDirectory, PROVINCE_WIDE,
   type SuburbEmergencyEntry, type EmergencyContactsResult,
 } from '@/data/westernCapeEmergencyDirectory';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

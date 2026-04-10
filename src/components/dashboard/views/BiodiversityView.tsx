@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { Leaf, TreePine, Bird, Droplets, TrendingUp, MapPin } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { cn } from '@/lib/utils';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

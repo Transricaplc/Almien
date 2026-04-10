@@ -60,7 +60,7 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
         <Shield className="w-10 h-10 text-primary" />
       </div>
       <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Gridfy</h1>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Almien</h1>
         <p className="text-lg text-foreground mt-2">Safety Intelligence.</p>
         <p className="text-lg text-foreground">Every South African.</p>
         <p className="text-sm text-muted-foreground mt-3">Built for Cape Town. Built for real life.</p>
@@ -78,7 +78,7 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
       <div>
         <h2 className="text-2xl font-bold text-foreground">Know your risk in real time</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          Gridfy uses your location to show live crime data for your exact area.
+          Almien uses your location to show live crime data for your exact area.
         </p>
       </div>
       <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
@@ -151,7 +151,7 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
       <div>
         <h2 className="text-2xl font-bold text-foreground">Never miss a threat in your area</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-          Gridfy alerts you to incidents near you, in real time.
+          Almien alerts you to incidents near you, in real time.
         </p>
       </div>
       {/* Alert preferences */}

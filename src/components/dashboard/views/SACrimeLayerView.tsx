@@ -410,7 +410,7 @@ const SACrimeLayerView = memo(() => {
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Gridfy Safety Route: ${startSuburb} → ${destSuburb}. Safest: ${routeOptions[0].name} (${routeOptions[0].safety}%)`)}`, '_blank')}>
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Almien Safety Route: ${startSuburb} → ${destSuburb}. Safest: ${routeOptions[0].name} (${routeOptions[0].safety}%)`)}`, '_blank')}>
                       <Share2 className="w-3.5 h-3.5 mr-1.5" /> Share via WhatsApp
                     </Button>
                   </>

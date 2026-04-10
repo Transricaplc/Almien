@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
@@ -231,7 +231,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
         {smsFallback && (
           <div className="mt-3 space-y-2">
             <div className="p-3 rounded-lg bg-secondary/50 space-y-2">
-              <p className="text-xs text-muted-foreground">📱 SMS template: <span className="font-mono text-foreground">"GRIDFY PANIC ALERT — [Name] needs help at [GPS]. Time: [timestamp]."</span></p>
+              <p className="text-xs text-muted-foreground">📱 SMS template: <span className="font-mono text-foreground">"ALMIEN PANIC ALERT — [Name] needs help at [GPS]. Time: [timestamp]."</span></p>
             </div>
             <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20">
               <div className="text-xs font-semibold text-foreground mb-1">Offline Panic Sequence:</div>
@@ -316,7 +316,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           <FileText className="w-5 h-5 text-primary" /> Daily Offline Briefing
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Each morning, Gridfy caches a full "Today's Safety Briefing" for your area. Readable all day without any network connection.
+          Each morning, Almien caches a full "Today's Safety Briefing" for your area. Readable all day without any network connection.
         </p>
         <div className="flex items-center justify-between p-4 rounded-lg border border-border mb-3">
           <div>
@@ -361,7 +361,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           <EyeOff className="w-5 h-5 text-purple-400" /> Discreet Mode
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          When enabled, the Gridfy app disguises itself as a generic utility app.
+          When enabled, the Almien app disguises itself as a generic utility app.
           A hidden gesture is required to access the real app.
         </p>
         <div className="flex items-center justify-between p-4 rounded-lg border border-purple-500/15 bg-card mb-3">
@@ -384,7 +384,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
               {[
                 '1. The app icon will change to a generic "Weather" icon on your home screen.',
                 '2. Opening the app will show a convincing weather forecast screen.',
-                '3. To unlock Gridfy: long-press the bottom-left corner for 2 seconds, then swipe up.',
+                '3. To unlock Almien: long-press the bottom-left corner for 2 seconds, then swipe up.',
                 '4. The real app will open. Your data remains fully secure.',
                 '5. To disable: return to Settings → Discreet Mode → toggle off.',
               ].map(step => (
@@ -424,13 +424,13 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           <FileText className="w-5 h-5 text-accent-info" /> Data Transparency & POPIA
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Gridfy is committed to full compliance with the Protection of Personal Information Act (POPIA) and the City of Cape Town CCTV By-Law (2023).
+          Almien is committed to full compliance with the Protection of Personal Information Act (POPIA) and the City of Cape Town CCTV By-Law (2023).
         </p>
         <div className="space-y-2">
           {[
             { label: 'Location Data', desc: 'Encrypted at rest (AES-256). Never sold. Used only for safety routing and emergency response.' },
             { label: 'Identity Data', desc: 'Siloed from location data. Only linked during active SOS events with explicit consent.' },
-            { label: 'CCTV Feed Access', desc: 'Gridfy displays CCTV metadata only (status, location). No live feeds are accessed or stored.' },
+            { label: 'CCTV Feed Access', desc: 'Almien displays CCTV metadata only (status, location). No live feeds are accessed or stored.' },
             { label: 'Incident Reports', desc: 'Anonymised by default. Reporter identity only disclosed to SAPS under valid Section 205 subpoena.' },
             { label: 'Data Retention', desc: 'Personal location history auto-purged after 30 days. Anonymised aggregate data retained for safety analytics.' },
           ].map(item => (
@@ -443,7 +443,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
         <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/50 flex items-start gap-2">
           <Shield className="w-4 h-4 text-accent-info mt-0.5 shrink-0" />
           <p className="text-[11px] text-muted-foreground">
-            Information Officer: privacy@gridify.co.za · POPIA Regulator Ref: ISPA/2026/0042 · CoCT CCTV By-Law compliant
+            Information Officer: privacy@almien.co.za · POPIA Regulator Ref: ISPA/2026/0042 · CoCT CCTV By-Law compliant
           </p>
         </div>
       </div>
@@ -452,7 +452,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
       <div className="p-6 rounded-xl border border-border bg-card">
         <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2"><HelpCircle className="w-5 h-5" /> Support</h2>
         <div className="space-y-2 text-sm">
-          <div className="text-muted-foreground">Email: support@gridify.co.za</div>
+          <div className="text-muted-foreground">Email: support@almien.co.za</div>
           <div className="text-muted-foreground">Elite: 24/7 Priority Support</div>
         </div>
         <div className="flex gap-3 mt-4">
@@ -465,10 +465,10 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
       {/* USSD FALLBACK & ABOUT */}
       {/* ═══════════════════════════════════════════════════════ */}
       <div className="p-6 rounded-xl border border-border bg-card">
-        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> About Gridfy</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> About Almien</h2>
         <div className="space-y-1 text-sm text-muted-foreground">
-          <div>Gridfy v2.0.0</div>
-          <div>© 2026 Gridfy Safety Intelligence</div>
+          <div>Almien v2.0.0</div>
+          <div>© 2026 Almien Safety Intelligence</div>
           <div className="flex gap-3 text-xs text-primary mt-2">
             <a href="#" className="hover:underline">Terms</a>
             <a href="#" className="hover:underline">Privacy</a>
@@ -484,11 +484,11 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           <Smartphone className="w-5 h-5 text-primary" /> USSD Access — No Data Required
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Gridfy's core safety features are available via USSD for feature phone users and those without mobile data. Dial from any phone:
+          Almien's core safety features are available via USSD for feature phone users and those without mobile data. Dial from any phone:
         </p>
 
         <div className="p-4 rounded-lg bg-card border border-primary/30 text-center mb-4">
-          <div className="text-2xl font-black text-primary font-mono tracking-wider">*120*GRIDFY#</div>
+          <div className="text-2xl font-black text-primary font-mono tracking-wider">*120*ALMIEN#</div>
           <p className="text-xs text-muted-foreground mt-1">Works on any phone · No data required · Standard USSD rates apply</p>
         </div>
 
@@ -498,7 +498,7 @@ const SettingsView = memo(({ onUpgrade }: Props) => {
           </div>
           <div className="p-4 space-y-3 font-mono text-sm">
             <div>
-              <div className="text-foreground font-semibold">Welcome to Gridfy Safety</div>
+              <div className="text-foreground font-semibold">Welcome to Almien Safety</div>
               <div className="text-muted-foreground text-xs mt-1">Select an option:</div>
             </div>
             <div className="space-y-2 pl-2 border-l-2 border-primary/30">

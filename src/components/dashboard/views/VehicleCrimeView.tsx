@@ -274,7 +274,7 @@ const StolenTab = () => {
             <Siren className="w-4 h-4 text-destructive" />
             Report Stolen / Suspicious Vehicle
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Alert all Gridfy users within 15km radius immediately.</p>
+          <p className="text-xs text-muted-foreground">Alert all Almien users within 15km radius immediately.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
@@ -374,7 +374,7 @@ const CITTab = () => (
             <Ban className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
             <div>
               <div className="text-xs font-semibold text-destructive">Active Alert Protocol</div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">When a CIT heist or ATM bombing is in progress, all Gridfy users within 2km receive an immediate "AVOID AREA" push notification with alternate routing.</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">When a CIT heist or ATM bombing is in progress, all Almien users within 2km receive an immediate "AVOID AREA" push notification with alternate routing.</p>
             </div>
           </div>
         </div>

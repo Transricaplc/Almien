@@ -80,7 +80,7 @@ const VirtualEscortTimer = () => {
 
   const copyEmergencyInfo = useCallback(async () => {
     const info = [
-      `⚠️ GRIDFY SAFETY ALERT`,
+      `⚠️ ALMIEN SAFETY ALERT`,
       `Timer expired — no check-in received.`,
       coords ? `📍 Last GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` : '',
       coords ? `🗺️ https://www.google.com/maps?q=${coords.lat},${coords.lng}` : '',
@@ -133,7 +133,7 @@ const VirtualEscortTimer = () => {
       copyEmergencyInfo();
       // Browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('⚠️ Gridfy Safety Alert', {
+        new Notification('⚠️ Almien Safety Alert', {
           body: 'Your virtual escort timer has expired. Emergency info copied to clipboard.',
           icon: '/favicon.ico',
         });

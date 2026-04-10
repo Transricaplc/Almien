@@ -5,7 +5,7 @@ import SafetyScoreBadge from '../SafetyScoreBadge';
 import VirtualEscortTimer from '../VirtualEscortTimer';
 import ZeroVisibilityZones from '../ZeroVisibilityZones';
 import { capeTownAreas, getTopSafeAreas } from '@/data/capeTownSafetyData';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

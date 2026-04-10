@@ -8,7 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import SafetyScoreRing from '../SafetyScoreRing';
 import MetricStrip from '../MetricStrip';
 import GuardianAlert from '../widgets/GuardianAlert';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 import TimeRiskStrip from '../widgets/TimeRiskStrip';
 import AreaIntelCard from '../widgets/AreaIntelCard';
 import { getTimeWindows } from '@/data/timeAnalyticsData';

@@ -127,7 +127,7 @@ const SOSActionDock = memo(({ isTravelerMode = false }: SOSActionDockProps) => {
               <CollapsibleContent className="py-2 border-t border-[hsl(var(--border-subtle)/0.2)] mt-1">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[9px]">
                   <LegalCard icon={Shield} title="POPIA Compliant" color="text-primary">
-                    Gridfy complies with POPIA. No personally identifiable surveillance data stored.
+                    Almien complies with POPIA. No personally identifiable surveillance data stored.
                   </LegalCard>
                   <LegalCard icon={Lock} title="CoCT CCTV By-Law" color="text-emerald-400">
                     Adheres to City of Cape Town's CCTV By-Law (2023) for third-party systems.
@@ -138,7 +138,7 @@ const SOSActionDock = memo(({ isTravelerMode = false }: SOSActionDockProps) => {
                 </div>
                 <div className="mt-2 text-center">
                   <p className="text-[8px] text-muted-foreground/70 font-mono">
-                    Gridfy is a product of <span className="font-semibold">Evenor Holdings (Pty) Ltd</span> © {new Date().getFullYear()}
+                    Almien is a product of <span className="font-semibold">Evenor Holdings (Pty) Ltd</span> © {new Date().getFullYear()}
                   </p>
                 </div>
               </CollapsibleContent>

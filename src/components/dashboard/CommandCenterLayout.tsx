@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * Command Center Layout
- * Implements the Gridfy Design System architecture:
+ * Implements the Almien Design System architecture:
  * - Top Status Bar (Context & Alerts)
  * - Left Control Panel (View Mode, Layers, Filters, Actions)
  * - Primary Map Canvas (≥65% of screen)

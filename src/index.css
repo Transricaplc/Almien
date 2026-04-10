@@ -2,146 +2,148 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gridfy — Charcoal Design System v1.0 */
+/* Almien — Purple Safety Design System v1.0 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Surface hierarchy — charcoal layering system */
-    --surface-base: 210 30% 5%;
-    --surface-01: 207 25% 10%;
-    --surface-02: 208 22% 14%;
-    --surface-deep: 224 40% 9%;
-    --surface-overlay: 210 33% 6%;
+    /* Surface hierarchy — deep dark layering */
+    --surface-base: 240 7% 4%;
+    --surface-01: 240 5% 10%;
+    --surface-02: 240 4% 15%;
+    --surface-deep: 260 20% 6%;
+    --surface-overlay: 240 7% 5%;
 
     /* Map to shadcn tokens */
     --background: var(--surface-base);
-    --foreground: 204 30% 93%;
+    --foreground: 0 0% 100%;
 
     --card: var(--surface-01);
-    --card-foreground: 204 30% 93%;
+    --card-foreground: 0 0% 100%;
 
     --popover: var(--surface-02);
-    --popover-foreground: 204 30% 93%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 152 100% 45%;
-    --primary-foreground: 210 30% 5%;
+    /* Almien Purple primary */
+    --primary: 263 70% 58%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: var(--surface-02);
-    --secondary-foreground: 204 30% 93%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: var(--surface-02);
-    --muted-foreground: 200 20% 52%;
+    --muted-foreground: 240 5% 52%;
 
-    --accent: 152 25% 14%;
-    --accent-foreground: 204 30% 93%;
+    --accent: 263 25% 16%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 205 25% 16%;
-    --input: 205 25% 16%;
-    --ring: 152 100% 45%;
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --ring: 263 70% 58%;
 
     --radius: 0.75rem;
 
     /* ── Accent tokens — semantic, never decorative ── */
-    --accent-safe: 152 100% 45%;
-    --accent-warning: 33 100% 50%;
+    --accent-safe: 160 84% 39%;
+    --accent-warning: 38 92% 50%;
     --accent-threat: 4 84% 57%;
     --accent-gbv: 270 95% 75%;
     --accent-info: 199 89% 60%;
 
-    /* Safety aliases (backward compat) */
+    /* Safety aliases */
     --safety-green: var(--accent-safe);
     --safety-yellow: var(--accent-warning);
     --safety-orange: 27 96% 55%;
     --safety-red: var(--accent-threat);
 
-    /* Gridfy tactical palette aliases */
-    --gridfy-green: var(--accent-safe);
-    --gridfy-red: var(--accent-threat);
-    --gridfy-amber: var(--accent-warning);
+    /* Almien palette aliases */
+    --almien-purple: 263 70% 58%;
+    --almien-violet: 263 86% 77%;
+    --almien-safe: var(--accent-safe);
+    --almien-danger: var(--accent-threat);
 
     /* Text tokens */
-    --text-primary: 204 30% 93%;
-    --text-secondary: 200 20% 52%;
-    --text-muted: 202 20% 30%;
-    --text-inverse: 210 30% 5%;
+    --text-primary: 0 0% 100%;
+    --text-secondary: 0 0% 70%;
+    --text-muted: 0 0% 50%;
+    --text-inverse: 240 7% 4%;
 
     /* Border tokens */
-    --border-subtle: 205 25% 16%;
-    --border-active: 206 22% 23%;
+    --border-subtle: 240 5% 16%;
+    --border-active: 263 30% 25%;
 
     /* Elite gold gradient stops */
-    --elite-gold-from: 51 100% 50%;
-    --elite-gold-to: 33 100% 50%;
+    --elite-gold-from: 263 70% 58%;
+    --elite-gold-to: 263 86% 77%;
 
     /* Surface convenience tokens */
     --surface: var(--surface-01);
     --surface-border: var(--border-subtle);
 
     /* Threat header tints */
-    --threat-low: 145 40% 8%;
+    --threat-low: 160 40% 8%;
     --threat-elevated: 36 40% 8%;
     --threat-high: 4 40% 8%;
     --threat-critical: var(--surface-deep);
 
     /* Sidebar */
     --sidebar-background: var(--surface-base);
-    --sidebar-foreground: 204 30% 90%;
-    --sidebar-primary: var(--accent-safe);
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 145 20% 12%;
-    --sidebar-accent-foreground: 204 30% 93%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: var(--almien-purple);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 263 20% 14%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: var(--border-subtle);
-    --sidebar-ring: var(--accent-safe);
+    --sidebar-ring: var(--almien-purple);
 
     /* Safe Space purple — absorbed as deep surface accent */
     --safe-space-bg: var(--surface-deep);
     --safe-space-accent: var(--accent-gbv);
-    --safe-space-foreground: 204 30% 93%;
+    --safe-space-foreground: 0 0% 100%;
   }
 
-  /* Dark mode is the default — light mode maps identically for consistency */
+  /* Dark mode is the default — light mode maps identically */
   .dark {
     --background: var(--surface-base);
-    --foreground: 204 30% 93%;
+    --foreground: 0 0% 100%;
     --card: var(--surface-01);
-    --card-foreground: 204 30% 93%;
+    --card-foreground: 0 0% 100%;
     --popover: var(--surface-02);
-    --popover-foreground: 204 30% 93%;
-    --primary: 152 100% 45%;
-    --primary-foreground: 210 30% 5%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 0 0% 100%;
     --secondary: var(--surface-02);
-    --secondary-foreground: 204 30% 93%;
+    --secondary-foreground: 0 0% 100%;
     --muted: var(--surface-02);
-    --muted-foreground: 200 20% 52%;
-    --accent: 145 25% 14%;
-    --accent-foreground: 204 30% 93%;
+    --muted-foreground: 240 5% 52%;
+    --accent: 263 25% 16%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 205 25% 16%;
-    --input: 205 25% 16%;
-    --ring: 152 100% 45%;
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --ring: 263 70% 58%;
   }
 
-  /* Safe Space theme — uses surface-deep as base, accent-gbv as primary */
+  /* Safe Space theme */
   .safe-space-theme {
     --background: var(--surface-deep);
-    --foreground: 204 30% 93%;
-    --card: 224 35% 12%;
-    --card-foreground: 204 30% 93%;
+    --foreground: 0 0% 100%;
+    --card: 260 35% 12%;
+    --card-foreground: 0 0% 100%;
     --primary: var(--accent-gbv);
     --primary-foreground: var(--surface-deep);
-    --secondary: 224 30% 15%;
-    --secondary-foreground: 204 30% 93%;
-    --muted: 224 30% 15%;
+    --secondary: 260 30% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 260 30% 15%;
     --muted-foreground: 270 20% 55%;
     --accent: 270 30% 16%;
     --accent-foreground: 270 95% 75%;
-    --border: 224 25% 18%;
-    --input: 224 25% 18%;
+    --border: 260 25% 18%;
+    --input: 260 25% 18%;
     --ring: var(--accent-gbv);
   }
 
@@ -151,8 +153,8 @@
     --foreground: 0 0% 100%;
     --card: 0 0% 6%;
     --card-foreground: 0 0% 100%;
-    --primary: 145 100% 50%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 263 100% 65%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 12%;
@@ -191,13 +193,11 @@
     touch-action: manipulation;
   }
 
-  /* Force all images, videos, iframes to respect container width */
   img, video, iframe, canvas, svg {
     max-width: 100%;
     height: auto;
   }
 
-  /* Prevent tables from blowing out containers */
   table {
     max-width: 100%;
     overflow-x: auto;
@@ -221,19 +221,19 @@
   .text-safety-yellow { color: hsl(var(--accent-warning)); }
   .text-safety-red { color: hsl(var(--accent-threat)); }
 
-  /* Elite gold gradient */
+  /* Elite / Premium gradient — now Almien purple */
   .bg-elite-gradient {
-    background: linear-gradient(135deg, hsl(var(--elite-gold-from)), hsl(var(--elite-gold-to)));
+    background: linear-gradient(135deg, hsl(var(--almien-purple)), hsl(var(--almien-violet)));
   }
 
   .text-elite-gradient {
-    background: linear-gradient(135deg, hsl(var(--elite-gold-from)), hsl(var(--elite-gold-to)));
+    background: linear-gradient(135deg, hsl(var(--almien-purple)), hsl(var(--almien-violet)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Card hover — elevation via surface layering, no shadows */
+  /* Card hover */
   .card-hover {
     @apply transition-all duration-200;
   }
@@ -308,8 +308,8 @@
     animation: pulse-glow 2s infinite;
   }
   @keyframes pulse-glow {
-    0%, 100% { opacity: 1; box-shadow: 0 0 6px hsl(var(--accent-safe) / 0.5); }
-    50% { opacity: 0.7; box-shadow: 0 0 16px hsl(var(--accent-safe) / 0.8); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px hsl(var(--almien-purple) / 0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 16px hsl(var(--almien-purple) / 0.8); }
   }
 
   /* SOS pulse — the ONLY shadow in the system */
@@ -321,7 +321,7 @@
     50% { box-shadow: 0 0 0 12px hsl(var(--accent-threat) / 0); }
   }
 
-  /* Skeleton shimmer — Linear speed */
+  /* Skeleton shimmer */
   .skeleton {
     @apply rounded-lg;
     background: linear-gradient(
@@ -343,7 +343,7 @@
     letter-spacing: 0.1em;
   }
 
-  /* Mobile tap feedback — scale-down for native feel */
+  /* Mobile tap feedback */
   @media (max-width: 767px) {
     .card-hover {
       @apply active:scale-[0.98] transition-transform duration-150;
@@ -356,7 +356,6 @@
       background-color: hsl(var(--surface-02));
     }
 
-    /* Prevent any child from overflowing on mobile */
     .content-panel > * {
       max-width: 100%;
       overflow-x: hidden;
@@ -364,7 +363,7 @@
   }
 }
 
-/* Leaflet map — charcoal background */
+/* Leaflet map */
 .leaflet-container {
   background: hsl(var(--surface-base));
 }

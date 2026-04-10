@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import SafetyScoreBadge from '../SafetyScoreBadge';
 import { capeTownAreas, searchAreas, type AreaSafetyData } from '@/data/capeTownSafetyData';
 import { useSuburbIntelligence, type SuburbIntelligence } from '@/hooks/useSuburbIntelligence';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

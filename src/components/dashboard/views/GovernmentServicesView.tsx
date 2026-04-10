@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Landmark, Phone, MapPin, FileText, Wrench, BookOpen, Heart, Lock, GraduationCap, Car, Shield, Smartphone } from 'lucide-react';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props { onUpgrade: (trigger?: string) => void; onNavigate: (view: ViewId) => void; }
 

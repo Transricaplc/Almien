@@ -37,13 +37,13 @@ const UpgradeModal = memo(({ isOpen, onClose, trigger }: UpgradeModalProps) => {
         <div className="p-8 pb-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-elite-gradient text-white text-sm font-semibold mb-4">
             <Crown className="w-4 h-4" />
-            UNLOCK GRIDFY ELITE
+            UNLOCK ALMIEN ELITE
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
             {trigger || 'Full Safety Intelligence'}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Join 10,000+ users who trust Gridfy for safety decisions
+            Join 10,000+ users who trust Almien for safety decisions
           </p>
         </div>
 

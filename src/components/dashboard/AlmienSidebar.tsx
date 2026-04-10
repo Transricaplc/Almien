@@ -9,9 +9,9 @@ import {
   Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, HeartHandshake, Award,
   ShieldAlert, Code, Heart, GraduationCap, Store, Map, Navigation
 } from 'lucide-react';
-import type { ViewId } from './GridifyDashboard';
+import type { ViewId } from './AlmienDashboard';
 
-interface GridifySidebarProps {
+interface AlmienSidebarProps {
   activeView: ViewId;
   onNavigate: (view: ViewId) => void;
   onUpgrade: () => void;
@@ -107,7 +107,7 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
   },
 ];
 
-const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggle, isMobile }: GridifySidebarProps) => {
+const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggle, isMobile }: AlmienSidebarProps) => {
   return (
     <aside className={cn(
       "flex flex-col bg-surface-base border-r border-border-subtle h-full shrink-0",
@@ -124,8 +124,8 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
             <Shield className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-foreground leading-none">Gridfy</h1>
-            <p className="text-[11px] text-muted-foreground font-medium leading-none mt-0.5">Cape Town Urban Intelligence</p>
+            <h1 className="text-lg font-extrabold tracking-tight text-foreground leading-none">Almien</h1>
+            <p className="text-[11px] text-muted-foreground font-medium leading-none mt-0.5">Always Near</p>
           </div>
         </div>
         {isMobile && (
@@ -206,5 +206,5 @@ const GridifySidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onTogg
   );
 });
 
-GridifySidebar.displayName = 'GridifySidebar';
-export default GridifySidebar;
+AlmienSidebar.displayName = 'AlmienSidebar';
+export default AlmienSidebar;

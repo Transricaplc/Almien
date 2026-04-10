@@ -13,7 +13,7 @@ import { getRouteTimeRiskLabel } from '@/data/timeAnalyticsData';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { Search, Navigation, AlertTriangle, Heart, MapPin, Shield, Phone, Zap } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
-import type { ViewId } from './GridifyDashboard';
+import type { ViewId } from './AlmienDashboard';
 
 interface CommandPillProps {
   onNavigate: (view: ViewId) => void;

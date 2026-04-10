@@ -1,11 +1,11 @@
 /**
- * Gridfy Unified Notification System
- * Format: [Gridfy Icon] [Urgency: ALERT | WARNING | INFO] + [Message] + [Deep link]
+ * Almien Unified Notification System
+ * Format: [Almien Icon] [Urgency: ALERT | WARNING | INFO] + [Message] + [Deep link]
  */
 
 export type NotificationUrgency = 'ALERT' | 'WARNING' | 'INFO';
 
-export interface GridfyNotification {
+export interface AlmienNotification {
   id: string;
   urgency: NotificationUrgency;
   title: string;
@@ -22,7 +22,7 @@ const urgencyEmoji: Record<NotificationUrgency, string> = {
   INFO: 'ℹ️',
 };
 
-export function formatNotification(n: GridfyNotification): string {
+export function formatNotification(n: AlmienNotification): string {
   return `${urgencyEmoji[n.urgency]} [${n.urgency}] ${n.message}`;
 }
 
@@ -32,7 +32,7 @@ export function createNotification(
   message: string,
   deepLink: string,
   module: string
-): GridfyNotification {
+): AlmienNotification {
   return {
     id: crypto.randomUUID(),
     urgency,

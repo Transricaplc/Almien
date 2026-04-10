@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Accessibility, AlertTriangle, CheckCircle, MapPin, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;

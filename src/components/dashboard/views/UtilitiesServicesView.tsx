@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Lightbulb, Droplets, Trash2, Phone, Lock, Zap } from 'lucide-react';
 import { useLoadshedding, getStageColor } from '@/hooks/useLoadshedding';
 import { useWaterStatus, getDamStatusColor } from '@/hooks/useWaterStatus';
-import type { ViewId } from '../GridifyDashboard';
+import type { ViewId } from '../AlmienDashboard';
 
 interface Props { onUpgrade: (trigger?: string) => void; onNavigate: (view: ViewId) => void; }
 

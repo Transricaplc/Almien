@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
-import GridifySidebar from './GridifySidebar';
+import AlmienSidebar from './AlmienSidebar';
 import BottomNavBar from './BottomNavBar';
 import SOSActionDock from './SOSActionDock';
 import ThreatHeader from './ThreatHeader';
@@ -97,14 +97,14 @@ export type ViewId =
   | 'business-safety'
   | 'settings';
 
-const GridifyDashboard = memo(() => {
+const AlmienDashboard = memo(() => {
   const isMobile = useIsMobile();
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger?: string }>({ open: false });
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [showZoneDirectory, setShowZoneDirectory] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('gridfy-onboarded');
+    return !localStorage.getItem('almien-onboarded');
   });
 
   const isSafeSpaceView = activeView === 'safe-space';
@@ -133,7 +133,7 @@ const GridifyDashboard = memo(() => {
   }, [isMobile]);
 
   const handleOnboardingComplete = useCallback(() => {
-    localStorage.setItem('gridfy-onboarded', 'true');
+    localStorage.setItem('almien-onboarded', 'true');
     setShowOnboarding(false);
   }, []);
 
@@ -201,7 +201,7 @@ const GridifyDashboard = memo(() => {
 
         {/* Sidebar — desktop only */}
         {!isMobile && (
-          <GridifySidebar
+          <AlmienSidebar
             activeView={activeView}
             onNavigate={navigate}
             onUpgrade={() => openUpgrade()}
@@ -213,7 +213,7 @@ const GridifyDashboard = memo(() => {
 
         {/* Mobile sidebar drawer */}
         {isMobile && sidebarOpen && (
-          <GridifySidebar
+          <AlmienSidebar
             activeView={activeView}
             onNavigate={navigate}
             onUpgrade={() => openUpgrade()}
@@ -273,5 +273,5 @@ const GridifyDashboard = memo(() => {
   );
 });
 
-GridifyDashboard.displayName = 'GridifyDashboard';
-export default GridifyDashboard;
+AlmienDashboard.displayName = 'AlmienDashboard';
+export default AlmienDashboard;
