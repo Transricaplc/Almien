@@ -1,6 +1,6 @@
 import { useState, memo } from 'react';
 import { cn } from '@/lib/utils';
-import { MapPin, UserPlus, Bell, Locate, ArrowRight, Check, SkipForward, Shield } from 'lucide-react';
+import { MapPin, UserPlus, Bell, Locate, ArrowRight, Check, SkipForward, Shield, Clock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -19,14 +19,20 @@ const crimeTypes = [
   { id: 'housebreaking', label: 'Housebreaking' },
 ];
 
+const timePills = ['06:00', '07:00', '07:30', '08:00', '09:00'];
+
 const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
   const [step, setStep] = useState(0);
   const [suburb, setSuburb] = useState('');
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set(['robbery', 'burglary']));
+  const [commuteFrom, setCommuteFrom] = useState('');
+  const [commuteTo, setCommuteTo] = useState('');
+  const [commuteTime, setCommuteTime] = useState('07:00');
 
-  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const totalSteps = 7;
+  const next = () => setStep((s) => Math.min(s + 1, totalSteps - 1));
   const skip = () => next();
 
   const toggleAlert = (id: string) => {
@@ -47,9 +53,9 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
 
   const enableNotifications = () => {
     if ('Notification' in window) {
-      Notification.requestPermission().then(() => onComplete());
+      Notification.requestPermission().then(() => next());
     } else {
-      onComplete();
+      next();
     }
   };
 
@@ -134,16 +140,62 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
         <Input placeholder="Phone number" type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} className="min-h-[48px] rounded-xl" />
       </div>
       <div className="flex gap-3 mt-2">
-        <button onClick={skip} className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2">
-          Skip
-        </button>
+        <button onClick={skip} className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2">Skip</button>
         <Button className="min-h-[48px] min-w-[120px] rounded-full" onClick={next}>
           Continue <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
       </div>
     </div>,
 
-    // Screen 5: Notifications
+    // Screen 5: Commute Setup (NEW)
+    <div key="commute" className="flex flex-col items-center text-center gap-6 px-8 animate-fade-in">
+      <div className="w-16 h-16 rounded-2xl bg-accent-safe/15 flex items-center justify-center">
+        <Clock className="w-8 h-8 text-accent-safe" />
+      </div>
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Tell Safi your daily route.</h2>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
+          Safi will monitor your commute and alert you to risks before you leave.
+        </p>
+      </div>
+      <div className="flex flex-col gap-3 w-full max-w-xs">
+        <Input
+          placeholder="From (e.g. Sea Point)"
+          value={commuteFrom || suburb}
+          onChange={(e) => setCommuteFrom(e.target.value)}
+          className="min-h-[48px] rounded-xl"
+        />
+        <Input
+          placeholder="To (work, school, gym...)"
+          value={commuteTo}
+          onChange={(e) => setCommuteTo(e.target.value)}
+          className="min-h-[48px] rounded-xl"
+        />
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Usually leave at</p>
+          <div className="flex gap-2 overflow-x-auto">
+            {timePills.map(t => (
+              <button
+                key={t}
+                onClick={() => setCommuteTime(t)}
+                className={cn(
+                  "px-3 py-2 rounded-full text-sm font-medium shrink-0 transition-colors",
+                  commuteTime === t ? "bg-accent-safe text-white" : "bg-secondary text-muted-foreground"
+                )}
+              >{t}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-3 mt-2">
+        <button onClick={skip} className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2">Skip</button>
+        <Button className="min-h-[48px] min-w-[120px] rounded-full" onClick={next}>
+          Continue <ArrowRight className="ml-2 w-4 h-4" />
+        </Button>
+      </div>
+    </div>,
+
+    // Screen 6: Notifications
     <div key="notifications" className="flex flex-col items-center text-center gap-6 px-8 animate-fade-in">
       <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center">
         <Bell className="w-8 h-8 text-primary" />
@@ -154,7 +206,6 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
           Almien alerts you to incidents near you, in real time.
         </p>
       </div>
-      {/* Alert preferences */}
       <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
         {crimeTypes.map((ct) => (
           <button
@@ -176,18 +227,40 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
         <Button className="min-h-[48px] text-base font-bold rounded-full" onClick={enableNotifications}>
           Enable Alerts
         </Button>
-        <button onClick={onComplete} className="text-sm font-medium text-muted-foreground hover:text-foreground py-2">
-          Skip
-        </button>
+        <button onClick={next} className="text-sm font-medium text-muted-foreground hover:text-foreground py-2">Skip</button>
       </div>
+    </div>,
+
+    // Screen 7: Safi Introduction (NEW)
+    <div key="safi" className="flex flex-col items-center justify-center text-center gap-8 px-8 animate-fade-in">
+      <div className="text-6xl animate-neural-breathe">✦</div>
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Meet Safi.</h2>
+        <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto">
+          Your personal AI safety companion. Safi knows your suburb, your commute, and your risk profile. Ask anything. Any time.
+        </p>
+      </div>
+      <div className="flex gap-2 mt-2">
+        {['Daily Briefing', 'Route Shield', 'Emergency Mode'].map(f => (
+          <span key={f} className="px-3 py-1.5 rounded-full bg-accent-safe/15 text-accent-safe text-xs font-semibold">{f}</span>
+        ))}
+      </div>
+      <Button
+        size="lg"
+        className="mt-4 min-w-[200px] min-h-[48px] text-base font-bold rounded-full"
+        style={{ background: 'linear-gradient(135deg, hsl(var(--safi-from)), hsl(var(--safi-to)))' }}
+        onClick={onComplete}
+      >
+        <Sparkles className="w-5 h-5 mr-2" /> Activate Safi
+      </Button>
     </div>,
   ];
 
   return (
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
-      {/* Progress dots */}
+      {/* Progress dots — 7 steps */}
       <div className="flex items-center justify-center gap-2 pt-8 pb-4">
-        {[0, 1, 2, 3, 4].map((i) => (
+        {Array.from({ length: totalSteps }, (_, i) => (
           <div
             key={i}
             className={cn(

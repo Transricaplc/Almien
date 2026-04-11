@@ -4,6 +4,7 @@
 
 /* Almien — Purple Safety Design System v1.0 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -84,10 +85,23 @@
     --surface-border: var(--border-subtle);
 
     /* Threat header tints */
-    --threat-low: 160 40% 8%;
-    --threat-elevated: 36 40% 8%;
-    --threat-high: 4 40% 8%;
-    --threat-critical: var(--surface-deep);
+    --threat-low: 145 35% 9%;
+    --threat-elevated: 36 45% 9%;
+    --threat-high: 4 45% 9%;
+    --threat-critical: 4 60% 7%;
+
+    /* Neural Pulse colours */
+    --neural-pulse: 152 80% 38%;
+    --neural-dim: 152 60% 12%;
+    --neural-glow: 152 100% 45% / 0.15;
+
+    /* Safi AI accent */
+    --safi-from: 152 100% 45%;
+    --safi-to: 43 100% 60%;
+
+    /* Dark zone amber */
+    --dark-zone: 27 96% 55%;
+    --dark-zone-dim: 27 60% 12%;
 
     /* Sidebar */
     --sidebar-background: var(--surface-base);
@@ -167,6 +181,14 @@
 }
 
 @layer base {
+  /* Neural mono for AI outputs */
+  .font-neural {
+    font-family: 'IBM Plex Mono', monospace;
+    font-feature-settings: 'tnum', 'ss02';
+    letter-spacing: 0.03em;
+  }
+  .text-display { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.05; }
+  .text-headline { font-size: clamp(1.25rem, 3vw, 1.75rem); font-weight: 600; line-height: 1.2; }
   * {
     @apply border-border;
     box-sizing: border-box;
@@ -415,3 +437,21 @@
 .animate-shake {
   animation: shake 0.3s ease-in-out;
 }
+
+/* Neural animations */
+@keyframes neural-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.04); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); opacity: 0.8; }
+  70%  { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+@keyframes data-stream {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.animate-neural-breathe { animation: neural-breathe 4s ease-in-out infinite; }
+.animate-pulse-ring      { animation: pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+.animate-data-stream     { animation: data-stream 2s linear infinite; }
