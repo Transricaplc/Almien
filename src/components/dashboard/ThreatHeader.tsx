@@ -17,6 +17,7 @@ interface ThreatHeaderProps {
   incidentCount?: number;
   onBrowseAllAreas?: () => void;
   onMenuOpen?: () => void;
+  onSafiEmergency?: () => void;
 }
 
 const levelConfig: Record<ThreatLevel, { label: string; pillBg: string; pillText: string; headerBg: string; barColor: string; pulse?: boolean }> = {
@@ -63,6 +64,7 @@ const ThreatHeader = memo(({
   incidentCount = 7,
   onBrowseAllAreas,
   onMenuOpen,
+  onSafiEmergency,
 }: ThreatHeaderProps) => {
   const config = levelConfig[threatLevel];
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -168,9 +170,22 @@ const ThreatHeader = memo(({
         )}
       </div>
 
-      <span className="text-xs text-muted-foreground tabular-nums shrink-0">
-        <span className="font-bold text-foreground">{incidentCount}</span> incidents nearby
-      </span>
+      {/* Right side — Safi emergency pill + incident count */}
+      <div className="flex items-center gap-2 shrink-0">
+        {onSafiEmergency && (
+          <button
+            onClick={onSafiEmergency}
+            className="md:hidden flex items-center gap-1 px-2 h-7 rounded-full bg-accent-safe/15 hover:bg-accent-safe/25 transition-colors"
+            aria-label="Safi emergency"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-safe animate-pulse" />
+            <span className="font-neural text-[10px] font-bold text-accent-safe">✦</span>
+          </button>
+        )}
+        <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+          <span className="font-bold text-foreground">{incidentCount}</span> incidents nearby
+        </span>
+      </div>
     </div>
   );
 });

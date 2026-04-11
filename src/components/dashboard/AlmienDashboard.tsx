@@ -9,6 +9,7 @@ import ThreatHeader from './ThreatHeader';
 import UpgradeModal from './UpgradeModal';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import ZoneDirectory from './widgets/ZoneDirectory';
+import SafiAI from '@/components/safi/SafiAI';
 import DashboardView from './views/DashboardView';
 import MapFullView from './views/MapFullView';
 import SafetyOverviewView from './views/SafetyOverviewView';
@@ -48,6 +49,10 @@ import DarknessWindowView from './views/DarknessWindowView';
 import VehicleCrimeView from './views/VehicleCrimeView';
 import SchoolSafetyView from './views/SchoolSafetyView';
 import BusinessSafetyView from './views/BusinessSafetyView';
+import NeuralProfileView from './views/NeuralProfileView';
+import DarkZoneView from './views/DarkZoneView';
+import SafiConversationsView from './views/SafiConversationsView';
+import ProfileView from './views/ProfileView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import PanicButton from './PanicButton';
@@ -95,6 +100,10 @@ export type ViewId =
   | 'vehicle-crime'
   | 'school-safety'
   | 'business-safety'
+  | 'neural-profile'
+  | 'dark-zones'
+  | 'safi-history'
+  | 'profile'
   | 'settings';
 
 const AlmienDashboard = memo(() => {
@@ -103,13 +112,14 @@ const AlmienDashboard = memo(() => {
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; trigger?: string }>({ open: false });
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [showZoneDirectory, setShowZoneDirectory] = useState(false);
+  const [safiOpen, setSafiOpen] = useState(false);
+  const [safiMode, setSafiMode] = useState<'chat' | 'briefing' | 'route' | 'emergency'>('chat');
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('almien-onboarded');
   });
 
   const isSafeSpaceView = activeView === 'safe-space';
 
-  // FIX 8: Lock body scroll when mobile sidebar is open
   useEffect(() => {
     if (isMobile && sidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -137,10 +147,15 @@ const AlmienDashboard = memo(() => {
     setShowOnboarding(false);
   }, []);
 
+  const openSafi = useCallback((mode: 'chat' | 'briefing' | 'route' | 'emergency' = 'chat') => {
+    setSafiMode(mode);
+    setSafiOpen(true);
+  }, []);
+
   const renderView = () => {
     const props = { onUpgrade: openUpgrade, onNavigate: navigate };
     switch (activeView) {
-      case 'dashboard': return <DashboardView {...props} />;
+      case 'dashboard': return <DashboardView {...props} onOpenSafi={openSafi} />;
       case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
@@ -178,8 +193,12 @@ const AlmienDashboard = memo(() => {
       case 'vehicle-crime': return <VehicleCrimeView {...props} />;
       case 'school-safety': return <SchoolSafetyView {...props} />;
       case 'business-safety': return <BusinessSafetyView {...props} />;
+      case 'neural-profile': return <NeuralProfileView {...props} />;
+      case 'dark-zones': return <DarkZoneView {...props} />;
+      case 'safi-history': return <SafiConversationsView {...props} onOpenSafi={() => openSafi('chat')} />;
+      case 'profile': return <ProfileView {...props} />;
       case 'settings': return <SettingsView {...props} />;
-      default: return <DashboardView {...props} />;
+      default: return <DashboardView {...props} onOpenSafi={openSafi} />;
     }
   };
 
@@ -194,7 +213,7 @@ const AlmienDashboard = memo(() => {
         "h-dvh h-screen flex flex-col sm:flex-row w-full max-w-full overflow-x-hidden overflow-y-hidden bg-background",
         isSafeSpaceView && "safe-space-theme"
       )}>
-        {/* Mobile overlay — FIX 8: z-[85] above ThreatHeader */}
+        {/* Mobile overlay */}
         {isMobile && sidebarOpen && (
           <div className="fixed inset-0 z-[85] bg-black/40" onClick={() => setSidebarOpen(false)} />
         )}
@@ -225,10 +244,10 @@ const AlmienDashboard = memo(() => {
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col w-full max-w-full">
-          {/* Persistent Threat Header */}
           <ThreatHeader
             onBrowseAllAreas={() => setShowZoneDirectory(true)}
             onMenuOpen={isMobile ? () => setSidebarOpen(true) : undefined}
+            onSafiEmergency={() => openSafi('emergency')}
           />
 
           <ScrollArea className="flex-1">
@@ -241,19 +260,19 @@ const AlmienDashboard = memo(() => {
           </ScrollArea>
         </main>
 
-        {/* Panic Button — always floats above bottom nav */}
+        {/* Floating elements */}
         <PanicButton />
         <WitnessReportButton />
 
-        {/* SOS Dock — FIX 1: desktop only */}
+        {/* SOS Dock — desktop only */}
         {!isMobile && <SOSActionDock />}
 
-        {/* Mobile Command Pill */}
-        {isMobile && <CommandPill onNavigate={navigate} />}
+        {/* Safi AI Panel */}
+        <SafiAI isOpen={safiOpen} onClose={() => setSafiOpen(false)} onNavigate={navigate} initialMode={safiMode} />
 
         {/* Mobile bottom navigation */}
         {isMobile && (
-          <BottomNavBar activeView={activeView} onNavigate={navigate} />
+          <BottomNavBar activeView={activeView} onNavigate={navigate} onSafiOpen={() => openSafi('chat')} />
         )}
 
         <UpgradeModal
@@ -263,9 +282,7 @@ const AlmienDashboard = memo(() => {
         />
 
         {showZoneDirectory && (
-          <ZoneDirectory
-            onClose={() => setShowZoneDirectory(false)}
-          />
+          <ZoneDirectory onClose={() => setShowZoneDirectory(false)} />
         )}
       </div>
     </SAPSCrimeProvider>
