@@ -50,9 +50,50 @@ const PredictiveAnalyticsView = memo(({ onUpgrade, onNavigate }: Props) => {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Guardian Status Bar */}
+      <div className="p-4 rounded-xl bg-card border border-border-subtle">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-neural text-[10px] font-bold text-accent-safe uppercase tracking-wider">GUARDIAN ENGINE</p>
+            <p className="text-xs text-muted-foreground mt-0.5">ACTIVE — 60s cycle · Calculated 00:23 ago</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent-safe animate-pulse" />
+            <span className="text-[10px] font-bold text-accent-safe">LIVE</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Risk Equation */}
+      <div className="p-4 rounded-xl bg-card border border-border-subtle">
+        <p className="font-neural text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Risk Equation</p>
+        <div className="text-xs font-neural text-foreground leading-relaxed">
+          <span className="text-accent-safe">RISK SCORE</span> = (<span className="px-1 py-0.5 rounded bg-accent-threat/15 text-accent-threat">Incident Freq</span>) ÷ (<span className="px-1 py-0.5 rounded bg-accent-safe/15 text-accent-safe">Police + Fire + CCTV</span>) × [<span className="px-1 py-0.5 rounded bg-accent-warning/15 text-accent-warning">ESP Stage</span>] × [<span className="px-1 py-0.5 rounded bg-accent-info/15 text-accent-info">i-TRAFFIC</span>] × [<span className="px-1 py-0.5 rounded bg-accent-gbv/15 text-accent-gbv">Night ×</span>]
+        </div>
+      </div>
+
+      {/* Chain of Awareness */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-visible">
+        {[
+          { step: 1, label: 'Signal Acquisition', status: 'active' },
+          { step: 2, label: 'Infrastructure Correlation', status: 'active' },
+          { step: 3, label: 'Spatial Logic', status: 'active' },
+          { step: 4, label: 'Proactive Orchestration', status: 'pending' },
+        ].map(s => (
+          <div key={s.step} className="shrink-0 w-[140px] p-3 rounded-xl bg-card border border-border-subtle text-center">
+            <span className="text-[9px] font-neural text-muted-foreground">STEP {s.step}</span>
+            <p className="text-xs font-semibold text-foreground mt-1">{s.label}</p>
+            <span className={cn("inline-block mt-2 w-2 h-2 rounded-full", s.status === 'active' ? "bg-accent-safe" : "bg-muted-foreground/30")} />
+          </div>
+        ))}
+      </div>
+
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Predictive Analytics</h1>
-        <p className="text-muted-foreground mt-1">ML-powered forecasts for urban planning decisions</p>
+        <h1 className="text-headline text-foreground flex items-center gap-2">
+          <Brain className="w-5 h-5 text-accent-safe" />
+          🧠 GUARDIAN INTELLIGENCE
+        </h1>
+        <p className="text-muted-foreground mt-1 text-xs">ML-powered forecasts for urban planning decisions</p>
       </div>
 
       {/* Heat Island Forecast */}

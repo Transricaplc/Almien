@@ -1,13 +1,14 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ThemeToggle from '@/components/ThemeToggle';
 import {
-  Home, BarChart3, MapPin, Target, Car, Mountain,
+  Home, MapPin, Target, Car, Mountain,
   Phone, Briefcase, Users, Bell, Settings, Crown, Shield, User, X,
   TrafficCone, Lightbulb, Plane, Landmark, TrendingUp, Leaf, Accessibility, Moon,
   Wrench, Gauge, Activity, FileCheck, CloudRain, Factory, Zap, HeartHandshake, Award,
-  ShieldAlert, Code, Heart, GraduationCap, Store, Map, Navigation
+  ShieldAlert, Code, Heart, GraduationCap, Store, Map, Navigation,
+  Brain, MessageSquare, Pin, PinOff
 } from 'lucide-react';
 import type { ViewId } from './AlmienDashboard';
 
@@ -22,81 +23,43 @@ interface AlmienSidebarProps {
 
 const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typeof Home; elite?: boolean }[] }[] = [
   {
-    label: 'Core',
+    label: '',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: Home },
+      { id: 'dashboard', label: 'Home', icon: Home },
       { id: 'map-full', label: 'Map', icon: Map },
       { id: 'safe-route', label: 'Routes', icon: Navigation },
-      { id: 'community', label: 'Community', icon: Users },
-      { id: 'safe-space', label: 'Safe Space', icon: Heart },
     ],
   },
   {
     label: 'Safety',
     items: [
-      { id: 'safety-overview', label: 'Safety Overview', icon: BarChart3 },
-      { id: 'activities', label: 'Safe Activities', icon: Target },
-      { id: 'rideshare', label: 'Ride Share Zones', icon: Car },
-      { id: 'trails', label: 'Trail Safety', icon: Mountain },
-      { id: 'emergency', label: 'Emergency Contacts', icon: Phone },
-      { id: 'safety-network', label: 'My Safety Network', icon: Shield },
-      { id: 'pro-tools', label: 'Professional Tools', icon: Briefcase, elite: true },
-      { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, elite: true },
-    ],
-  },
-  {
-    label: 'City Services',
-    items: [
-      { id: 'traffic', label: 'Traffic & Transport', icon: TrafficCone },
-      { id: 'utilities', label: 'Utilities & Services', icon: Lightbulb },
-      { id: 'airport', label: 'Airport Info', icon: Plane },
-      { id: 'government', label: 'Government Services', icon: Landmark },
+      { id: 'safety-overview', label: 'Safety Overview', icon: Shield },
+      { id: 'safe-space', label: 'Safe Space', icon: Heart },
+      { id: 'emergency', label: 'Emergency', icon: Phone },
+      { id: 'safety-network', label: 'My Network', icon: Users },
+      { id: 'alerts', label: 'Alerts', icon: Bell, elite: true },
     ],
   },
   {
     label: 'Intelligence',
     items: [
-      { id: 'predictive', label: 'Predictive Analytics', icon: TrendingUp },
-      { id: 'biodiversity', label: 'Biodiversity Monitor', icon: Leaf },
-      { id: 'accessibility', label: 'Accessibility Auditor', icon: Accessibility },
-      { id: 'night-economy', label: 'Night Economy', icon: Moon },
+      { id: 'predictive', label: 'Guardian AI', icon: Brain },
+      { id: 'darkness-windows', label: 'Dark Zones', icon: Zap },
+      { id: 'neural-profile', label: 'Neural Profile', icon: Brain },
+      { id: 'dark-zones', label: 'Dark Zone Intel', icon: ShieldAlert },
+      { id: 'safi-history', label: 'Safi History', icon: MessageSquare },
+      { id: 'vehicle-crime', label: 'Vehicle Crime', icon: Car },
+      { id: 'school-safety', label: 'School Safety', icon: GraduationCap },
+      { id: 'municipal-scorecard', label: 'Municipal Scorecard', icon: Award, elite: true },
     ],
   },
   {
-    label: 'Advanced Operations',
+    label: 'City',
     items: [
-      { id: 'pred-maintenance', label: 'Predictive Maintenance', icon: Wrench },
-      { id: 'traffic-optimizer', label: 'Traffic Optimizer', icon: Gauge },
-      { id: 'exposure-tracker', label: 'Exposure Tracker', icon: Activity },
-      { id: 'permit-reviewer', label: 'AI Permit Reviewer', icon: FileCheck },
-      { id: 'microclimate', label: 'Microclimate & Flood', icon: CloudRain },
-      { id: 'carbon-dashboard', label: 'Carbon & Net-Zero', icon: Factory },
-      { id: 'utility-insights', label: 'Utility Insights', icon: Zap },
-      { id: 'volunteer-match', label: 'Volunteer Matching', icon: HeartHandshake },
-      { id: 'municipal-scorecard', label: 'Municipal Scorecard', icon: Award },
-    ],
-  },
-  {
-    label: 'Tourism',
-    items: [
-      { id: 'tourism-hub', label: 'Tourism Hub', icon: MapPin },
-    ],
-  },
-  {
-    label: 'SA Crime Layer',
-    items: [
-      { id: 'sa-crime-layer', label: 'Crime & Loadshedding', icon: ShieldAlert },
-      { id: 'darkness-windows', label: 'Darkness Windows', icon: Zap },
-      { id: 'vehicle-crime', label: 'Vehicle Crime Intel', icon: Car },
-      { id: 'school-safety', label: 'School & Child Safety', icon: GraduationCap },
-      { id: 'business-safety', label: 'Business & Trader Intel', icon: Store },
-    ],
-  },
-  {
-    label: 'National Expansion',
-    items: [
-      { id: 'resilience', label: 'Resilience', icon: ShieldAlert },
-      { id: 'api-hub', label: 'API Hub', icon: Code },
+      { id: 'traffic', label: 'Traffic & Transport', icon: TrafficCone },
+      { id: 'utilities', label: 'Utilities', icon: Lightbulb },
+      { id: 'airport', label: 'Airport', icon: Plane },
+      { id: 'government', label: 'Government', icon: Landmark },
     ],
   },
   {
@@ -108,40 +71,58 @@ const menuGroups: { label: string; items: { id: ViewId; label: string; icon: typ
 ];
 
 const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggle, isMobile }: AlmienSidebarProps) => {
+  const [pinned, setPinned] = useState(true);
+
   return (
     <aside className={cn(
-      "flex flex-col bg-surface-base border-r border-border-subtle h-full shrink-0",
-      "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+      "flex flex-col bg-[hsl(var(--surface-base))] border-r border-[hsl(var(--border-subtle))] h-full shrink-0",
+      "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
       isMobile
         ? "fixed left-0 top-0 z-[86] w-[280px] max-w-[85vw] shadow-2xl"
-        : "w-[240px] lg:w-[280px]",
+        : pinned ? "w-[240px]" : "w-16 hover:w-[240px] group",
       isMobile && !isOpen && "-translate-x-full"
     )}>
       {/* Logo */}
-      <div className="px-5 pt-5 pb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-            <Shield className="w-5 h-5 text-primary-foreground" />
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+            <Shield className="w-4 h-4 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-foreground leading-none">Almien</h1>
-            <p className="text-[11px] text-muted-foreground font-medium leading-none mt-0.5">Always Near</p>
+          <div className={cn("min-w-0", !isMobile && !pinned && "hidden group-hover:block")}>
+            <h1 className="text-base font-extrabold tracking-tight text-foreground leading-none">Almien</h1>
+            <p className="text-[10px] text-muted-foreground font-medium leading-none mt-0.5">Always Near</p>
           </div>
         </div>
-        {isMobile && (
-          <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-secondary">
+        {isMobile ? (
+          <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center">
             <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        ) : (
+          <button onClick={() => setPinned(!pinned)} className={cn("p-1.5 rounded-lg hover:bg-secondary", !pinned && "hidden group-hover:block")}>
+            {pinned ? <PinOff className="w-3.5 h-3.5 text-muted-foreground" /> : <Pin className="w-3.5 h-3.5 text-muted-foreground" />}
           </button>
         )}
       </div>
 
+      {/* Mini safety score (collapsed) */}
+      {!isMobile && !pinned && (
+        <div className="flex flex-col items-center py-3 group-hover:hidden">
+          <div className="w-10 h-10 rounded-full border-2 border-accent-safe flex items-center justify-center">
+            <span className="text-xs font-neural font-bold text-accent-safe">7.8</span>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-4">
+      <ScrollArea className="flex-1 px-2 py-3">
+        <nav className="space-y-3">
           {menuGroups.map(group => (
             <div key={group.label || 'misc'}>
               {group.label && (
-                <div className="px-3.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{group.label}</div>
+                <div className={cn(
+                  "px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60",
+                  !isMobile && !pinned && "hidden group-hover:block"
+                )}>{group.label}</div>
               )}
               <div className="space-y-0.5">
                 {group.items.map(item => {
@@ -151,23 +132,20 @@ const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggl
                       key={`${group.label}-${item.id}`}
                       onClick={() => onNavigate(item.id)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px]",
+                        "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px]",
                         isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                          ? "bg-accent-safe/10 text-accent-safe border-l-2 border-accent-safe"
+                          : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--accent)/0.5)]"
                       )}
                     >
-                      <item.icon className="w-[18px] h-[18px] shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <item.icon className={cn("w-[18px] h-[18px] shrink-0", isActive && "text-accent-safe")} />
+                      <span className={cn("truncate", !isMobile && !pinned && "hidden group-hover:block")}>{item.label}</span>
                       {item.elite && (
                         <span className={cn(
                           "ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
-                          isActive
-                            ? "bg-primary-foreground/20 text-primary-foreground"
-                            : "bg-elite-gradient text-white"
-                        )}>
-                          👑
-                        </span>
+                          !isMobile && !pinned && "hidden group-hover:block",
+                          isActive ? "bg-accent-safe/20 text-accent-safe" : "bg-elite-gradient text-white"
+                        )}>👑</span>
                       )}
                     </button>
                   );
@@ -179,27 +157,32 @@ const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggl
       </ScrollArea>
 
       {/* Bottom section */}
-      <div className="p-3 space-y-3 border-t border-border-subtle">
+      <div className={cn("p-3 space-y-2 border-t border-[hsl(var(--border-subtle))]", !isMobile && !pinned && "group-hover:p-3 p-1.5")}>
         <button
           onClick={onUpgrade}
-          className="w-full p-4 rounded-xl bg-elite-gradient text-white text-left hover:opacity-90 transition-opacity"
+          className={cn(
+            "w-full p-3 rounded-xl bg-elite-gradient text-white text-left hover:opacity-90 transition-opacity",
+            !isMobile && !pinned && "hidden group-hover:block"
+          )}
         >
-          <div className="flex items-center gap-2 mb-1">
-            <Crown className="w-5 h-5" />
-            <span className="text-sm font-bold">UPGRADE TO ELITE</span>
+          <div className="flex items-center gap-2 mb-0.5">
+            <Crown className="w-4 h-4" />
+            <span className="text-xs font-bold">UPGRADE TO ELITE</span>
           </div>
-          <p className="text-xs text-white/80">Real-time alerts, unlimited access</p>
+          <p className="text-[10px] text-white/80">Real-time alerts, unlimited access</p>
         </button>
 
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary/50">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-4 h-4 text-primary" />
+        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-[hsl(var(--secondary)/0.5)]">
+          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <User className="w-3.5 h-3.5 text-primary" />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-foreground truncate">Guest User</div>
-            <div className="text-[11px] text-muted-foreground">Free Plan</div>
+          <div className={cn("flex-1 min-w-0", !isMobile && !pinned && "hidden group-hover:block")}>
+            <div className="text-xs font-medium text-foreground truncate">Guest User</div>
+            <div className="text-[10px] text-muted-foreground">Free Plan</div>
           </div>
-          <ThemeToggle />
+          <div className={cn(!isMobile && !pinned && "hidden group-hover:block")}>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </aside>
