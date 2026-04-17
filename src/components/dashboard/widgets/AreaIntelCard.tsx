@@ -1,10 +1,11 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Search, MapPin, Shield, Phone, Building2, Flame, X, Target, Clock, Radio, CheckCircle2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { MapPin, Shield, Phone, Building2, Flame, X, Target, Clock, Radio, CheckCircle2, Navigation } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
-import { capeTownAreas, searchAreas, type AreaSafetyData } from '@/data/capeTownSafetyData';
-import { useSuburbIntelligence, type SuburbIntelligence } from '@/hooks/useSuburbIntelligence';
+import { type AreaSafetyData } from '@/data/capeTownSafetyData';
+import { type SuburbIntelligence } from '@/hooks/useSuburbIntelligence';
+import { openDirectionsTo } from '@/utils/locationUtils';
+import SuburbSearchInput from '../SuburbSearchInput';
 
 const getSuburbSafetyLevel = (score: number) => {
   if (score >= 75) return 'green';
