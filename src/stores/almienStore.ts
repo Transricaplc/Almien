@@ -29,11 +29,21 @@ interface AlmienStore {
   isLoading: boolean;
   lastSync: string | null;
 
+  // Opt-in safety preferences (privacy-first, all default OFF)
+  roadSafetyMode: boolean;       // Shows ward-level historical crime heatmap on roads
+  safiHotwordEnabled: boolean;   // "Hey Safi" wake-word listener
+  safiVoiceReplies: boolean;     // Read Safi replies aloud (auto-on in driving mode)
+  safiPatternConsent: boolean;   // Consent for behaviour-aware notifications
+
   addCrimeAlert: (alert: CrimeAlert) => void;
   updateUserProfile: (profile: Partial<UserProfile>) => void;
   markAlertAsRead: (alertId: string) => void;
   refreshData: () => void;
   setSafetyScore: (score: number) => void;
+  toggleRoadSafetyMode: () => void;
+  toggleSafiHotword: () => void;
+  toggleSafiVoiceReplies: () => void;
+  toggleSafiPatternConsent: () => void;
 }
 
 const capeTownLocations = [
@@ -96,6 +106,17 @@ export const useAlmienStore = create<AlmienStore>()(
       isLoading: false,
       lastSync: new Date().toISOString(),
 
+      // Privacy-first defaults — every advanced safety feature is opt-in
+      roadSafetyMode: false,
+      safiHotwordEnabled: false,
+      safiVoiceReplies: false,
+      safiPatternConsent: false,
+
+      toggleRoadSafetyMode: () => set((s) => ({ roadSafetyMode: !s.roadSafetyMode })),
+      toggleSafiHotword: () => set((s) => ({ safiHotwordEnabled: !s.safiHotwordEnabled })),
+      toggleSafiVoiceReplies: () => set((s) => ({ safiVoiceReplies: !s.safiVoiceReplies })),
+      toggleSafiPatternConsent: () => set((s) => ({ safiPatternConsent: !s.safiPatternConsent })),
+
       addCrimeAlert: (alert) => {
         set((state) => ({
           crimeAlerts: [alert, ...state.crimeAlerts].slice(0, 50),
@@ -136,6 +157,10 @@ export const useAlmienStore = create<AlmienStore>()(
       partialize: (state) => ({
         userProfile: state.userProfile,
         crimeAlerts: state.crimeAlerts.slice(0, 15),
+        roadSafetyMode: state.roadSafetyMode,
+        safiHotwordEnabled: state.safiHotwordEnabled,
+        safiVoiceReplies: state.safiVoiceReplies,
+        safiPatternConsent: state.safiPatternConsent,
       }),
     }
   )
