@@ -30,20 +30,8 @@ interface Props {
 }
 
 const AreaIntelCard = memo(({ variant = 'inline', initialQuery = '', className }: Props) => {
-  const [query, setQuery] = useState(initialQuery);
   const [selectedSuburb, setSelectedSuburb] = useState<SuburbIntelligence | null>(null);
   const [selectedArea, setSelectedArea] = useState<AreaSafetyData | null>(null);
-  const { suburbs } = useSuburbIntelligence();
-
-  const q = query.trim().toLowerCase();
-  const matchedSuburbs = q.length > 0
-    ? suburbs.filter(s =>
-        s.suburb_name.toLowerCase().includes(q) ||
-        s.area_code.toLowerCase().includes(q)
-      ).slice(0, 6)
-    : [];
-
-  const matchedAreas = q.length > 0 ? searchAreas(query).slice(0, 4) : [];
 
   // Suburb detail
   if (selectedSuburb) {
