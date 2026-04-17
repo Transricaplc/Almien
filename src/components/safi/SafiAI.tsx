@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { X, Send, Mic, Phone, MapPin, Users, Shield, ChevronRight, Share2 } from 'lucide-react';
+import { X, Send, Mic, MicOff, Phone, MapPin, Users, Shield, ChevronRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -58,6 +58,12 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported] = useState(() =>
+    typeof window !== 'undefined' &&
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  );
+  const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,6 +90,34 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'safi', content: response, timestamp: new Date() }]);
       setIsThinking(false);
     }, 1200);
+  }, []);
+
+  const startVoiceInput = useCallback(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    try {
+      const recognition = new SR();
+      recognition.lang = 'en-ZA';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setIsListening(false);
+        sendMessage(transcript);
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch {
+      setIsListening(false);
+    }
+  }, [sendMessage]);
+
+  const stopVoiceInput = useCallback(() => {
+    recognitionRef.current?.stop?.();
+    setIsListening(false);
   }, []);
 
   if (!isOpen) return null;
@@ -219,6 +253,22 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
               >{chip}</button>
             ))}
           </div>
+          {/* Listening indicator */}
+          {isListening && (
+            <div className="px-4 py-3 border-t border-border-subtle bg-accent-safe/5 flex flex-col items-center gap-1.5 shrink-0 animate-fade-in">
+              <div className="flex items-end gap-1 h-5">
+                {[0, 1, 2, 3].map(i => (
+                  <span
+                    key={i}
+                    className="w-1 bg-accent-safe rounded-full animate-pulse"
+                    style={{ height: `${40 + i * 15}%`, animationDelay: `${i * 100}ms` }}
+                  />
+                ))}
+              </div>
+              <span className="text-[11px] font-semibold text-accent-safe">Listening… speak now</span>
+              <span className="text-[9px] font-neural text-muted-foreground">en-ZA · Chrome/Android</span>
+            </div>
+          )}
           {/* Input */}
           <div className="p-4 border-t border-border-subtle flex gap-2 shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
             <div className="flex-1 flex items-center gap-2 bg-card border border-border-subtle rounded-xl px-3">
@@ -227,14 +277,29 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendMessage(inputValue)}
-                placeholder="Ask Safi anything..."
+                placeholder={isListening ? 'Listening…' : 'Ask Safi anything...'}
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground py-3 outline-none min-h-[48px]"
               />
-              <Mic className="w-4 h-4 text-muted-foreground opacity-40" />
+              {voiceSupported && (
+                <button
+                  onClick={isListening ? stopVoiceInput : startVoiceInput}
+                  className={cn(
+                    'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors',
+                    isListening
+                      ? 'bg-accent-safe text-white'
+                      : 'text-muted-foreground hover:text-accent-safe hover:bg-accent-safe/10'
+                  )}
+                  aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                  title="Voice mode — works best on Android/Chrome"
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+              )}
             </div>
             <button
               onClick={() => sendMessage(inputValue)}
               className="w-12 h-12 rounded-xl bg-accent-safe flex items-center justify-center shrink-0"
+              aria-label="Send message"
             >
               <Send className="w-4 h-4 text-white" />
             </button>
