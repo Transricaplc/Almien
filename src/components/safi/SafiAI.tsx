@@ -199,23 +199,52 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
       isMobile ? "inset-0" : "top-0 right-0 bottom-0 w-96 border-l border-border-subtle"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
-        <span className="font-neural text-sm font-bold text-accent-safe">✦ SAFI</span>
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0 gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="font-neural text-sm font-bold text-accent-safe">✦ SAFI</span>
+          {hotwordActive && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent-safe/15 text-[9px] font-bold text-accent-safe animate-pulse" title="Listening for ‘Hey Safi’">
+              <Ear className="w-2.5 h-2.5" /> WAKE
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1 flex-1 justify-center overflow-x-auto">
           {modes.map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={cn(
-                "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize transition-colors",
+                "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize transition-colors shrink-0",
                 mode === m ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:text-foreground"
               )}
             >{m}</button>
           ))}
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center">
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          {voiceSupported && (
+            <button
+              onClick={toggleSafiHotword}
+              className={cn("p-1.5 rounded-lg transition-colors", safiHotwordEnabled ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
+              title={safiHotwordEnabled ? 'Disable “Hey Safi” wake-word' : 'Enable “Hey Safi” wake-word'}
+              aria-label="Toggle hotword listener"
+            >
+              <Ear className="w-4 h-4" />
+            </button>
+          )}
+          {ttsSupported && (
+            <button
+              onClick={toggleSafiVoiceReplies}
+              className={cn("p-1.5 rounded-lg transition-colors", safiVoiceReplies ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
+              title={safiVoiceReplies ? 'Mute spoken replies' : 'Read replies aloud'}
+              aria-label="Toggle voice replies"
+            >
+              {safiVoiceReplies ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          )}
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary min-w-[40px] min-h-[40px] flex items-center justify-center" aria-label="Close Safi">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Content by mode */}
