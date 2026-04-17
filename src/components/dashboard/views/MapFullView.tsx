@@ -1,6 +1,6 @@
 import { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Search, MapPin, Layers, Locate, Plus, Minus, Map, Clock, X, Shield, Flame, Phone, AlertTriangle, Share2, FileWarning, Navigation, WifiOff, Info, LogIn, User } from 'lucide-react';
+import { Search, MapPin, Layers, Locate, Plus, Minus, Map, Clock, X, Shield, Flame, Phone, AlertTriangle, Share2, FileWarning, Navigation, WifiOff, Info, LogIn, User, Route } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import SuburbSearchInput from '../SuburbSearchInput';
 import SOSActionDock from '../SOSActionDock';
@@ -12,6 +12,7 @@ import { getSafetyColor } from '@/lib/utils';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAlmienStore } from '@/stores/almienStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
@@ -479,6 +480,8 @@ DataSourcesFooter.displayName = 'DataSourcesFooter';
 const MapFullView = memo(({ onNavigate }: Props) => {
   const { selectEntity } = useDashboard();
   const { user } = useAuth();
+  const roadSafetyMode = useAlmienStore((s) => s.roadSafetyMode);
+  const toggleRoadSafetyMode = useAlmienStore((s) => s.toggleRoadSafetyMode);
   const isMobile = useIsMobile();
   const [activeFilter, setActiveFilter] = useState('all');
   const [showLegend, setShowLegend] = useState(false);
@@ -687,7 +690,45 @@ const MapFullView = memo(({ onNavigate }: Props) => {
         >
           <Locate className="w-4 h-4 text-accent-safe" />
         </button>
+        {/* Road Safety Mode toggle — opt-in, ward-level historical heatmap (no aggressive predictions) */}
+        <button
+          onClick={() => {
+            toggleRoadSafetyMode();
+            toast.success(roadSafetyMode ? 'Road Safety Mode off' : 'Road Safety Mode on — showing historical risk patterns');
+          }}
+          className={cn(
+            "w-10 h-10 rounded-xl backdrop-blur border flex items-center justify-center active:scale-90 transition-colors",
+            roadSafetyMode
+              ? "bg-accent-warning/25 border-accent-warning/50"
+              : "bg-[hsl(var(--surface-01))]/90 border-border-subtle hover:bg-surface-02"
+          )}
+          aria-label={roadSafetyMode ? 'Disable Road Safety Mode' : 'Enable Road Safety Mode'}
+          title={roadSafetyMode ? 'Road Safety Mode ON — historical patterns visible' : 'Road Safety Mode OFF — tap to show ward-level risk patterns'}
+        >
+          <Route className={cn("w-4 h-4", roadSafetyMode ? "text-accent-warning" : "text-foreground")} />
+        </button>
       </div>
+
+      {/* Road Safety Mode heatmap overlay — gentle, ward-level historical patterns only */}
+      {roadSafetyMode && (
+        <div className="absolute inset-0 z-10 pointer-events-none animate-fade-in" aria-hidden>
+          <div
+            className="absolute inset-0 mix-blend-overlay opacity-60"
+            style={{
+              background: `
+                radial-gradient(circle at 28% 42%, hsl(var(--safety-red) / 0.45) 0%, transparent 18%),
+                radial-gradient(circle at 64% 38%, hsl(var(--safety-orange) / 0.35) 0%, transparent 22%),
+                radial-gradient(circle at 48% 62%, hsl(var(--safety-yellow) / 0.30) 0%, transparent 25%),
+                radial-gradient(circle at 78% 70%, hsl(var(--safety-orange) / 0.30) 0%, transparent 20%),
+                radial-gradient(circle at 22% 78%, hsl(var(--safety-red) / 0.40) 0%, transparent 18%)
+              `,
+            }}
+          />
+          <div className="absolute top-16 left-3 z-20 px-2.5 py-1 rounded-full bg-accent-warning/20 border border-accent-warning/40 backdrop-blur text-[10px] font-bold text-accent-warning flex items-center gap-1.5 pointer-events-auto">
+            <Route className="w-3 h-3" /> ROAD SAFETY MODE · HISTORICAL
+          </div>
+        </div>
+      )}
 
       {/* ═══ SOS DOCK — collapsible FAB on map ═══ */}
       <SOSActionDock mapMode />

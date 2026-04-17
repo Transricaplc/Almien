@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { X, Send, Mic, MicOff, Phone, MapPin, Users, Shield, ChevronRight, Share2 } from 'lucide-react';
+import { X, Send, Mic, MicOff, Phone, MapPin, Users, Shield, ChevronRight, Share2, Volume2, VolumeX, Ear } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAlmienStore } from '@/stores/almienStore';
 import type { ViewId } from '../dashboard/AlmienDashboard';
 
 interface SafiAIProps {
@@ -54,16 +55,25 @@ const getGreeting = () => {
 
 const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: SafiAIProps) => {
   const isMobile = useIsMobile();
+  const safiVoiceReplies = useAlmienStore((s) => s.safiVoiceReplies);
+  const toggleSafiVoiceReplies = useAlmienStore((s) => s.toggleSafiVoiceReplies);
+  const safiHotwordEnabled = useAlmienStore((s) => s.safiHotwordEnabled);
+  const toggleSafiHotword = useAlmienStore((s) => s.toggleSafiHotword);
   const [mode, setMode] = useState<'chat' | 'briefing' | 'route' | 'emergency'>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [hotwordActive, setHotwordActive] = useState(false);
   const [voiceSupported] = useState(() =>
     typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
   );
+  const [ttsSupported] = useState(() =>
+    typeof window !== 'undefined' && 'speechSynthesis' in window
+  );
   const recognitionRef = useRef<any>(null);
+  const hotwordRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,6 +89,19 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
 
   useEffect(() => { setMode(initialMode); }, [initialMode]);
 
+  /** Speak Safi's reply aloud — only when user has enabled voice replies */
+  const speak = useCallback((text: string) => {
+    if (!ttsSupported || !safiVoiceReplies) return;
+    try {
+      const cleaned = text.replace(/[✦✓⚠💜⚡🌙🏃🧭🛡🌐]/g, '').trim();
+      const utter = new SpeechSynthesisUtterance(cleaned);
+      utter.lang = 'en-ZA';
+      utter.rate = 1.02;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    } catch { /* fail silently */ }
+  }, [ttsSupported, safiVoiceReplies]);
+
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: new Date() };
@@ -89,8 +112,9 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
       const response = getSafiResponse(text);
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'safi', content: response, timestamp: new Date() }]);
       setIsThinking(false);
+      speak(response);
     }, 1200);
-  }, []);
+  }, [speak]);
 
   const startVoiceInput = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -120,6 +144,51 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
     setIsListening(false);
   }, []);
 
+  /**
+   * Hey Safi hotword listener.
+   * Uses continuous SpeechRecognition with low-power interim results.
+   * When "hey safi" / "hi safi" is detected, automatically opens mic for command.
+   * Privacy: only runs when user explicitly toggles `safiHotwordEnabled` ON.
+   */
+  useEffect(() => {
+    if (!safiHotwordEnabled || !voiceSupported || isListening) {
+      hotwordRef.current?.stop?.();
+      hotwordRef.current = null;
+      setHotwordActive(false);
+      return;
+    }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    let stopped = false;
+    try {
+      const rec = new SR();
+      rec.lang = 'en-ZA';
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.onstart = () => setHotwordActive(true);
+      rec.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((r: any) => r[0]?.transcript ?? '')
+          .join(' ')
+          .toLowerCase();
+        if (/\b(hey|hi|hello)\s+(safi|sa fi|sufi)\b/.test(transcript)) {
+          rec.stop();
+          setTimeout(() => startVoiceInput(), 250);
+        }
+      };
+      rec.onerror = () => { if (!stopped) setTimeout(() => { try { rec.start(); } catch {} }, 1500); };
+      rec.onend = () => { if (!stopped && safiHotwordEnabled) { try { rec.start(); } catch {} } };
+      rec.start();
+      hotwordRef.current = rec;
+    } catch { setHotwordActive(false); }
+    return () => { stopped = true; try { hotwordRef.current?.stop?.(); } catch {} setHotwordActive(false); };
+  }, [safiHotwordEnabled, voiceSupported, isListening]);
+
+  // Stop TTS when panel closes
+  useEffect(() => {
+    if (!isOpen && ttsSupported) window.speechSynthesis.cancel();
+  }, [isOpen, ttsSupported]);
+
   if (!isOpen) return null;
 
   const modes = ['chat', 'briefing', 'route', 'emergency'] as const;
@@ -130,23 +199,52 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
       isMobile ? "inset-0" : "top-0 right-0 bottom-0 w-96 border-l border-border-subtle"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
-        <span className="font-neural text-sm font-bold text-accent-safe">✦ SAFI</span>
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0 gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="font-neural text-sm font-bold text-accent-safe">✦ SAFI</span>
+          {hotwordActive && (
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent-safe/15 text-[9px] font-bold text-accent-safe animate-pulse" title="Listening for ‘Hey Safi’">
+              <Ear className="w-2.5 h-2.5" /> WAKE
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1 flex-1 justify-center overflow-x-auto">
           {modes.map(m => (
             <button
               key={m}
               onClick={() => setMode(m)}
               className={cn(
-                "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize transition-colors",
+                "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize transition-colors shrink-0",
                 mode === m ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:text-foreground"
               )}
             >{m}</button>
           ))}
         </div>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center">
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          {voiceSupported && (
+            <button
+              onClick={toggleSafiHotword}
+              className={cn("p-1.5 rounded-lg transition-colors", safiHotwordEnabled ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
+              title={safiHotwordEnabled ? 'Disable “Hey Safi” wake-word' : 'Enable “Hey Safi” wake-word'}
+              aria-label="Toggle hotword listener"
+            >
+              <Ear className="w-4 h-4" />
+            </button>
+          )}
+          {ttsSupported && (
+            <button
+              onClick={toggleSafiVoiceReplies}
+              className={cn("p-1.5 rounded-lg transition-colors", safiVoiceReplies ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
+              title={safiVoiceReplies ? 'Mute spoken replies' : 'Read replies aloud'}
+              aria-label="Toggle voice replies"
+            >
+              {safiVoiceReplies ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          )}
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary min-w-[40px] min-h-[40px] flex items-center justify-center" aria-label="Close Safi">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Content by mode */}
