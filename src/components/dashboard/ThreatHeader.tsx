@@ -1,6 +1,7 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, MapPin, Plus, Menu } from 'lucide-react';
+import { ChevronDown, MapPin, Plus, Menu, Locate } from 'lucide-react';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 type ThreatLevel = 'low' | 'elevated' | 'high' | 'critical';
 
@@ -59,17 +60,29 @@ const defaultSavedZones: SavedZone[] = [
 ];
 
 const ThreatHeader = memo(({
-  suburb = 'Sea Point',
+  suburb,
   threatLevel = 'elevated',
   incidentCount = 7,
   onBrowseAllAreas,
   onMenuOpen,
   onSafiEmergency,
 }: ThreatHeaderProps) => {
+  const userLoc = useUserLocation();
+  const detectedSuburb =
+    userLoc.nearestArea?.name ?? userLoc.nearestSuburb?.suburb_name ?? suburb ?? 'Sea Point';
+
   const config = levelConfig[threatLevel];
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activeZone, setActiveZone] = useState(suburb);
+  const [activeZone, setActiveZone] = useState<string>(detectedSuburb);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync activeZone with detected location once it resolves
+  useEffect(() => {
+    if (detectedSuburb && activeZone === 'Sea Point' && detectedSuburb !== 'Sea Point') {
+      setActiveZone(detectedSuburb);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detectedSuburb]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -84,6 +97,12 @@ const ThreatHeader = memo(({
 
   const handleZoneSelect = (zone: SavedZone) => {
     setActiveZone(zone.name);
+    setDropdownOpen(false);
+  };
+
+  const handleUseMyLocation = () => {
+    userLoc.refresh();
+    setActiveZone(detectedSuburb);
     setDropdownOpen(false);
   };
 
