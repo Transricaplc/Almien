@@ -20,7 +20,11 @@ export interface UserProfile {
   homeLocation: { lat: number; lng: number; address: string };
   safetyScore: number;
   emergencyContacts: Array<{ name: string; phone: string; relation: string }>;
-  subscriptionTier: 'free' | 'elite';
+  subscriptionTier: 'free' | 'trial' | 'elite';
+  /** Plan the user picked at the paywall (only set once converted/trialing). */
+  selectedPlan?: 'standard-monthly' | 'standard-annual' | 'township-monthly' | 'township-annual' | 'family-monthly';
+  /** ISO timestamp when the 7-day Safi trial was activated. */
+  trialStartedAt?: string | null;
 }
 
 interface AlmienStore {
@@ -44,6 +48,11 @@ interface AlmienStore {
   toggleSafiHotword: () => void;
   toggleSafiVoiceReplies: () => void;
   toggleSafiPatternConsent: () => void;
+
+  // Monetisation funnel
+  startSafiTrial: () => void;
+  upgradeToElite: (plan: NonNullable<UserProfile['selectedPlan']>) => void;
+  cancelSubscription: () => void;
 }
 
 const capeTownLocations = [
@@ -102,6 +111,7 @@ export const useAlmienStore = create<AlmienStore>()(
           { name: 'Dr. Lerato Mthembu', phone: '+27 21 555 3333', relation: 'Doctor' },
         ],
         subscriptionTier: 'free',
+        trialStartedAt: null,
       },
       isLoading: false,
       lastSync: new Date().toISOString(),
@@ -149,6 +159,35 @@ export const useAlmienStore = create<AlmienStore>()(
       setSafetyScore: (score) => {
         set((state) => ({
           userProfile: state.userProfile ? { ...state.userProfile, safetyScore: score } : null,
+        }));
+      },
+
+      // ── Monetisation funnel actions ───────────────────────────────────
+      // Free-core safety features (SOS, GBV, crime map, basic routes) are NEVER gated.
+      // These actions only affect AI/insight features.
+      startSafiTrial: () => {
+        set((state) => ({
+          userProfile: state.userProfile
+            ? {
+                ...state.userProfile,
+                subscriptionTier: 'trial',
+                trialStartedAt: new Date().toISOString(),
+              }
+            : null,
+        }));
+      },
+      upgradeToElite: (plan) => {
+        set((state) => ({
+          userProfile: state.userProfile
+            ? { ...state.userProfile, subscriptionTier: 'elite', selectedPlan: plan }
+            : null,
+        }));
+      },
+      cancelSubscription: () => {
+        set((state) => ({
+          userProfile: state.userProfile
+            ? { ...state.userProfile, subscriptionTier: 'free', selectedPlan: undefined, trialStartedAt: null }
+            : null,
         }));
       },
     }),

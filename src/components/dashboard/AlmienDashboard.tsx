@@ -6,6 +6,7 @@ import AlmienSidebar from './AlmienSidebar';
 import BottomNavBar from './BottomNavBar';
 import SOSActionDock from './SOSActionDock';
 import ThreatHeader from './ThreatHeader';
+import TrialBanner from './TrialBanner';
 import UpgradeModal from './UpgradeModal';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import ZoneDirectory from './widgets/ZoneDirectory';
@@ -244,6 +245,7 @@ const AlmienDashboard = memo(() => {
 
         {/* Center workspace */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col w-full max-w-full">
+          <TrialBanner onUpgrade={() => openUpgrade('See your Almien plan options')} />
           <ThreatHeader
             onBrowseAllAreas={() => setShowZoneDirectory(true)}
             onMenuOpen={isMobile ? () => setSidebarOpen(true) : undefined}
