@@ -34,6 +34,64 @@ const SOSActionDock = memo(({ isTravelerMode = false, mapMode = false }: SOSActi
     if (isTravelerMode) setExpanded(true);
   }, [isTravelerMode]);
 
+  // ── MAP MODE: collapsible FAB (sits above bottom nav, left side) ──
+  if (mapMode) {
+    return (
+      <div
+        className="fixed z-[88] left-4 flex flex-col-reverse items-start gap-2"
+        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 84px)' }}
+      >
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className={cn(
+            'flex items-center gap-2 h-11 px-4 rounded-full font-bold shadow-xl transition-all min-w-[44px]',
+            expanded
+              ? 'bg-[hsl(var(--surface-02))] border border-border-subtle text-foreground'
+              : 'bg-accent-threat text-white pulse-sos'
+          )}
+          aria-label={expanded ? 'Close SOS menu' : 'Open SOS menu'}
+        >
+          {expanded ? (
+            <>
+              <X className="w-4 h-4" />
+              <span className="text-xs">Close</span>
+            </>
+          ) : (
+            <>
+              <Phone className="w-4 h-4" />
+              <span className="text-xs font-neural tracking-wider">SOS</span>
+            </>
+          )}
+        </button>
+
+        {expanded && (
+          <div className="flex flex-col gap-2 animate-fade-in">
+            {sosButtons.map(btn => {
+              const Icon = btn.icon;
+              return (
+                <a
+                  key={btn.id}
+                  href={`tel:${btn.number.replace(/\s/g, '')}`}
+                  className={cn(
+                    'flex items-center gap-2 px-3 h-11 rounded-full text-white text-xs font-bold shadow-lg min-w-[44px]',
+                    btn.bgColor
+                  )}
+                  aria-label={`Call ${btn.label} at ${btn.number}`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
+                  <div className="text-left leading-tight">
+                    <div className="text-[10px] font-bold">{btn.label}</div>
+                    <div className="text-[8px] opacity-80 font-mono">{btn.number}</div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={cn(
       'fixed left-0 right-0 z-[85]',
