@@ -121,6 +121,51 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
     setIsListening(false);
   }, []);
 
+  /**
+   * Hey Safi hotword listener.
+   * Uses continuous SpeechRecognition with low-power interim results.
+   * When "hey safi" / "hi safi" is detected, automatically opens mic for command.
+   * Privacy: only runs when user explicitly toggles `safiHotwordEnabled` ON.
+   */
+  useEffect(() => {
+    if (!safiHotwordEnabled || !voiceSupported || isListening) {
+      hotwordRef.current?.stop?.();
+      hotwordRef.current = null;
+      setHotwordActive(false);
+      return;
+    }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    let stopped = false;
+    try {
+      const rec = new SR();
+      rec.lang = 'en-ZA';
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.onstart = () => setHotwordActive(true);
+      rec.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((r: any) => r[0]?.transcript ?? '')
+          .join(' ')
+          .toLowerCase();
+        if (/\b(hey|hi|hello)\s+(safi|sa fi|sufi)\b/.test(transcript)) {
+          rec.stop();
+          setTimeout(() => startVoiceInput(), 250);
+        }
+      };
+      rec.onerror = () => { if (!stopped) setTimeout(() => { try { rec.start(); } catch {} }, 1500); };
+      rec.onend = () => { if (!stopped && safiHotwordEnabled) { try { rec.start(); } catch {} } };
+      rec.start();
+      hotwordRef.current = rec;
+    } catch { setHotwordActive(false); }
+    return () => { stopped = true; try { hotwordRef.current?.stop?.(); } catch {} setHotwordActive(false); };
+  }, [safiHotwordEnabled, voiceSupported, isListening]);
+
+  // Stop TTS when panel closes
+  useEffect(() => {
+    if (!isOpen && ttsSupported) window.speechSynthesis.cancel();
+  }, [isOpen, ttsSupported]);
+
   if (!isOpen) return null;
 
   const modes = ['chat', 'briefing', 'route', 'emergency'] as const;
