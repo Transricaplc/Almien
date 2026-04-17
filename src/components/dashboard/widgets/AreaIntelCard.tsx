@@ -1,10 +1,11 @@
 import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Search, MapPin, Shield, Phone, Building2, Flame, X, Target, Clock, Radio, CheckCircle2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { MapPin, Shield, Phone, Building2, Flame, X, Target, Clock, Radio, CheckCircle2, Navigation } from 'lucide-react';
 import SafetyScoreBadge from '../SafetyScoreBadge';
-import { capeTownAreas, searchAreas, type AreaSafetyData } from '@/data/capeTownSafetyData';
-import { useSuburbIntelligence, type SuburbIntelligence } from '@/hooks/useSuburbIntelligence';
+import { type AreaSafetyData } from '@/data/capeTownSafetyData';
+import { type SuburbIntelligence } from '@/hooks/useSuburbIntelligence';
+import { openDirectionsTo } from '@/utils/locationUtils';
+import SuburbSearchInput from '../SuburbSearchInput';
 
 const getSuburbSafetyLevel = (score: number) => {
   if (score >= 75) return 'green';
@@ -29,20 +30,8 @@ interface Props {
 }
 
 const AreaIntelCard = memo(({ variant = 'inline', initialQuery = '', className }: Props) => {
-  const [query, setQuery] = useState(initialQuery);
   const [selectedSuburb, setSelectedSuburb] = useState<SuburbIntelligence | null>(null);
   const [selectedArea, setSelectedArea] = useState<AreaSafetyData | null>(null);
-  const { suburbs } = useSuburbIntelligence();
-
-  const q = query.trim().toLowerCase();
-  const matchedSuburbs = q.length > 0
-    ? suburbs.filter(s =>
-        s.suburb_name.toLowerCase().includes(q) ||
-        s.area_code.toLowerCase().includes(q)
-      ).slice(0, 6)
-    : [];
-
-  const matchedAreas = q.length > 0 ? searchAreas(query).slice(0, 4) : [];
 
   // Suburb detail
   if (selectedSuburb) {
@@ -84,17 +73,43 @@ const AreaIntelCard = memo(({ variant = 'inline', initialQuery = '', className }
           </div>
         )}
 
+        {/* SAPS + Hospital with Navigate buttons */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] text-foreground">
+            <Shield className="w-3 h-3 text-blue-400 shrink-0" />
+            <span className="truncate">{selectedSuburb.saps_station}</span>
+            <button
+              onClick={() => openDirectionsTo(selectedSuburb.saps_station)}
+              className="ml-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-accent-safe/10 hover:bg-accent-safe/20 text-accent-safe border border-accent-safe/20 text-[9px] font-bold transition-colors"
+              title={`Navigate to ${selectedSuburb.saps_station}`}
+            >
+              <Navigation className="w-2.5 h-2.5" />NAVIGATE
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-foreground">
+            <Building2 className="w-3 h-3 text-emerald-400 shrink-0" />
+            <span className="truncate">{selectedSuburb.hospital_name}</span>
+            <button
+              onClick={() => openDirectionsTo(selectedSuburb.hospital_name)}
+              className="ml-auto inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold transition-colors"
+              title={`Navigate to ${selectedSuburb.hospital_name}`}
+            >
+              <Navigation className="w-2.5 h-2.5" />NAVIGATE
+            </button>
+          </div>
+        </div>
+
         <div className="flex gap-2">
           <a href={`tel:${selectedSuburb.saps_contact.replace(/[^0-9+]/g, '')}`}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity">
-            <Shield className="w-3.5 h-3.5" /> SAPS
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity min-h-[44px]">
+            <Phone className="w-3.5 h-3.5" /> SAPS
           </a>
           <a href={`tel:${selectedSuburb.hospital_contact.replace(/[^0-9+]/g, '')}`}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-opacity">
-            <Building2 className="w-3.5 h-3.5" /> Medical
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90 transition-opacity min-h-[44px]">
+            <Phone className="w-3.5 h-3.5" /> Medical
           </a>
           <a href={`tel:${selectedSuburb.fire_contact.replace(/[^0-9+]/g, '')}`}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-safety-orange text-white text-xs font-bold hover:opacity-90 transition-opacity">
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-safety-orange text-white text-xs font-bold hover:opacity-90 transition-opacity min-h-[44px]">
             <Flame className="w-3.5 h-3.5" /> Fire
           </a>
         </div>
@@ -153,66 +168,36 @@ const AreaIntelCard = memo(({ variant = 'inline', initialQuery = '', className }
     );
   }
 
-  // Search state
+  // Search state — uses unified SuburbSearchInput
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-        <Input
-          placeholder="Search suburb or area code..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          className={cn("pl-9 h-9 text-sm", variant === 'popover' && "bg-card/90 backdrop-blur")}
-        />
-        {query && (
-          <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-            <X className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        )}
-      </div>
-
-      {/* DB suburb results */}
-      {matchedSuburbs.length > 0 && (
-        <div className="space-y-1">
-          {matchedSuburbs.map(s => {
-            const level = getSuburbSafetyLevel(s.safety_score);
-            return (
-              <button
-                key={s.id}
-                onClick={() => { setSelectedSuburb(s); setQuery(''); }}
-                className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-left"
-              >
-                <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{s.suburb_name}</p>
-                  <p className="text-[10px] text-muted-foreground">Ward {s.ward_id} · {s.incidents_24h} incidents / 24h</p>
-                </div>
-                <span className={cn("text-sm font-bold tabular-nums", levelColors[level])}>{s.safety_score}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Static area results */}
-      {matchedAreas.length > 0 && matchedSuburbs.length === 0 && (
-        <div className="space-y-1">
-          {matchedAreas.map(a => (
-            <button
-              key={a.id}
-              onClick={() => { setSelectedArea(a); setQuery(''); }}
-              className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-left"
-            >
-              <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{a.name}</p>
-                <p className="text-[10px] text-muted-foreground capitalize">{a.safetyLevel} · {a.incidentCount.last7Days} / 7d</p>
-              </div>
-              <SafetyScoreBadge score={a.safetyScore} size="sm" />
-            </button>
-          ))}
-        </div>
-      )}
+    <div className={cn('space-y-2', className)}>
+      <SuburbSearchInput
+        placeholder="Search suburb, ward, or area code..."
+        initialValue={initialQuery}
+        onSelect={r => {
+          if (r.suburbData) {
+            // Build a SuburbIntelligence-like object for downstream display
+            setSelectedSuburb({
+              id: r.suburbData.id,
+              suburb_name: r.suburbData.suburb_name,
+              area_code: r.suburbData.area_code,
+              ward_id: r.suburbData.ward_id,
+              safety_score: r.suburbData.safety_score,
+              cctv_coverage: r.suburbData.cctv_coverage,
+              incidents_24h: r.suburbData.incidents_24h,
+              saps_station: r.suburbData.saps_station,
+              saps_contact: r.suburbData.saps_contact,
+              fire_station: r.suburbData.fire_station,
+              fire_contact: r.suburbData.fire_contact,
+              hospital_name: r.suburbData.hospital_name,
+              hospital_contact: r.suburbData.hospital_contact,
+              risk_type: r.suburbData.risk_type ?? null,
+            });
+          } else if (r.areaData) {
+            setSelectedArea(r.areaData);
+          }
+        }}
+      />
     </div>
   );
 });

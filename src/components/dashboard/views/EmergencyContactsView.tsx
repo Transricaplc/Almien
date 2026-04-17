@@ -2,12 +2,13 @@ import { memo, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import {
   Phone, MapPin, Clock, ChevronDown, ChevronUp, Shield, Crown, Lock,
-  Search, Flame, AlertTriangle, Zap, Filter, X
+  Search, Flame, AlertTriangle, Zap, Filter, X, Navigation,
 } from 'lucide-react';
 import {
   westernCapeDirectory, getEmergencyContacts, searchDirectory, PROVINCE_WIDE,
   type SuburbEmergencyEntry, type EmergencyContactsResult,
 } from '@/data/westernCapeEmergencyDirectory';
+import { openDirectionsTo } from '@/utils/locationUtils';
 import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
@@ -75,7 +76,16 @@ const SuburbContactCard = memo(({ contacts, filter }: { contacts: EmergencyConta
         {/* SAPS */}
         {showSAPS && (
           <div className="space-y-1.5">
-            <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-[#2563eb]">[SAPS CONTACTS]</div>
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-[#2563eb]">[SAPS CONTACTS]</div>
+              <button
+                onClick={() => openDirectionsTo(contacts.saps.station)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-accent-safe/10 hover:bg-accent-safe/20 text-accent-safe border border-accent-safe/20 text-[9px] font-bold transition-colors min-h-[28px]"
+                title={`Navigate to ${contacts.saps.station}`}
+              >
+                <Navigation className="w-2.5 h-2.5" />NAVIGATE
+              </button>
+            </div>
             <CallChip name={contacts.saps.station} number={contacts.saps.phone} colorClass="border-[#2563eb]/30 bg-[#2563eb]/5" />
             {contacts.saps.clusterHQ && (
               <CallChip name={`Cluster HQ: ${contacts.saps.clusterHQ}`} number={contacts.saps.clusterPhone!} colorClass="border-[#2563eb]/20 bg-[#2563eb]/5" />
@@ -98,7 +108,16 @@ const SuburbContactCard = memo(({ contacts, filter }: { contacts: EmergencyConta
         {/* Medical */}
         {showMedical && (
           <div className="space-y-1.5">
-            <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-emerald-500">[MEDICAL INTELLIGENCE]</div>
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] font-mono uppercase tracking-[0.08em] font-bold text-emerald-500">[MEDICAL INTELLIGENCE]</div>
+              <button
+                onClick={() => openDirectionsTo(contacts.medical.publicHospital)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold transition-colors min-h-[28px]"
+                title={`Navigate to ${contacts.medical.publicHospital}`}
+              >
+                <Navigation className="w-2.5 h-2.5" />NAVIGATE
+              </button>
+            </div>
             <CallChip name={`Public: ${contacts.medical.publicHospital}`} number={contacts.medical.publicPhone} colorClass="border-emerald-500/30 bg-emerald-500/5" />
             {contacts.medical.privateClinic && (
               <CallChip name={`Private: ${contacts.medical.privateClinic}`} number={contacts.medical.privatePhone!} colorClass="border-emerald-500/20 bg-emerald-500/5" />
