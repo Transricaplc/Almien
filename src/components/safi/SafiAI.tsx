@@ -55,16 +55,25 @@ const getGreeting = () => {
 
 const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: SafiAIProps) => {
   const isMobile = useIsMobile();
+  const safiVoiceReplies = useAlmienStore((s) => s.safiVoiceReplies);
+  const toggleSafiVoiceReplies = useAlmienStore((s) => s.toggleSafiVoiceReplies);
+  const safiHotwordEnabled = useAlmienStore((s) => s.safiHotwordEnabled);
+  const toggleSafiHotword = useAlmienStore((s) => s.toggleSafiHotword);
   const [mode, setMode] = useState<'chat' | 'briefing' | 'route' | 'emergency'>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [hotwordActive, setHotwordActive] = useState(false);
   const [voiceSupported] = useState(() =>
     typeof window !== 'undefined' &&
     ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
   );
+  const [ttsSupported] = useState(() =>
+    typeof window !== 'undefined' && 'speechSynthesis' in window
+  );
   const recognitionRef = useRef<any>(null);
+  const hotwordRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,6 +89,19 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
 
   useEffect(() => { setMode(initialMode); }, [initialMode]);
 
+  /** Speak Safi's reply aloud — only when user has enabled voice replies */
+  const speak = useCallback((text: string) => {
+    if (!ttsSupported || !safiVoiceReplies) return;
+    try {
+      const cleaned = text.replace(/[✦✓⚠💜⚡🌙🏃🧭🛡🌐]/g, '').trim();
+      const utter = new SpeechSynthesisUtterance(cleaned);
+      utter.lang = 'en-ZA';
+      utter.rate = 1.02;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    } catch { /* fail silently */ }
+  }, [ttsSupported, safiVoiceReplies]);
+
   const sendMessage = useCallback((text: string) => {
     if (!text.trim()) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: new Date() };
@@ -90,8 +112,9 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
       const response = getSafiResponse(text);
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'safi', content: response, timestamp: new Date() }]);
       setIsThinking(false);
+      speak(response);
     }, 1200);
-  }, []);
+  }, [speak]);
 
   const startVoiceInput = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
