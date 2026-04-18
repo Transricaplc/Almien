@@ -104,11 +104,21 @@ const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggl
         )}
       </div>
 
-      {/* Mini safety score (collapsed) */}
+      {/* Mini safety score (collapsed) — v5.1: glanceable score even at 64px */}
       {!isMobile && !pinned && (
         <div className="flex flex-col items-center py-3 group-hover:hidden">
-          <div className="w-10 h-10 rounded-full border-2 border-accent-safe flex items-center justify-center">
-            <span className="text-xs font-neural font-bold text-accent-safe">7.8</span>
+          <div className="relative w-10 h-10">
+            <svg viewBox="0 0 40 40" className="w-full h-full -rotate-90">
+              <circle cx="20" cy="20" r="17" fill="none" stroke="hsl(var(--border-subtle))" strokeWidth="3" />
+              <circle
+                cx="20" cy="20" r="17" fill="none"
+                stroke="hsl(var(--safe))" strokeWidth="3" strokeLinecap="round"
+                strokeDasharray={`${(7.8 / 10) * 106.8} 106.8`}
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-neural font-bold text-accent-safe">
+              7.8
+            </span>
           </div>
         </div>
       )}
@@ -120,7 +130,8 @@ const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggl
             <div key={group.label || 'misc'}>
               {group.label && (
                 <div className={cn(
-                  "px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60",
+                  // v5.1 — group labels in mono safe-tier accent for clearer hierarchy
+                  "px-3 pb-1.5 font-neural text-[9px] font-bold uppercase tracking-[0.12em] text-accent-safe/70",
                   !isMobile && !pinned && "hidden group-hover:block"
                 )}>{group.label}</div>
               )}
@@ -133,9 +144,10 @@ const AlmienSidebar = memo(({ activeView, onNavigate, onUpgrade, isOpen, onToggl
                       onClick={() => onNavigate(item.id)}
                       className={cn(
                         "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px]",
+                        // v5.1 — keep border-left slot reserved on inactive items so click doesn't shift width
                         isActive
                           ? "bg-accent-safe/10 text-accent-safe border-l-2 border-accent-safe"
-                          : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--accent)/0.5)]"
+                          : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--accent)/0.5)] border-l-2 border-transparent"
                       )}
                     >
                       <item.icon className={cn("w-[18px] h-[18px] shrink-0", isActive && "text-accent-safe")} />

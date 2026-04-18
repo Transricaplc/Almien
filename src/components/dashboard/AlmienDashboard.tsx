@@ -243,7 +243,11 @@ const AlmienDashboard = memo(() => {
           />
         )}
 
-        {/* Center workspace */}
+        {/* Center workspace
+            v5.1 desktop split: map dominates left (60%), active view docks right (40%).
+            When the user explicitly opens the map ('map-full' view) we collapse the
+            split so coordinators get the full surface area for pure-map work.
+            Mobile keeps the single-column linear scroll. */}
         <main className="flex-1 min-w-0 overflow-hidden flex flex-col w-full max-w-full">
           <TrialBanner onUpgrade={() => openUpgrade('See your Almien plan options')} />
           <ThreatHeader
@@ -252,14 +256,29 @@ const AlmienDashboard = memo(() => {
             onSafiEmergency={() => openSafi('emergency')}
           />
 
-          <ScrollArea className="flex-1">
-            <div className={cn(
-              "mx-auto w-full max-w-full content-panel",
-              isMobile ? "px-4 py-4 pb-[200px] max-w-full" : "px-8 py-8 max-w-[720px]"
-            )}>
-              {renderView()}
+          {!isMobile && activeView !== 'map-full' ? (
+            /* Desktop two-column split */
+            <div className="flex-1 min-h-0 flex">
+              <div className="w-[60%] min-w-0 border-r border-border-subtle relative overflow-hidden">
+                <MapFullView onUpgrade={openUpgrade} onNavigate={navigate} />
+              </div>
+              <ScrollArea className="w-[40%] min-w-0">
+                <div className="px-6 py-6 max-w-full content-panel">
+                  {renderView()}
+                </div>
+              </ScrollArea>
             </div>
-          </ScrollArea>
+          ) : (
+            /* Mobile linear scroll · or desktop full-map mode */
+            <ScrollArea className="flex-1">
+              <div className={cn(
+                "mx-auto w-full max-w-full content-panel",
+                isMobile ? "px-4 py-4 pb-[200px] max-w-full" : "px-8 py-8 max-w-[720px]"
+              )}>
+                {renderView()}
+              </div>
+            </ScrollArea>
+          )}
         </main>
 
         {/* Floating elements */}
