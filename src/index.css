@@ -117,6 +117,25 @@
     --safe-space-bg: var(--surface-deep);
     --safe-space-accent: var(--accent-gbv);
     --safe-space-foreground: 0 0% 100%;
+
+    /* ── Almien v5.1 — semantic safety aliases (HSL) ──
+       Mapped onto existing accent tokens so the entire app
+       speaks one safety vocabulary: safe / elevated / threat / gbv / info */
+    --safe:     var(--accent-safe);     /* teal-green   — clear */
+    --elevated: var(--accent-warning);  /* amber        — caution */
+    --threat:   var(--accent-threat);   /* red          — danger */
+    --gbv-color:var(--accent-gbv);      /* violet       — GBV */
+    --info-color:var(--accent-info);    /* sky          — info */
+
+    /* Surface 03 — one step lighter than 02 for shimmer / hover */
+    --surface-03: 240 4% 19%;
+
+    /* Border accent — used by safe-tier focus rings */
+    --border-accent: 263 30% 25%;
+
+    /* Typography scale tokens (used directly in style props) */
+    --text-display-size: clamp(2rem, 5vw, 3.5rem);
+    --text-metric-size:  clamp(1.5rem, 3vw, 2.5rem);
   }
 
   /* Dark mode is the default — light mode maps identically */
@@ -437,6 +456,84 @@
 .animate-shake {
   animation: shake 0.3s ease-in-out;
 }
+
+/* ────────────────────────────────────────────────────────
+   ALMIEN v5.1 — Status badges, metric cards, panel sections
+   One vocabulary, one colour per meaning, used app-wide.
+   ──────────────────────────────────────────────────────── */
+@layer components {
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .badge-safe {
+    background: hsl(var(--safe) / 0.10);
+    color: hsl(var(--safe));
+    border: 1px solid hsl(var(--safe) / 0.25);
+  }
+  .badge-elevated {
+    background: hsl(var(--elevated) / 0.10);
+    color: hsl(var(--elevated));
+    border: 1px solid hsl(var(--elevated) / 0.25);
+  }
+  .badge-threat {
+    background: hsl(var(--threat) / 0.10);
+    color: hsl(var(--threat));
+    border: 1px solid hsl(var(--threat) / 0.25);
+  }
+  .badge-live {
+    background: hsl(var(--safe) / 0.12);
+    color: hsl(var(--safe));
+    border: 1px solid hsl(var(--safe) / 0.25);
+  }
+  .badge-gbv {
+    background: hsl(var(--gbv-color) / 0.10);
+    color: hsl(var(--gbv-color));
+    border: 1px solid hsl(var(--gbv-color) / 0.25);
+  }
+
+  .metric-card {
+    background: hsl(var(--surface-02));
+    border: 1px solid hsl(var(--border-subtle));
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  .panel-section { margin-bottom: 1rem; }
+  .panel-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--safe));
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Slide-down — used by Safi behaviour banners & guardian alerts */
+@keyframes slide-down {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-slide-down { animation: slide-down 0.2s ease-out forwards; }
+
+/* Ring-pulse — calmer breathing variant for safety-score rings */
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.03); }
+}
+.animate-ring-pulse { animation: ring-pulse 3s ease-in-out infinite; }
 
 /* Neural animations */
 @keyframes neural-breathe {

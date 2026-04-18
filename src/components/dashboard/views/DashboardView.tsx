@@ -424,6 +424,31 @@ const DashboardView = memo(({ onNavigate, onOpenSafi }: DashboardViewProps) => {
         </div>
       </div>
 
+      {/* ═══ PANEL G (v5.1): GBV SAFE SPACE — always free, always visible ═══ */}
+      <button
+        onClick={() => onNavigate('safe-space')}
+        className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-colors active:scale-[0.99]"
+        style={{
+          background: 'hsl(var(--gbv-color) / 0.08)',
+          border: '1px solid hsl(var(--gbv-color) / 0.20)',
+        }}
+        aria-label="Open GBV Safe Space"
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
+          style={{ background: 'hsl(var(--gbv-color) / 0.15)' }}
+        >
+          💜
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-bold text-foreground">GBV Safe Space</p>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            Nearest shelter · 24hr crisis line · Legal aid — always free
+          </p>
+        </div>
+        <span className="badge badge-gbv shrink-0">Open →</span>
+      </button>
+
       {/* ═══ EMERGENCY CONTACTS STRIP ═══ */}
       <div>
         <h2 className="text-sm font-bold text-foreground mb-3">Emergency Contacts</h2>

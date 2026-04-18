@@ -106,9 +106,20 @@ const ThreatHeader = memo(({
     setDropdownOpen(false);
   };
 
+  // v5.1 — map internal threat level to the universal badge vocabulary
+  const badgeClass =
+    threatLevel === 'low' ? 'badge badge-safe'
+    : threatLevel === 'elevated' ? 'badge badge-elevated'
+    : 'badge badge-threat';
+  const badgeLabel =
+    threatLevel === 'low' ? 'CLEAR'
+    : threatLevel === 'elevated' ? 'ELEVATED'
+    : threatLevel === 'high' ? 'HIGH'
+    : 'CRITICAL';
+
   return (
     <div className={cn(
-      "h-10 shrink-0 flex items-center justify-between px-4 border-b border-border-subtle z-50 relative",
+      "h-[52px] shrink-0 flex items-center justify-between px-4 border-b border-border-subtle z-50 relative",
       config.headerBg
     )}>
       {/* Left accent bar */}
@@ -135,13 +146,9 @@ const ThreatHeader = memo(({
             dropdownOpen && "rotate-180"
           )} />
         </button>
-        <span className={cn(
-          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-system shrink-0",
-          config.pillBg,
-          config.pillText,
-          config.pulse && "animate-pulse"
-        )}>
-          {config.label}
+        {/* v5.1 unified status badge */}
+        <span className={cn(badgeClass, "shrink-0", config.pulse && "animate-pulse")}>
+          {badgeLabel}
         </span>
 
         {/* Inline dropdown */}
