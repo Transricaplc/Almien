@@ -23,6 +23,7 @@ import TrailSafetyView from './views/TrailSafetyView';
 import EmergencyContactsView from './views/EmergencyContactsView';
 import ProfessionalToolsView from './views/ProfessionalToolsView';
 import CommunityIntelView from './views/CommunityIntelView';
+import TrustGridView from './views/TrustGridView';
 import AlertsView from './views/AlertsView';
 import SettingsView from './views/SettingsView';
 import TrafficTransportView from './views/TrafficTransportView';
@@ -228,7 +229,12 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
       case 'trails': return <TrailSafetyView {...props} />;
       case 'emergency': return <EmergencyContactsView {...props} />;
       case 'pro-tools': return <ProfessionalToolsView {...props} />;
-      case 'community': return <CommunityIntelView {...props} />;
+      case 'community':
+        // Mobile gets the new Trust Grid (Obsidian Tactical).
+        // Desktop keeps the rich CommunityIntelView.
+        return isMobile
+          ? <TrustGridView {...props} />
+          : <CommunityIntelView {...props} />;
       case 'alerts': return <AlertsView {...props} />;
       case 'traffic': return <TrafficTransportView {...props} />;
       case 'utilities': return <UtilitiesServicesView {...props} />;
