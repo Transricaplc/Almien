@@ -1,67 +1,158 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const legalLinks = [
-  { label: 'Privacy Policy', href: '#privacy' },
-  { label: 'Terms & Conditions', href: '#terms' },
-  { label: 'POPIA Compliance', href: '#popia' },
-  { label: 'Cookie Policy', href: '#cookies' },
-  { label: 'Disclaimer', href: '#disclaimer' },
+  { label: 'PRIVACY', href: '#privacy' },
+  { label: 'TERMS', href: '#terms' },
+  { label: 'POPIA', href: '#popia' },
+  { label: 'COOKIES', href: '#cookies' },
 ];
 
 const Welcome = () => {
   const navigate = useNavigate();
   const [fading, setFading] = useState(false);
+  const [tick, setTick] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const d = new Date();
+      const hh = String(d.getUTCHours()).padStart(2, '0');
+      const mm = String(d.getUTCMinutes()).padStart(2, '0');
+      const ss = String(d.getUTCSeconds()).padStart(2, '0');
+      setTick(`${hh}:${mm}:${ss} UTC`);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleEnter = () => {
     setFading(true);
-    setTimeout(() => navigate('/dashboard'), 500);
+    setTimeout(() => navigate('/dashboard'), 350);
   };
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col transition-opacity duration-500 ${fading ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] flex flex-col bg-black transition-opacity duration-300 ${
+        fading ? 'opacity-0' : 'opacity-100'
+      }`}
     >
-      {/* Background image */}
+      {/* Background image — desaturated */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/table-mountain-hero.jpg')" }}
+        style={{
+          backgroundImage: "url('/images/table-mountain-hero.jpg')",
+          filter: 'grayscale(0.85) contrast(1.1) brightness(0.45)',
+        }}
       />
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70" />
+      {/* True-black overlay */}
+      <div className="absolute inset-0 bg-black/65" />
+
+      {/* Scanline overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, #00FF85 0, #00FF85 1px, transparent 1px, transparent 4px)',
+        }}
+      />
+
+      {/* TOP STATUS STRIP */}
+      <header className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-[#1A1A1A]">
+        <div className="flex items-center gap-2 label-micro" style={{ color: '#00FF85' }}>
+          <span className="inline-block w-1.5 h-1.5 bg-[#00FF85] animate-pulse" />
+          SYS_ONLINE
+        </div>
+        <div className="label-micro mono" style={{ color: '#666' }}>
+          {tick}
+        </div>
+        <div className="label-micro" style={{ color: '#666' }}>
+          v2.0
+        </div>
+      </header>
 
       {/* Centered content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white drop-shadow-lg" style={{ textShadow: '0 0 40px hsl(263 70% 58% / 0.35)' }}>
-          Almien
+        {/* Brand mark */}
+        <div className="label-micro mb-4" style={{ color: '#00FF85' }}>
+          [ URBAN INTELLIGENCE TERMINAL ]
+        </div>
+
+        <h1
+          className="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter text-white leading-[0.9]"
+          style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+        >
+          ALMIEN
         </h1>
-        <p className="mt-4 text-lg sm:text-xl md:text-2xl font-medium text-white/90 tracking-wide" style={{ textShadow: '0 0 20px hsl(263 70% 58% / 0.2)' }}>
-          Your Safety, Always Near
+
+        {/* Acid green underline */}
+        <div className="mt-3 h-[2px] w-24 bg-[#00FF85]" />
+
+        <p
+          className="mt-6 text-sm sm:text-base font-medium tracking-[0.3em] uppercase text-white/70"
+          style={{ fontFamily: 'JetBrains Mono, monospace' }}
+        >
+          Your Safety. Always Near.
         </p>
 
+        {/* Spec block */}
+        <div className="mt-10 grid grid-cols-3 gap-3 max-w-md w-full">
+          {[
+            { l: 'COVERAGE', v: 'WC' },
+            { l: 'WARDS', v: '116' },
+            { l: 'STATUS', v: 'LIVE' },
+          ].map((s) => (
+            <div
+              key={s.l}
+              className="border border-[#1A1A1A] bg-black/60 backdrop-blur-sm px-3 py-2.5"
+            >
+              <div className="label-micro" style={{ color: '#666' }}>
+                {s.l}
+              </div>
+              <div
+                className="text-base font-bold mt-0.5"
+                style={{ color: '#00FF85', fontFamily: 'JetBrains Mono, monospace' }}
+              >
+                {s.v}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={handleEnter} className="btn-primary mt-10 w-full max-w-xs">
+          ENTER TERMINAL →
+        </button>
+
         <button
-          onClick={handleEnter}
-          className="mt-10 px-10 py-4 sm:px-14 sm:py-5 rounded-full text-lg sm:text-xl font-bold text-white bg-primary hover:brightness-110 active:scale-[0.97] transition-all shadow-lg shadow-primary/30 hover:shadow-xl"
+          onClick={() => navigate('/auth')}
+          className="btn-ghost mt-3"
+          style={{ color: '#666' }}
         >
-          Enter
+          STAFF ACCESS
         </button>
       </main>
 
       {/* Legal footer */}
-      <footer className="relative z-10 bg-black/80 backdrop-blur-sm px-6 py-4 text-center">
-        <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs sm:text-sm text-white/70">
+      <footer className="relative z-10 border-t border-[#1A1A1A] bg-black/80 backdrop-blur-sm px-4 py-3">
+        <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           {legalLinks.map((link, i) => (
-            <span key={link.label} className="flex items-center gap-4">
-              {i > 0 && <span className="text-white/30">•</span>}
-              <a href={link.href} className="hover:text-white transition-colors">{link.label}</a>
+            <span key={link.label} className="flex items-center gap-3">
+              {i > 0 && <span style={{ color: '#333' }}>·</span>}
+              <a
+                href={link.href}
+                className="label-micro hover:text-[#00FF85] transition-colors"
+                style={{ color: '#666' }}
+              >
+                {link.label}
+              </a>
             </span>
           ))}
         </nav>
-        <p className="mt-2 text-[11px] sm:text-xs text-white/50">
-          © 2026 Almien • Cape Town, Western Cape
-        </p>
-        <p className="mt-1 text-[10px] sm:text-[11px] text-white/40 max-w-xl mx-auto leading-relaxed">
-          Almien is fully compliant with the Protection of Personal Information Act (POPIA). We respect your privacy and protect all personal data. By entering you agree to our Terms &amp; Conditions.
+        <p
+          className="mt-2 text-center label-micro"
+          style={{ color: '#444' }}
+        >
+          © 2026 ALMIEN · CAPE TOWN · POPIA COMPLIANT
         </p>
       </footer>
     </div>

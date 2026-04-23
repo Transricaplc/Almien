@@ -1,22 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Shield, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { toUserMessage } from "@/lib/errorMessages";
 
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Invalid operator email"),
+  password: z.string().min(8, "Min 8 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -32,6 +29,22 @@ export default function AuthPage() {
   const { data: roles } = useRoles(user?.id ?? null);
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [tick, setTick] = useState("");
+
+  useEffect(() => {
+    const update = () => {
+      const d = new Date();
+      setTick(
+        `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(
+          2,
+          "0",
+        )}:${String(d.getUTCSeconds()).padStart(2, "0")} UTC`,
+      );
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -42,73 +55,95 @@ export default function AuthPage() {
     if (from) return from;
     if ((roles ?? []).includes("dispatcher") || (roles ?? []).includes("admin")) return "/dispatch";
     if ((roles ?? []).includes("responder")) return "/responder";
-    return "/";
+    return "/dashboard";
   }, [from, roles]);
 
+  // ── Signed-in state ──
   if (user) {
     const claimInitialAdmin = async () => {
       try {
         const { data: hasAdmin, error: e1 } = await supabase.rpc("any_admin_exists");
         if (e1) throw e1;
         if (hasAdmin) {
-          toast({ title: "An admin already exists", description: "Ask an admin to grant your role(s)." });
+          toast({ title: "Admin already provisioned", description: "Request role escalation from active admin." });
           return;
         }
-
         const { data: claimed, error: e2 } = await supabase.rpc("claim_initial_admin");
         if (e2) throw e2;
         if (!claimed) {
-          toast({ title: "Unable to claim admin", description: "An admin may have been created concurrently." });
+          toast({ title: "Claim rejected", description: "Concurrent admin assignment detected." });
           return;
         }
-
-        toast({ title: "Admin role granted", description: "You can now manage roles and units." });
+        toast({ title: "ADMIN ROLE GRANTED", description: "Dispatch console unlocked." });
         nav("/dispatch");
       } catch (e) {
-        toast({ title: "Bootstrap failed", description: toUserMessage(e), variant: "destructive" });
+        toast({ title: "BOOTSTRAP FAILED", description: toUserMessage(e), variant: "destructive" });
       }
     };
 
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg">
-          <CardHeader>
-            <CardTitle>Staff Access</CardTitle>
-            <CardDescription>
-              Signed in as <span className="font-medium">{user.email}</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm text-muted-foreground">
-              Profile: <span className="text-foreground">{profile?.display_name ?? "(not set)"}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Roles: <span className="text-foreground">{(roles ?? []).length ? (roles ?? []).join(", ") : "(none)"}</span>
-            </div>
+      <main className="min-h-screen bg-black flex flex-col text-white">
+        <TopBar tick={tick} onBack={() => nav("/")} />
 
-            {(roles ?? []).length === 0 && (
-              <div className="rounded-md border p-3 text-sm">
-                <div className="font-medium">No roles yet</div>
-                <div className="text-muted-foreground mt-1">
-                  If this is a fresh environment, the first signed-in user can claim the initial Admin role.
-                </div>
-                <div className="mt-3">
-                  <Button onClick={claimInitialAdmin}>Claim initial admin</Button>
-                </div>
+        <div className="flex-1 flex items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md">
+            <div
+              className="border border-[#1A1A1A] bg-[#0A0A0A] p-6"
+              style={{ borderLeft: "2px solid #00FF85" }}
+            >
+              <div className="label-micro mb-2" style={{ color: "#00FF85" }}>
+                [ AUTHENTICATED SESSION ]
               </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex gap-2">
-            <Button onClick={() => nav(postAuthTarget)}>Continue</Button>
-            <Button variant="secondary" onClick={() => signOut()}>
-              Sign out
-            </Button>
-          </CardFooter>
-        </Card>
+              <div
+                className="text-2xl font-bold mb-1"
+                style={{ fontFamily: "Space Grotesk, sans-serif" }}
+              >
+                OPERATOR
+              </div>
+              <div className="mono text-xs text-[#666] truncate">{user.email}</div>
+
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <Spec label="DISPLAY" value={profile?.display_name ?? "—"} />
+                <Spec
+                  label="ROLES"
+                  value={(roles ?? []).length ? (roles ?? []).join(",") : "NONE"}
+                />
+              </div>
+
+              {(roles ?? []).length === 0 && (
+                <div className="mt-5 border border-[#FF9500]/40 bg-[#FF9500]/5 p-3">
+                  <div className="label-micro" style={{ color: "#FF9500" }}>
+                    [ NO ROLES ASSIGNED ]
+                  </div>
+                  <p className="text-xs text-[#999] mt-1.5 leading-relaxed">
+                    First operator on a fresh deployment may claim the initial Admin role.
+                  </p>
+                  <button onClick={claimInitialAdmin} className="btn-primary mt-3 w-full">
+                    CLAIM ADMIN
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-5 flex gap-2">
+                <button onClick={() => nav(postAuthTarget)} className="btn-primary flex-1">
+                  CONTINUE →
+                </button>
+                <button
+                  onClick={() => signOut()}
+                  className="px-4 py-3 border border-[#1A1A1A] text-xs font-bold tracking-wider uppercase text-[#999] hover:text-white hover:border-[#333] transition-colors"
+                  style={{ fontFamily: "JetBrains Mono, monospace" }}
+                >
+                  SIGN OUT
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     );
   }
 
+  // ── Auth form ──
   const onSubmit = async (values: FormValues) => {
     try {
       if (mode === "signin") {
@@ -117,14 +152,14 @@ export default function AuthPage() {
       } else {
         await signUpWithPassword(values.email, values.password);
         toast({
-          title: "Account created",
-          description: "You can sign in now (email is auto-confirmed in this environment).",
+          title: "ACCOUNT PROVISIONED",
+          description: "Authentication ready. Sign in to continue.",
         });
         setMode("signin");
       }
     } catch (e) {
       toast({
-        title: "Authentication error",
+        title: "AUTHENTICATION FAILED",
         description: toUserMessage(e),
         variant: "destructive",
       });
@@ -132,42 +167,155 @@ export default function AuthPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>Staff Access</CardTitle>
-          <CardDescription>Sign in to dispatch or respond.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
-            </TabsList>
-            <TabsContent value={mode} className="mt-4">
-              <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Email</label>
-                  <Input type="email" autoComplete="email" {...form.register("email")} />
-                  {form.formState.errors.email && (
-                    <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Password</label>
-                  <Input type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} {...form.register("password")} />
-                  {form.formState.errors.password && (
-                    <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full">
-                  {mode === "signin" ? "Sign in" : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+    <main className="min-h-screen bg-black flex flex-col text-white">
+      <TopBar tick={tick} onBack={() => nav("/")} />
+
+      {/* Scanline overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, #00FF85 0, #00FF85 1px, transparent 1px, transparent 4px)",
+        }}
+      />
+
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          {/* Header block */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 label-micro mb-2" style={{ color: "#00FF85" }}>
+              <Shield className="w-3 h-3" />
+              [ STAFF ACCESS · RESTRICTED ]
+            </div>
+            <h1
+              className="text-3xl font-bold tracking-tight"
+              style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            >
+              OPERATOR LOGIN
+            </h1>
+            <p className="text-xs text-[#666] mt-1.5 mono">
+              Dispatch · Responder · Admin terminals
+            </p>
+          </div>
+
+          {/* Mode toggle */}
+          <div className="flex border border-[#1A1A1A] mb-5">
+            {(["signin", "signup"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className="flex-1 py-2.5 text-xs font-bold tracking-wider uppercase transition-colors"
+                style={{
+                  fontFamily: "JetBrains Mono, monospace",
+                  background: mode === m ? "#00FF85" : "transparent",
+                  color: mode === m ? "#000" : "#666",
+                }}
+              >
+                {m === "signin" ? "SIGN IN" : "REGISTER"}
+              </button>
+            ))}
+          </div>
+
+          {/* Form card */}
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="border border-[#1A1A1A] bg-[#0A0A0A] p-5 space-y-5"
+          >
+            <div>
+              <label className="label-micro block mb-2" style={{ color: "#666" }}>
+                [ EMAIL ]
+              </label>
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="operator@almien.live"
+                className="t-input w-full"
+                {...form.register("email")}
+              />
+              {form.formState.errors.email && (
+                <p className="mt-1.5 text-xs mono" style={{ color: "#FF3B30" }}>
+                  ⚠ {form.formState.errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="label-micro block mb-2" style={{ color: "#666" }}>
+                [ PASSWORD ]
+              </label>
+              <input
+                type="password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                placeholder="••••••••"
+                className="t-input w-full"
+                {...form.register("password")}
+              />
+              {form.formState.errors.password && (
+                <p className="mt-1.5 text-xs mono" style={{ color: "#FF3B30" }}>
+                  ⚠ {form.formState.errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="btn-primary w-full"
+            >
+              {form.formState.isSubmitting
+                ? "AUTHENTICATING..."
+                : mode === "signin"
+                  ? "AUTHENTICATE →"
+                  : "CREATE ACCOUNT →"}
+            </button>
+          </form>
+
+          {/* Footer note */}
+          <p
+            className="mt-4 text-center label-micro"
+            style={{ color: "#444" }}
+          >
+            CIVILIAN USERS · GO BACK TO ENTER TERMINAL
+          </p>
+        </div>
+      </div>
     </main>
+  );
+}
+
+// ── Subcomponents ──
+function TopBar({ tick, onBack }: { tick: string; onBack: () => void }) {
+  return (
+    <header className="relative z-20 flex items-center justify-between px-4 py-3 border-b border-[#1A1A1A] bg-black">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 label-micro hover:text-[#00FF85] transition-colors"
+        style={{ color: "#666" }}
+      >
+        <ArrowLeft className="w-3 h-3" /> BACK
+      </button>
+      <div className="label-micro mono" style={{ color: "#666" }}>
+        {tick}
+      </div>
+      <div className="label-micro" style={{ color: "#00FF85" }}>
+        AUTH
+      </div>
+    </header>
+  );
+}
+
+function Spec({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-[#1A1A1A] bg-black px-3 py-2">
+      <div className="label-micro" style={{ color: "#666" }}>
+        {label}
+      </div>
+      <div
+        className="text-sm font-bold truncate mt-0.5"
+        style={{ color: "#00FF85", fontFamily: "JetBrains Mono, monospace" }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }
