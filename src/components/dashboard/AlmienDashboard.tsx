@@ -208,7 +208,12 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
   const renderView = () => {
     const props = { onUpgrade: openUpgrade, onNavigate: navigate };
     switch (activeView) {
-      case 'dashboard': return <DashboardView {...props} onOpenSafi={openSafi} />;
+      case 'dashboard':
+        // Mobile gets the new Obsidian Tactical Command Center.
+        // Desktop keeps the bento DashboardView (used inside the right panel).
+        return isMobile
+          ? <CommandCenterHome onNavigate={navigate} onOpenSafi={openSafi} onUpgrade={openUpgrade} />
+          : <DashboardView {...props} onOpenSafi={openSafi} />;
       case 'map-full': return <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
@@ -325,7 +330,7 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
             <ScrollArea className="flex-1">
               <div className={cn(
                 "mx-auto w-full max-w-full content-panel",
-                isMobile ? "px-4 py-4 pb-[200px] max-w-full" : "px-8 py-8 max-w-[720px]"
+                isMobile ? "max-w-full" : "px-8 py-8 max-w-[720px]"
               )}>
                 {renderView()}
               </div>
@@ -333,19 +338,23 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
           )}
         </main>
 
-        {/* Floating elements */}
-        <PanicButton />
-        <WitnessReportButton />
-
-        {/* SOS Dock — desktop only */}
+        {/* Floating elements — desktop only.
+            On mobile the TacticalNav owns the SOS action and witness
+            reporting lives inside the Map page header. */}
+        {!isMobile && <PanicButton />}
+        {!isMobile && <WitnessReportButton />}
         {!isMobile && <SOSActionDock />}
 
         {/* Safi AI Panel */}
         <SafiAI isOpen={safiOpen} onClose={() => setSafiOpen(false)} onNavigate={navigate} initialMode={safiMode} />
 
-        {/* Mobile bottom navigation */}
+        {/* Mobile bottom navigation — Obsidian Tactical 5-tab + fixed SOS */}
         {isMobile && (
-          <BottomNavBar activeView={activeView} onNavigate={navigate} onSafiOpen={() => openSafi('chat')} />
+          <TacticalNav
+            active={(VIEW_TO_TAB[activeView] ?? 'home') as TacticalTab}
+            onNavigate={handleTabNavigate}
+            onSos={handleSos}
+          />
         )}
 
         <UpgradeModal
