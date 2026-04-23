@@ -15,6 +15,7 @@ import ZoneDirectory from './widgets/ZoneDirectory';
 import SafiAI from '@/components/safi/SafiAI';
 import DashboardView from './views/DashboardView';
 import MapFullView from './views/MapFullView';
+import TacticalMapView from './views/TacticalMapView';
 import SafetyOverviewView from './views/SafetyOverviewView';
 import ActivitiesView from './views/ActivitiesView';
 import RideShareView from './views/RideShareView';
@@ -214,7 +215,12 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
         return isMobile
           ? <CommandCenterHome onNavigate={navigate} onOpenSafi={openSafi} onUpgrade={openUpgrade} />
           : <DashboardView {...props} onOpenSafi={openSafi} />;
-      case 'map-full': return <MapFullView {...props} />;
+      case 'map-full':
+        // Mobile gets the new Obsidian Tactical full-bleed radar view.
+        // Desktop keeps the rich MapFullView (used in split-screen and full-map mode).
+        return isMobile
+          ? <TacticalMapView {...props} />
+          : <MapFullView {...props} />;
       case 'safety-overview': return <SafetyOverviewView {...props} />;
       case 'activities': return <ActivitiesView {...props} />;
       case 'rideshare': return <RideShareView {...props} />;
