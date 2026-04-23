@@ -1,7 +1,5 @@
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { cn } from '@/lib/utils';
-import { Siren, X, Check, Mic, Camera, MapPin, Users, ShieldCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface PanicContact {
@@ -11,15 +9,15 @@ interface PanicContact {
 }
 
 const mockContacts: PanicContact[] = [
-  { name: 'Mom', role: 'Primary Contact', notified: false },
-  { name: 'Partner', role: 'Primary Contact', notified: false },
-  { name: 'ADT Armed Response', role: 'Armed Response', notified: false },
+  { name: 'MOM', role: 'PRIMARY', notified: false },
+  { name: 'PARTNER', role: 'PRIMARY', notified: false },
+  { name: 'ADT_ARMED_RESPONSE', role: 'TIER_1', notified: false },
 ];
 
 const mockStewards = [
-  { name: 'Steward J. Mtolo', distance: '120m', notified: false },
-  { name: 'Steward N. Davids', distance: '340m', notified: false },
-  { name: 'Steward T. Swart', distance: '480m', notified: false },
+  { name: 'STEWARD_J_MTOLO', distance: 120, notified: false },
+  { name: 'STEWARD_N_DAVIDS', distance: 340, notified: false },
+  { name: 'STEWARD_T_SWART', distance: 480, notified: false },
 ];
 
 const PanicButton = memo(() => {
@@ -32,11 +30,13 @@ const PanicButton = memo(() => {
   const [photosTaken, setPhotosTaken] = useState(0);
   const [cancelTaps, setCancelTaps] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [elapsed, setElapsed] = useState(0);
 
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const photoInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearTimers = useCallback(() => {
     if (holdTimer.current) clearTimeout(holdTimer.current);
@@ -85,7 +85,11 @@ const PanicButton = memo(() => {
       setPhotosTaken(prev => prev + 1);
     }, 10000);
 
-    toast.error('🚨 PANIC ALERT ACTIVATED', { duration: 5000 });
+    elapsedInterval.current = setInterval(() => {
+      setElapsed(prev => prev + 1);
+    }, 1000);
+
+    toast.error('SOS · ACTIVE · BROADCAST_INITIATED', { duration: 5000 });
   }, []);
 
   const handleHoldStart = useCallback(() => {
@@ -127,12 +131,14 @@ const PanicButton = memo(() => {
         setPhotosTaken(0);
         setCoords(null);
         setCancelTaps(0);
+        setElapsed(0);
         if (recordingInterval.current) clearInterval(recordingInterval.current);
         if (photoInterval.current) clearInterval(photoInterval.current);
-        toast.success('Panic alert cancelled');
+        if (elapsedInterval.current) clearInterval(elapsedInterval.current);
+        toast.success('SOS · TERMINATED');
         return 0;
       }
-      toast.warning(`Tap ${3 - next} more time${3 - next > 1 ? 's' : ''} to cancel`);
+      toast.warning(`CANCEL · CONFIRM_${3 - next}_MORE`);
       return next;
     });
   }, []);
@@ -142,119 +148,213 @@ const PanicButton = memo(() => {
       clearTimers();
       if (recordingInterval.current) clearInterval(recordingInterval.current);
       if (photoInterval.current) clearInterval(photoInterval.current);
+      if (elapsedInterval.current) clearInterval(elapsedInterval.current);
     };
   }, [clearTimers]);
 
-  // Panic status overlay
+  const fmtTime = (s: number) => `T+${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const notifiedContacts = contacts.filter(c => c.notified).length;
+  const notifiedStewards = stewards.filter(s => s.notified).length;
+
+  // ============= TACTICAL SOS OVERLAY =============
   if (panicActive) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-surface-deep/95 backdrop-blur-sm flex flex-col animate-fade-in">
-        <div className="bg-accent-threat text-white p-4 flex items-center gap-3">
-          <Siren className="w-6 h-6 animate-pulse" />
-          <div>
-            <h2 className="text-lg font-bold">PANIC ALERT ACTIVE</h2>
-            <p className="text-xs opacity-80">
-              {coords ? `GPS: ${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : 'Acquiring location...'}
-            </p>
+      <div className="fixed inset-0 z-[9999] bg-background flex flex-col page-animate">
+        {/* Tactical grid + scanline overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'linear-gradient(hsl(var(--accent-threat)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent-threat)) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, hsl(var(--accent-threat)) 0px, hsl(var(--accent-threat)) 1px, transparent 1px, transparent 3px)',
+          }}
+        />
+
+        {/* HEADER — RED ALERT BAR */}
+        <div className="relative bg-accent-threat/12 border-b-2 border-accent-threat px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2.5 h-2.5 bg-accent-threat animate-pulse" />
+              <div className="font-mono text-[10px] tracking-[0.15em] text-accent-threat">
+                SOS · ACTIVE · {fmtTime(elapsed)}
+              </div>
+            </div>
+            <div className="font-mono text-[10px] tracking-[0.15em] text-accent-threat/70">
+              BROADCAST_TIER_1
+            </div>
+          </div>
+          <div className="mt-2 font-mono text-[10px] tracking-[0.15em] text-foreground/60">
+            GPS · {coords ? `${coords.lat.toFixed(5)} / ${coords.lng.toFixed(5)}` : 'ACQUIRING...'}
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 space-y-4">
-          <div className="rounded-xl border border-border-subtle bg-card p-4">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-accent-threat" />
-              Trusted Network
-            </h3>
-            <div className="space-y-2">
-              {contacts.map((c) => (
-                <div key={c.name} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
-                  <div>
-                    <span className="text-sm font-medium text-foreground">{c.name}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{c.role}</span>
-                  </div>
-                  {c.notified ? (
-                    <span className="flex items-center gap-1 text-xs font-semibold text-accent-safe">
-                      <Check className="w-3.5 h-3.5" /> Notified
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground animate-pulse">Sending...</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* CONTENT */}
+        <div className="relative flex-1 overflow-auto">
+          <div className="p-4 space-y-4 max-w-[480px] mx-auto">
 
-          <div className="rounded-xl border border-border-subtle bg-card p-4">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-3">
-              <ShieldCheck className="w-4 h-4 text-accent-safe" />
-              Community Stewards (500m radius)
-            </h3>
-            <div className="space-y-2">
-              {stewards.map((s) => (
-                <div key={s.name} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
-                  <div>
-                    <span className="text-sm font-medium text-foreground">{s.name}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{s.distance}</span>
+            {/* TRUSTED NETWORK */}
+            <section>
+              <div className="flex items-center justify-between mb-2 px-1">
+                <div className="font-mono text-[10px] tracking-[0.15em] text-foreground/40">
+                  ▸ TRUSTED_NETWORK
+                </div>
+                <div className="font-mono text-[10px] tracking-[0.15em] text-accent-safe">
+                  {notifiedContacts}/{contacts.length} ACK
+                </div>
+              </div>
+              <div className="border border-border/30 divide-y divide-border/30">
+                {contacts.map((c) => (
+                  <div key={c.name} className="flex items-center justify-between px-3 py-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "w-1.5 h-1.5 shrink-0",
+                        c.notified ? "bg-accent-safe" : "bg-accent-warning animate-pulse"
+                      )} />
+                      <div className="min-w-0">
+                        <div className="font-mono text-[11px] tracking-wider text-foreground truncate">{c.name}</div>
+                        <div className="font-mono text-[9px] tracking-[0.15em] text-foreground/40">{c.role}</div>
+                      </div>
+                    </div>
+                    <div className={cn(
+                      "font-mono text-[9px] tracking-[0.15em] px-2 py-1 border",
+                      c.notified
+                        ? "text-accent-safe border-accent-safe/40 bg-accent-safe/5"
+                        : "text-accent-warning border-accent-warning/40 bg-accent-warning/5"
+                    )}>
+                      {c.notified ? 'ACK' : 'SENDING'}
+                    </div>
                   </div>
-                  {s.notified ? (
-                    <span className="flex items-center gap-1 text-xs font-semibold text-accent-safe">
-                      <Check className="w-3.5 h-3.5" /> Alerted
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground animate-pulse">Locating...</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+            </section>
 
-          <div className="rounded-xl border border-border-subtle bg-card p-4">
-            <h3 className="text-sm font-bold text-foreground mb-3">Evidence Collection</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-threat/10 border border-accent-threat/20">
-                <Mic className="w-4 h-4 text-accent-threat" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Audio</p>
-                  <p className="text-xs text-muted-foreground tabular-nums">{recordingSeconds}s / 60s</p>
+            {/* COMMUNITY STEWARDS */}
+            <section>
+              <div className="flex items-center justify-between mb-2 px-1">
+                <div className="font-mono text-[10px] tracking-[0.15em] text-foreground/40">
+                  ▸ STEWARDS · 500m_RADIUS
+                </div>
+                <div className="font-mono text-[10px] tracking-[0.15em] text-accent-safe">
+                  {notifiedStewards}/{stewards.length} LOCATED
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-threat/10 border border-accent-threat/20">
-                <Camera className="w-4 h-4 text-accent-threat" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Photos</p>
-                  <p className="text-xs text-muted-foreground tabular-nums">{photosTaken} taken</p>
+              <div className="border border-border/30 divide-y divide-border/30">
+                {stewards.map((s) => (
+                  <div key={s.name} className="flex items-center justify-between px-3 py-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "w-1.5 h-1.5 shrink-0",
+                        s.notified ? "bg-accent-safe" : "bg-accent-info animate-pulse"
+                      )} />
+                      <div className="min-w-0">
+                        <div className="font-mono text-[11px] tracking-wider text-foreground truncate">{s.name}</div>
+                        <div className="font-mono text-[9px] tracking-[0.15em] text-foreground/40">DIST · {s.distance}m</div>
+                      </div>
+                    </div>
+                    <div className={cn(
+                      "font-mono text-[9px] tracking-[0.15em] px-2 py-1 border",
+                      s.notified
+                        ? "text-accent-safe border-accent-safe/40 bg-accent-safe/5"
+                        : "text-accent-info border-accent-info/40 bg-accent-info/5"
+                    )}>
+                      {s.notified ? 'ALERTED' : 'LOCATING'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* EVIDENCE COLLECTION */}
+            <section>
+              <div className="mb-2 px-1 font-mono text-[10px] tracking-[0.15em] text-foreground/40">
+                ▸ EVIDENCE_CAPTURE · LIVE
+              </div>
+              <div className="grid grid-cols-3 gap-px bg-border/30 border border-border/30">
+                <div className="bg-background p-3">
+                  <div className="font-mono text-[9px] tracking-[0.15em] text-foreground/40 mb-1">AUDIO</div>
+                  <div className="font-mono text-[18px] tabular-nums text-accent-threat">{recordingSeconds}<span className="text-[10px] text-foreground/40">/60s</span></div>
+                  <div className="mt-2 h-0.5 bg-border/30">
+                    <div className="h-full bg-accent-threat transition-all" style={{ width: `${(recordingSeconds / 60) * 100}%` }} />
+                  </div>
+                </div>
+                <div className="bg-background p-3">
+                  <div className="font-mono text-[9px] tracking-[0.15em] text-foreground/40 mb-1">PHOTO</div>
+                  <div className="font-mono text-[18px] tabular-nums text-accent-threat">{photosTaken}<span className="text-[10px] text-foreground/40"> shots</span></div>
+                  <div className="mt-2 font-mono text-[9px] tracking-[0.15em] text-foreground/40">+10s INTERVAL</div>
+                </div>
+                <div className="bg-background p-3">
+                  <div className="font-mono text-[9px] tracking-[0.15em] text-foreground/40 mb-1">GPS</div>
+                  <div className="font-mono text-[14px] tabular-nums text-accent-safe leading-tight">
+                    {coords ? coords.lat.toFixed(3) : '--.---'}
+                  </div>
+                  <div className="font-mono text-[14px] tabular-nums text-accent-safe leading-tight">
+                    {coords ? coords.lng.toFixed(3) : '--.---'}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-threat/10 border border-accent-threat/20 col-span-2">
-                <MapPin className="w-4 h-4 text-accent-threat" />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Live Location</p>
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    {coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : 'Acquiring...'}
-                  </p>
-                </div>
+            </section>
+
+            {/* STATUS LOG */}
+            <section>
+              <div className="mb-2 px-1 font-mono text-[10px] tracking-[0.15em] text-foreground/40">
+                ▸ EVENT_LOG
               </div>
-            </div>
+              <div className="border border-border/30 bg-background p-3 space-y-1 font-mono text-[10px] tracking-wider">
+                <div className="text-accent-safe">[{fmtTime(0)}] SOS · TRIGGERED</div>
+                <div className="text-accent-safe">[{fmtTime(1)}] GPS · LOCKED</div>
+                <div className="text-accent-safe">[{fmtTime(1)}] AUDIO · RECORDING</div>
+                {notifiedContacts > 0 && <div className="text-accent-info">[{fmtTime(2)}] NETWORK · {notifiedContacts}_CONTACTS_NOTIFIED</div>}
+                {notifiedStewards > 0 && <div className="text-accent-info">[{fmtTime(4)}] STEWARDS · {notifiedStewards}_RESPONDING</div>}
+                {photosTaken > 0 && <div className="text-foreground/60">[{fmtTime(elapsed)}] EVIDENCE · {photosTaken}_PHOTOS_CAPTURED</div>}
+                <div className="text-accent-threat animate-pulse">[{fmtTime(elapsed)}] ▸ BROADCAST_LIVE</div>
+              </div>
+            </section>
           </div>
         </div>
 
-        <div className="p-4 border-t border-border-subtle bg-card">
-          <Button
-            variant="outline"
-            className="w-full h-12 text-sm font-bold border-accent-threat/30 text-accent-threat hover:bg-accent-threat/10"
-            onClick={handleCancel}
-          >
-            <X className="w-4 h-4 mr-2" />
-            CANCEL ALERT (tap {3 - cancelTaps}x to confirm)
-          </Button>
+        {/* CANCEL FOOTER */}
+        <div className="relative border-t-2 border-accent-threat bg-background">
+          <div className="max-w-[480px] mx-auto p-4">
+            <button
+              onClick={handleCancel}
+              className="w-full h-14 bg-accent-threat/10 border-2 border-accent-threat hover:bg-accent-threat/20 transition-colors group"
+            >
+              <div className="font-mono text-[11px] tracking-[0.2em] text-accent-threat font-bold">
+                ⏻ TERMINATE_SOS
+              </div>
+              <div className="font-mono text-[9px] tracking-[0.15em] text-accent-threat/60 mt-0.5">
+                CONFIRM · TAP_{3 - cancelTaps}_MORE_TIMES
+              </div>
+            </button>
+            <div className="mt-2 flex justify-center gap-1">
+              {[0, 1, 2].map(i => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-0.5 w-8 transition-colors",
+                    i < cancelTaps ? "bg-accent-threat" : "bg-border/40"
+                  )}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Floating SOS button — the ONLY element with a shadow
+  // ============= TACTICAL SOS BUTTON =============
   return (
-    <div className="fixed z-[95] left-4 md:left-auto md:right-6 md:bottom-6" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 16px)' }}>
+    <div
+      className="fixed z-[95] left-4 md:left-auto md:right-6 md:bottom-6"
+      style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 16px)' }}
+    >
       <button
         onMouseDown={handleHoldStart}
         onMouseUp={handleHoldEnd}
@@ -262,32 +362,36 @@ const PanicButton = memo(() => {
         onTouchStart={handleHoldStart}
         onTouchEnd={handleHoldEnd}
         className={cn(
-          "relative w-[64px] h-[64px] rounded-full bg-accent-threat text-white",
+          "relative w-[64px] h-[64px] bg-accent-threat text-white",
           "flex items-center justify-center",
+          "border-2 border-accent-threat",
           "transition-transform duration-150",
           holding ? "scale-110" : "hover:scale-105",
-          !holding && "pulse-sos"
+          !holding && "sos-ring active"
         )}
+        style={{ borderRadius: 0 }}
         aria-label="SOS Panic Button — hold for 1.5 seconds"
       >
-        {/* Progress ring */}
-        <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
-          <circle
-            cx="32" cy="32" r="29"
-            fill="none"
-            stroke="white"
-            strokeWidth="3"
-            strokeDasharray={`${(progress / 100) * 182.2} 182.2`}
-            opacity={holding ? 0.9 : 0}
-            className="transition-opacity duration-150"
+        {/* Corner crosshairs */}
+        <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/80" />
+        <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/80" />
+        <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/80" />
+        <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/80" />
+
+        {/* Progress bar (bottom edge) when holding */}
+        {holding && (
+          <span
+            className="absolute bottom-0 left-0 h-1 bg-white transition-[width] duration-75 ease-linear"
+            style={{ width: `${progress}%` }}
           />
-        </svg>
-        <span className="relative z-10 text-sm font-bold">SOS</span>
+        )}
+
+        <span className="relative z-10 font-mono text-[13px] font-bold tracking-[0.15em]">SOS</span>
       </button>
       {holding && (
-        <p className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-accent-threat bg-card/90 px-2 py-1 rounded-full border border-accent-threat/30">
-          Hold to activate SOS...
-        </p>
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[9px] font-bold tracking-[0.2em] text-accent-threat bg-background border border-accent-threat px-2 py-1">
+          HOLD · {Math.round(progress)}%
+        </div>
       )}
     </div>
   );
