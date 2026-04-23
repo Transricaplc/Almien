@@ -59,6 +59,7 @@ import NeuralProfileView from './views/NeuralProfileView';
 import DarkZoneView from './views/DarkZoneView';
 import SafiConversationsView from './views/SafiConversationsView';
 import ProfileView from './views/ProfileView';
+import NeuralMeView from './views/NeuralMeView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
 import PanicButton from './PanicButton';
@@ -272,7 +273,12 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
       case 'neural-profile': return <NeuralProfileView {...props} />;
       case 'dark-zones': return <DarkZoneView {...props} />;
       case 'safi-history': return <SafiConversationsView {...props} onOpenSafi={() => openSafi('chat')} />;
-      case 'profile': return <ProfileView {...props} />;
+      case 'profile':
+        // Mobile gets the new Neural Profile (Obsidian Tactical).
+        // Desktop keeps the rich ProfileView.
+        return isMobile
+          ? <NeuralMeView {...props} />
+          : <ProfileView {...props} />;
       case 'settings': return <SettingsView {...props} />;
       default: return <DashboardView {...props} onOpenSafi={openSafi} />;
     }
