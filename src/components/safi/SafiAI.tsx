@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { X, Send, Mic, MicOff, Phone, MapPin, Users, Shield, ChevronRight, Share2, Volume2, VolumeX, Ear } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  X, Send, Mic, MicOff, Phone, MapPin, Users, Shield, ChevronRight,
+  Volume2, VolumeX, Ear, Sparkles, AlertTriangle,
+} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAlmienStore } from '@/stores/almienStore';
+import { useToast } from '@/hooks/use-toast';
 import type { ViewId } from '../dashboard/AlmienDashboard';
 
 interface SafiAIProps {
@@ -14,108 +18,254 @@ interface SafiAIProps {
   initialMode?: 'chat' | 'briefing' | 'route' | 'emergency';
 }
 
+type Role = 'user' | 'assistant';
 interface Message {
   id: string;
-  role: 'user' | 'safi';
+  role: Role;
   content: string;
   timestamp: Date;
 }
 
+// User context — would normally come from profile/store
 const userContext = { suburb: 'Sea Point', commute: 'CBD', riskTolerance: 'moderate' };
 
-const safiResponses: Record<string, (ctx: typeof userContext) => string> = {
-  'run': (ctx) => `🏃 Morning runs in ${ctx.suburb} are safest 06:00–07:30 before peak commute. SAPS patrol Promenade from 05:45. Avoid Beach Road north after 07:00 — 3 incidents this week. Today's risk window: LOW until 08:15.`,
-  'route': (ctx) => `🧭 Your usual ${ctx.suburb} → ${ctx.commute} route: Safety score 7.8/10 this morning. Avoid De Waal Drive — 1 stationary vehicle alert. Recommended: M3 via UCT. ETA 18 min. Starting escort timer?`,
-  'tonight': (ctx) => `🌙 Tonight in ${ctx.suburb}: Stage 2 load-shedding 20:00–22:30. Risk elevates at 20:15 when street lights out on High Level Rd. Stay home or travel before 19:45. 2 × CPF stewards on patrol from 20:00.`,
-  'gbv': () => `💜 GBV resources near you:\n• Saartjie Baartman Centre — 8.1km (021 633 5287)\n• Rape Crisis — 24hr helpline: 021 447 9762\n• SAPS GBV desk: 0800 428 428\n• Protection order guide: available in Settings.`,
-  'load': (ctx) => `⚡ ${ctx.suburb} load-shedding: Stage 2 active. Next window: 20:00–22:30 tonight. 34 of 120 streetlights affected. Crime risk increases ↑18% during outage. Recommend staying indoors or travelling before 19:45.`,
-};
-
-function getSafiResponse(input: string): string {
-  const lower = input.toLowerCase();
-  for (const [key, fn] of Object.entries(safiResponses)) {
-    if (lower.includes(key)) return fn(userContext);
-  }
-  return `✦ I'm analysing your request about "${input}" for ${userContext.suburb}. Based on current conditions: safety score is 7.8/10, 3 active incidents nearby. Would you like me to find a safe route or check tonight's risk windows?`;
-}
-
-const quickChips = [
+const QUICK_PROMPTS = [
   'Is it safe to run at 6am?',
-  'Safe route to CBD',
+  'Safest route to CBD now',
   'GBV resources nearby',
-  'Load-shedding tonight',
+  'Load-shedding risk tonight',
 ];
+
+const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/safi-chat`;
+const PUBLIC_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const getGreeting = () => {
   const h = new Date().getHours();
-  if (h < 12) return 'Morning';
-  if (h < 17) return 'Afternoon';
-  return 'Evening';
+  if (h < 12) return 'MORNING';
+  if (h < 17) return 'AFTERNOON';
+  return 'EVENING';
 };
+
+const fmtTime = (d: Date) =>
+  d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false });
 
 const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: SafiAIProps) => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const safiVoiceReplies = useAlmienStore((s) => s.safiVoiceReplies);
   const toggleSafiVoiceReplies = useAlmienStore((s) => s.toggleSafiVoiceReplies);
   const safiHotwordEnabled = useAlmienStore((s) => s.safiHotwordEnabled);
   const toggleSafiHotword = useAlmienStore((s) => s.toggleSafiHotword);
+
   const [mode, setMode] = useState<'chat' | 'briefing' | 'route' | 'emergency'>(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [hotwordActive, setHotwordActive] = useState(false);
-  const [voiceSupported] = useState(() =>
-    typeof window !== 'undefined' &&
-    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+
+  const [voiceSupported] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window),
   );
-  const [ttsSupported] = useState(() =>
-    typeof window !== 'undefined' && 'speechSynthesis' in window
+  const [ttsSupported] = useState(
+    () => typeof window !== 'undefined' && 'speechSynthesis' in window,
   );
   const recognitionRef = useRef<any>(null);
   const hotwordRef = useRef<any>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollEndRef = useRef<HTMLDivElement>(null);
 
+  // Seed greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{
-        id: '0',
-        role: 'safi',
-        content: `Good ${getGreeting()}. Your area has 3 active incidents. What would you like to know?`,
-        timestamp: new Date(),
-      }]);
+      setMessages([
+        {
+          id: '0',
+          role: 'assistant',
+          content: `**${getGreeting()}, OPERATOR.**\n\nSafi online. Ask anything — risk windows, routes, emergency contacts, or load-shedding impact for ${userContext.suburb}.`,
+          timestamp: new Date(),
+        },
+      ]);
     }
-  }, [isOpen]);
+  }, [isOpen, messages.length]);
 
-  useEffect(() => { setMode(initialMode); }, [initialMode]);
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
-  /** Speak Safi's reply aloud — only when user has enabled voice replies */
-  const speak = useCallback((text: string) => {
-    if (!ttsSupported || !safiVoiceReplies) return;
-    try {
-      const cleaned = text.replace(/[✦✓⚠💜⚡🌙🏃🧭🛡🌐]/g, '').trim();
-      const utter = new SpeechSynthesisUtterance(cleaned);
-      utter.lang = 'en-ZA';
-      utter.rate = 1.02;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utter);
-    } catch { /* fail silently */ }
-  }, [ttsSupported, safiVoiceReplies]);
+  useEffect(() => {
+    scrollEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, streaming]);
 
-  const sendMessage = useCallback((text: string) => {
-    if (!text.trim()) return;
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text.trim(), timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue('');
-    setIsThinking(true);
-    setTimeout(() => {
-      const response = getSafiResponse(text);
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'safi', content: response, timestamp: new Date() }]);
-      setIsThinking(false);
-      speak(response);
-    }, 1200);
-  }, [speak]);
+  const speak = useCallback(
+    (text: string) => {
+      if (!ttsSupported || !safiVoiceReplies) return;
+      try {
+        const cleaned = text.replace(/[*#`>_~\-•✦✓⚠💜⚡🌙🏃🧭🛡🌐]/g, '').replace(/\n+/g, '. ').trim();
+        const utter = new SpeechSynthesisUtterance(cleaned);
+        utter.lang = 'en-ZA';
+        utter.rate = 1.05;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+      } catch {
+        /* fail silently */
+      }
+    },
+    [ttsSupported, safiVoiceReplies],
+  );
 
+  // ── STREAMING ──
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || streaming) return;
+
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: trimmed,
+        timestamp: new Date(),
+      };
+
+      // Build payload BEFORE appending so we don't include the in-progress assistant
+      const apiHistory = [...messages, userMsg].map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      setMessages((prev) => [...prev, userMsg]);
+      setInputValue('');
+      setStreaming(true);
+
+      const assistantId = (Date.now() + 1).toString();
+      let assistantSoFar = '';
+      let firstTokenSeen = false;
+
+      const upsertAssistant = (chunk: string) => {
+        assistantSoFar += chunk;
+        setMessages((prev) => {
+          if (!firstTokenSeen) {
+            firstTokenSeen = true;
+            return [
+              ...prev,
+              {
+                id: assistantId,
+                role: 'assistant',
+                content: assistantSoFar,
+                timestamp: new Date(),
+              },
+            ];
+          }
+          return prev.map((m) =>
+            m.id === assistantId ? { ...m, content: assistantSoFar } : m,
+          );
+        });
+      };
+
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+
+      try {
+        const resp = await fetch(STREAM_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${PUBLIC_KEY}`,
+          },
+          signal: ctrl.signal,
+          body: JSON.stringify({
+            messages: apiHistory,
+            context: {
+              ...userContext,
+              localTime: new Date().toLocaleString('en-ZA'),
+            },
+          }),
+        });
+
+        if (resp.status === 429) {
+          toast({
+            title: 'RATE LIMITED',
+            description: 'Too many requests. Try again in a moment.',
+            variant: 'destructive',
+          });
+          throw new Error('rate-limit');
+        }
+        if (resp.status === 402) {
+          toast({
+            title: 'CREDITS EXHAUSTED',
+            description: 'Add Lovable AI credits in Settings → Workspace → Usage.',
+            variant: 'destructive',
+          });
+          throw new Error('payment-required');
+        }
+        if (!resp.ok || !resp.body) throw new Error(`Bad response ${resp.status}`);
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let done = false;
+
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          if (streamDone) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          let nl: number;
+          while ((nl = buffer.indexOf('\n')) !== -1) {
+            let line = buffer.slice(0, nl);
+            buffer = buffer.slice(nl + 1);
+            if (line.endsWith('\r')) line = line.slice(0, -1);
+            if (line.startsWith(':') || line.trim() === '') continue;
+            if (!line.startsWith('data: ')) continue;
+            const json = line.slice(6).trim();
+            if (json === '[DONE]') {
+              done = true;
+              break;
+            }
+            try {
+              const parsed = JSON.parse(json);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) upsertAssistant(content);
+            } catch {
+              buffer = line + '\n' + buffer;
+              break;
+            }
+          }
+        }
+
+        if (assistantSoFar) speak(assistantSoFar);
+      } catch (e: any) {
+        if (e.name !== 'AbortError' && e.message !== 'rate-limit' && e.message !== 'payment-required') {
+          console.error('Safi stream error:', e);
+          if (!firstTokenSeen) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: assistantId,
+                role: 'assistant',
+                content: '⚠ **CONNECTION FAILED.** Safi could not reach the gateway. Try again in a moment.',
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        }
+      } finally {
+        abortRef.current = null;
+        setStreaming(false);
+      }
+    },
+    [messages, streaming, speak, toast],
+  );
+
+  const cancelStream = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStreaming(false);
+  }, []);
+
+  // ── VOICE INPUT ──
   const startVoiceInput = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) return;
@@ -144,12 +294,7 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
     setIsListening(false);
   }, []);
 
-  /**
-   * Hey Safi hotword listener.
-   * Uses continuous SpeechRecognition with low-power interim results.
-   * When "hey safi" / "hi safi" is detected, automatically opens mic for command.
-   * Privacy: only runs when user explicitly toggles `safiHotwordEnabled` ON.
-   */
+  // ── HOTWORD ──
   useEffect(() => {
     if (!safiHotwordEnabled || !voiceSupported || isListening) {
       hotwordRef.current?.stop?.();
@@ -176,15 +321,24 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
           setTimeout(() => startVoiceInput(), 250);
         }
       };
-      rec.onerror = () => { if (!stopped) setTimeout(() => { try { rec.start(); } catch {} }, 1500); };
-      rec.onend = () => { if (!stopped && safiHotwordEnabled) { try { rec.start(); } catch {} } };
+      rec.onerror = () => {
+        if (!stopped) setTimeout(() => { try { rec.start(); } catch {} }, 1500);
+      };
+      rec.onend = () => {
+        if (!stopped && safiHotwordEnabled) { try { rec.start(); } catch {} }
+      };
       rec.start();
       hotwordRef.current = rec;
-    } catch { setHotwordActive(false); }
-    return () => { stopped = true; try { hotwordRef.current?.stop?.(); } catch {} setHotwordActive(false); };
-  }, [safiHotwordEnabled, voiceSupported, isListening]);
+    } catch {
+      setHotwordActive(false);
+    }
+    return () => {
+      stopped = true;
+      try { hotwordRef.current?.stop?.(); } catch {}
+      setHotwordActive(false);
+    };
+  }, [safiHotwordEnabled, voiceSupported, isListening, startVoiceInput]);
 
-  // Stop TTS when panel closes
   useEffect(() => {
     if (!isOpen && ttsSupported) window.speechSynthesis.cancel();
   }, [isOpen, ttsSupported]);
@@ -194,213 +348,209 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
   const modes = ['chat', 'briefing', 'route', 'emergency'] as const;
 
   return (
-    <div className={cn(
-      "fixed z-[96] bg-[hsl(var(--surface-deep)/0.98)] backdrop-blur-xl flex flex-col",
-      isMobile ? "inset-0" : "top-0 right-0 bottom-0 w-96 border-l border-border-subtle"
-    )}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0 gap-2">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="font-neural text-sm font-bold text-accent-safe">✦ SAFI</span>
+    <div
+      className={cn(
+        'fixed z-[96] bg-black flex flex-col text-white',
+        isMobile ? 'inset-0' : 'top-0 right-0 bottom-0 w-[420px] border-l border-[#1A1A1A]',
+      )}
+    >
+      {/* Scanline overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.025] z-0"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(0deg, #00FF85 0, #00FF85 1px, transparent 1px, transparent 4px)',
+        }}
+      />
+
+      {/* TOP STATUS STRIP */}
+      <header className="relative z-10 flex items-center justify-between px-4 py-3 border-b border-[#1A1A1A] shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: '#00FF85' }} />
+          <div
+            className="text-xs font-bold tracking-[0.15em]"
+            style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00FF85' }}
+          >
+            SAFI
+          </div>
+          <span
+            className="label-micro px-1.5 py-0.5 border"
+            style={{ color: streaming ? '#FF9500' : '#00FF85', borderColor: streaming ? '#FF9500' : '#1A1A1A' }}
+          >
+            {streaming ? '◉ STREAMING' : '● ONLINE'}
+          </span>
           {hotwordActive && (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent-safe/15 text-[9px] font-bold text-accent-safe animate-pulse" title="Listening for ‘Hey Safi’">
+            <span
+              className="label-micro flex items-center gap-1 px-1.5 py-0.5 border animate-pulse"
+              style={{ color: '#00B4D8', borderColor: '#00B4D8' }}
+              title="Listening for 'Hey Safi'"
+            >
               <Ear className="w-2.5 h-2.5" /> WAKE
             </span>
           )}
         </div>
-        <div className="flex gap-1 flex-1 justify-center overflow-x-auto">
-          {modes.map(m => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={cn(
-                "px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize transition-colors shrink-0",
-                mode === m ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:text-foreground"
-              )}
-            >{m}</button>
-          ))}
-        </div>
         <div className="flex items-center gap-1 shrink-0">
           {voiceSupported && (
-            <button
+            <IconBtn
+              active={safiHotwordEnabled}
               onClick={toggleSafiHotword}
-              className={cn("p-1.5 rounded-lg transition-colors", safiHotwordEnabled ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
-              title={safiHotwordEnabled ? 'Disable “Hey Safi” wake-word' : 'Enable “Hey Safi” wake-word'}
-              aria-label="Toggle hotword listener"
+              label={safiHotwordEnabled ? "Disable 'Hey Safi'" : "Enable 'Hey Safi'"}
             >
-              <Ear className="w-4 h-4" />
-            </button>
+              <Ear className="w-3.5 h-3.5" />
+            </IconBtn>
           )}
           {ttsSupported && (
-            <button
+            <IconBtn
+              active={safiVoiceReplies}
               onClick={toggleSafiVoiceReplies}
-              className={cn("p-1.5 rounded-lg transition-colors", safiVoiceReplies ? "bg-accent-safe/15 text-accent-safe" : "text-muted-foreground hover:bg-secondary")}
-              title={safiVoiceReplies ? 'Mute spoken replies' : 'Read replies aloud'}
-              aria-label="Toggle voice replies"
+              label={safiVoiceReplies ? 'Mute replies' : 'Read replies aloud'}
             >
-              {safiVoiceReplies ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
+              {safiVoiceReplies ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            </IconBtn>
           )}
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary min-w-[40px] min-h-[40px] flex items-center justify-center" aria-label="Close Safi">
-            <X className="w-5 h-5 text-muted-foreground" />
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center border border-[#1A1A1A] hover:border-[#00FF85] hover:text-[#00FF85] text-[#666] transition-colors"
+            aria-label="Close Safi"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
+      </header>
+
+      {/* MODE TABS */}
+      <div className="relative z-10 flex border-b border-[#1A1A1A] shrink-0">
+        {modes.map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className="flex-1 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase transition-colors"
+            style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              background: mode === m ? '#00FF85' : 'transparent',
+              color: mode === m ? '#000' : '#666',
+              borderRight: '1px solid #1A1A1A',
+            }}
+          >
+            {m === 'chat' ? '◆ CHAT' : m === 'briefing' ? 'BRIEF' : m === 'route' ? 'ROUTE' : 'SOS'}
+          </button>
+        ))}
       </div>
 
-      {/* Content by mode */}
+      {/* CONTENT BY MODE */}
       {mode === 'emergency' ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 bg-accent-threat/5">
-          <Shield className="w-16 h-16 text-accent-threat animate-pulse" />
-          <h2 className="text-xl font-bold text-accent-threat">EMERGENCY MODE</h2>
-          {[
-            { label: 'Call SAPS (10111)', icon: Phone, color: 'bg-blue-600' },
-            { label: 'Share My Location', icon: MapPin, color: 'bg-accent-safe' },
-            { label: 'Alert My Network', icon: Users, color: 'bg-accent-warning' },
-          ].map(btn => (
-            <button key={btn.label} className={cn("w-full max-w-xs h-16 rounded-xl text-white font-bold flex items-center justify-center gap-3 text-base", btn.color)}>
-              <btn.icon className="w-6 h-6" /> {btn.label}
-            </button>
-          ))}
-        </div>
+        <EmergencyMode />
       ) : mode === 'briefing' ? (
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4 animate-fade-in">
-            <h2 className="text-lg font-bold text-foreground">Your {new Date().toLocaleDateString('en-ZA', { weekday: 'long' })} Safety Briefing</h2>
-            {[
-              { dot: 'bg-accent-threat', label: 'Top Threat', text: '3 vehicle break-ins overnight on Beach Road — highest in 7 days.' },
-              { dot: 'bg-accent-warning', label: 'Risk Window', text: 'Elevated risk 17:00–20:00 during Stage 2 load-shedding.' },
-              { dot: 'bg-accent-safe', label: 'Safe Windows', text: 'Morning walk safe until 08:15. Evening return recommended before 17:30.' },
-            ].map(b => (
-              <div key={b.label} className="p-4 rounded-xl bg-card border border-border-subtle">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={cn("w-2 h-2 rounded-full shrink-0", b.dot)} />
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{b.label}</span>
-                </div>
-                <p className="text-sm text-foreground">{b.text}</p>
-              </div>
-            ))}
-            <Button variant="outline" className="w-full min-h-[44px] gap-2">
-              <Share2 className="w-4 h-4" /> Share Briefing
-            </Button>
-          </div>
-        </ScrollArea>
+        <BriefingMode />
       ) : mode === 'route' ? (
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4 animate-fade-in">
-            <h2 className="text-lg font-bold text-foreground">Route Shield</h2>
-            <div className="p-4 rounded-xl bg-card border border-border-subtle">
-              <p className="text-xs text-muted-foreground">From</p>
-              <p className="text-sm font-bold text-foreground">{userContext.suburb}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-card border border-border-subtle">
-              <p className="text-xs text-muted-foreground">To</p>
-              <p className="text-sm font-bold text-foreground">{userContext.commute}</p>
-            </div>
-            {['M3 via UCT — Score 7.8', 'N2 Highway — Score 6.2'].map((r, i) => (
-              <button key={r} className="w-full p-4 rounded-xl bg-card border border-border-subtle text-left hover:border-accent-safe/30 transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-foreground">Option {i + 1}</span>
-                  <span className={cn("text-xs font-neural", i === 0 ? "text-accent-safe" : "text-accent-warning")}>{r.split('— ')[1]}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{r.split('— ')[0]}</p>
-              </button>
-            ))}
-            <Button className="w-full min-h-[44px]" onClick={() => onNavigate?.('safe-route')}>
-              Open Full Route Planner <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        </ScrollArea>
+        <RouteMode onNavigate={onNavigate} />
       ) : (
-        /* Chat mode */
         <>
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            <div className="space-y-3">
-              {messages.map(msg => (
-                <div key={msg.id} className={cn("flex", msg.role === 'user' ? "justify-end" : "justify-start")}>
-                  <div className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-3 text-sm",
-                    msg.role === 'user'
-                      ? "bg-accent-safe/15 text-foreground rounded-br-md"
-                      : "bg-card border border-border-subtle text-foreground rounded-bl-md"
-                  )}>
-                    {msg.role === 'safi' && <span className="text-accent-safe font-neural text-[10px] mr-1">✦</span>}
-                    <span className="whitespace-pre-wrap">{msg.content}</span>
-                  </div>
-                </div>
+          {/* CHAT TRANSCRIPT */}
+          <ScrollArea className="flex-1 relative z-10">
+            <div className="p-4 space-y-4">
+              {messages.map((msg) => (
+                <MessageRow key={msg.id} message={msg} />
               ))}
-              {isThinking && (
-                <div className="flex justify-start">
-                  <div className="bg-card border border-border-subtle rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1">
-                      {[0, 1, 2].map(i => (
-                        <span key={i} className="w-2 h-2 rounded-full bg-accent-safe/40 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
-                      ))}
-                    </div>
-                  </div>
+              {streaming && messages[messages.length - 1]?.role !== 'assistant' && (
+                <div className="flex items-center gap-2 label-micro" style={{ color: '#00FF85' }}>
+                  <span className="inline-block w-1.5 h-1.5 bg-[#00FF85] animate-pulse" />
+                  PROCESSING…
                 </div>
               )}
+              <div ref={scrollEndRef} />
             </div>
           </ScrollArea>
-          {/* Quick chips */}
-          <div className="px-4 py-2 flex gap-2 overflow-x-auto shrink-0 scrollbar-visible">
-            {quickChips.map(chip => (
-              <button
-                key={chip}
-                onClick={() => sendMessage(chip)}
-                className="px-3 py-1.5 rounded-full border border-border-subtle text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-accent-safe/30 shrink-0 transition-colors"
-              >{chip}</button>
-            ))}
-          </div>
-          {/* Listening indicator */}
+
+          {/* QUICK PROMPTS */}
+          {messages.length <= 1 && !streaming && (
+            <div className="relative z-10 px-4 pb-2 flex gap-1.5 overflow-x-auto shrink-0">
+              {QUICK_PROMPTS.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => sendMessage(chip)}
+                  className="shrink-0 px-3 py-2 border border-[#1A1A1A] text-[11px] text-[#999] hover:text-[#00FF85] hover:border-[#00FF85] transition-colors"
+                  style={{ fontFamily: 'JetBrains Mono, monospace' }}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* LISTENING BAR */}
           {isListening && (
-            <div className="px-4 py-3 border-t border-border-subtle bg-accent-safe/5 flex flex-col items-center gap-1.5 shrink-0 animate-fade-in">
+            <div className="relative z-10 px-4 py-3 border-t border-[#1A1A1A] bg-[#00FF85]/5 flex flex-col items-center gap-1.5 shrink-0 animate-fade-in">
               <div className="flex items-end gap-1 h-5">
-                {[0, 1, 2, 3].map(i => (
+                {[0, 1, 2, 3].map((i) => (
                   <span
                     key={i}
-                    className="w-1 bg-accent-safe rounded-full animate-pulse"
+                    className="w-1 bg-[#00FF85] animate-pulse"
                     style={{ height: `${40 + i * 15}%`, animationDelay: `${i * 100}ms` }}
                   />
                 ))}
               </div>
-              <span className="text-[11px] font-semibold text-accent-safe">Listening… speak now</span>
-              <span className="text-[9px] font-neural text-muted-foreground">en-ZA · Chrome/Android</span>
+              <span
+                className="text-[10px] font-bold tracking-wider"
+                style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00FF85' }}
+              >
+                LISTENING · SPEAK NOW
+              </span>
             </div>
           )}
-          {/* Input */}
-          <div className="p-4 border-t border-border-subtle flex gap-2 shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-            <div className="flex-1 flex items-center gap-2 bg-card border border-border-subtle rounded-xl px-3">
+
+          {/* INPUT */}
+          <div
+            className="relative z-10 flex items-center gap-2 p-3 border-t border-[#1A1A1A] shrink-0"
+            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          >
+            <div className="flex-1 flex items-center gap-2 border border-[#1A1A1A] focus-within:border-[#00FF85] bg-[#0A0A0A] px-3 transition-colors">
+              <span
+                className="label-micro shrink-0"
+                style={{ color: '#00FF85' }}
+              >
+                {'>'}
+              </span>
               <input
                 type="text"
                 value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendMessage(inputValue)}
-                placeholder={isListening ? 'Listening…' : 'Ask Safi anything...'}
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground py-3 outline-none min-h-[48px]"
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendMessage(inputValue)}
+                placeholder={isListening ? 'LISTENING…' : 'QUERY SAFI…'}
+                disabled={streaming}
+                className="flex-1 bg-transparent text-sm py-3 outline-none placeholder:text-[#444] disabled:opacity-50"
+                style={{ fontFamily: 'JetBrains Mono, monospace', color: '#fff' }}
               />
               {voiceSupported && (
                 <button
                   onClick={isListening ? stopVoiceInput : startVoiceInput}
-                  className={cn(
-                    'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors',
-                    isListening
-                      ? 'bg-accent-safe text-white'
-                      : 'text-muted-foreground hover:text-accent-safe hover:bg-accent-safe/10'
-                  )}
+                  disabled={streaming}
+                  className="shrink-0 w-8 h-8 flex items-center justify-center border border-[#1A1A1A] hover:border-[#00FF85] transition-colors disabled:opacity-30"
+                  style={{ color: isListening ? '#00FF85' : '#666' }}
                   aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
-                  title="Voice mode — works best on Android/Chrome"
                 >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                 </button>
               )}
             </div>
-            <button
-              onClick={() => sendMessage(inputValue)}
-              className="w-12 h-12 rounded-xl bg-accent-safe flex items-center justify-center shrink-0"
-              aria-label="Send message"
-            >
-              <Send className="w-4 h-4 text-white" />
-            </button>
+            {streaming ? (
+              <button
+                onClick={cancelStream}
+                className="w-12 h-12 flex items-center justify-center bg-[#FF3B30] hover:brightness-110 transition-all"
+                aria-label="Cancel stream"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            ) : (
+              <button
+                onClick={() => sendMessage(inputValue)}
+                disabled={!inputValue.trim()}
+                className="w-12 h-12 flex items-center justify-center bg-[#00FF85] hover:brightness-110 active:scale-95 transition-all disabled:bg-[#1A1A1A] disabled:cursor-not-allowed"
+                aria-label="Send message"
+              >
+                <Send className="w-4 h-4 text-black" />
+              </button>
+            )}
           </div>
         </>
       )}
@@ -410,3 +560,295 @@ const SafiAI = memo(({ isOpen, onClose, onNavigate, initialMode = 'chat' }: Safi
 
 SafiAI.displayName = 'SafiAI';
 export default SafiAI;
+
+// ─────────────────────────────────────────────
+// SUBCOMPONENTS
+// ─────────────────────────────────────────────
+
+function IconBtn({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active?: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className="w-9 h-9 flex items-center justify-center border transition-colors"
+      style={{
+        borderColor: active ? '#00FF85' : '#1A1A1A',
+        color: active ? '#00FF85' : '#666',
+        background: active ? 'rgba(0,255,133,0.08)' : 'transparent',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MessageRow({ message }: { message: Message }) {
+  const isUser = message.role === 'user';
+  return (
+    <div className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}>
+      <div
+        className="flex items-center gap-2 label-micro"
+        style={{ color: isUser ? '#666' : '#00FF85' }}
+      >
+        <span>{isUser ? '› YOU' : '◆ SAFI'}</span>
+        <span style={{ color: '#444' }}>{fmtTime(message.timestamp)}</span>
+      </div>
+      <div
+        className={cn('max-w-[88%] px-3 py-2.5 border')}
+        style={{
+          background: isUser ? 'rgba(0,255,133,0.05)' : '#0A0A0A',
+          borderColor: isUser ? '#00FF85' : '#1A1A1A',
+          borderLeft: isUser ? '2px solid #00FF85' : '2px solid #00FF85',
+        }}
+      >
+        {isUser ? (
+          <p
+            className="text-sm whitespace-pre-wrap leading-relaxed"
+            style={{ fontFamily: 'JetBrains Mono, monospace', color: '#fff' }}
+          >
+            {message.content}
+          </p>
+        ) : (
+          <div className="safi-md text-sm leading-relaxed text-white">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                strong: ({ children }) => (
+                  <strong style={{ color: '#00FF85', fontWeight: 700 }}>{children}</strong>
+                ),
+                ul: ({ children }) => <ul className="my-2 space-y-1">{children}</ul>,
+                ol: ({ children }) => <ol className="my-2 space-y-1 list-decimal pl-4">{children}</ol>,
+                li: ({ children }) => (
+                  <li className="flex gap-2">
+                    <span style={{ color: '#00FF85' }}>›</span>
+                    <span className="flex-1">{children}</span>
+                  </li>
+                ),
+                code: ({ children }) => (
+                  <code
+                    className="px-1.5 py-0.5 text-xs"
+                    style={{
+                      fontFamily: 'JetBrains Mono, monospace',
+                      background: '#000',
+                      color: '#00FF85',
+                      border: '1px solid #1A1A1A',
+                    }}
+                  >
+                    {children}
+                  </code>
+                ),
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                    style={{ color: '#00B4D8' }}
+                  >
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {message.content || '…'}
+            </ReactMarkdown>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmergencyMode() {
+  const items = [
+    { label: 'CALL SAPS', sub: '10111', tel: '10111', color: '#00B4D8', icon: Shield },
+    { label: 'EMS AMBULANCE', sub: '10177', tel: '10177', color: '#FF3B30', icon: AlertTriangle },
+    { label: 'SHARE LOCATION', sub: 'BROADCAST GUARDIANS', color: '#00FF85', icon: MapPin },
+    { label: 'ALERT NETWORK', sub: 'NOTIFY ALL CONTACTS', color: '#FFD60A', icon: Users },
+  ];
+  return (
+    <div className="relative z-10 flex-1 flex flex-col gap-3 p-4 overflow-y-auto">
+      <div
+        className="border p-3"
+        style={{ borderColor: '#FF3B30', background: 'rgba(255,59,48,0.05)', borderLeft: '2px solid #FF3B30' }}
+      >
+        <div className="flex items-center gap-2 label-micro" style={{ color: '#FF3B30' }}>
+          <AlertTriangle className="w-3 h-3" /> [ EMERGENCY MODE ARMED ]
+        </div>
+        <p className="text-xs text-white mt-1.5 leading-relaxed">
+          Tap a contact to dial directly. Hold the SOS button on the home screen to broadcast to all guardians simultaneously.
+        </p>
+      </div>
+      {items.map((item) => {
+        const Inner = (
+          <div className="flex items-center gap-3 px-4 py-3.5 border w-full bg-[#0A0A0A] hover:bg-[#111] transition-colors text-left"
+               style={{ borderColor: '#1A1A1A', borderLeft: `2px solid ${item.color}` }}>
+            <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold tracking-wider" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#fff' }}>
+                {item.label}
+              </div>
+              <div className="label-micro mt-0.5" style={{ color: '#666' }}>
+                {item.sub}
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: item.color }} />
+          </div>
+        );
+        return item.tel ? (
+          <a key={item.label} href={`tel:${item.tel}`}>{Inner}</a>
+        ) : (
+          <button key={item.label} className="block w-full">{Inner}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+function BriefingMode() {
+  const day = new Date().toLocaleDateString('en-ZA', { weekday: 'long' }).toUpperCase();
+  const items = [
+    {
+      level: 'THREAT',
+      color: '#FF3B30',
+      label: 'TOP THREAT',
+      text: '3 vehicle break-ins overnight on Beach Road. Highest in 7 days.',
+    },
+    {
+      level: 'WARN',
+      color: '#FF9500',
+      label: 'RISK WINDOW',
+      text: 'Elevated risk 17:00–20:00 during Stage 2 load-shedding.',
+    },
+    {
+      level: 'SAFE',
+      color: '#00FF85',
+      label: 'SAFE WINDOWS',
+      text: 'Morning walk safe until 08:15. Evening return before 17:30.',
+    },
+    {
+      level: 'INTEL',
+      color: '#00B4D8',
+      label: 'CPF PATROL',
+      text: '2 stewards active on High Level Rd from 20:00 to 23:30.',
+    },
+  ];
+
+  return (
+    <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-3">
+      <div>
+        <div className="label-micro" style={{ color: '#666' }}>
+          [ INTELLIGENCE BRIEFING · {day} ]
+        </div>
+        <h2
+          className="text-xl font-bold mt-1"
+          style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+        >
+          {userContext.suburb.toUpperCase()}
+        </h2>
+      </div>
+      {items.map((it) => (
+        <div
+          key={it.label}
+          className="border bg-[#0A0A0A] p-3"
+          style={{ borderColor: '#1A1A1A', borderLeft: `2px solid ${it.color}` }}
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span
+              className="label-micro"
+              style={{ color: it.color }}
+            >
+              [ {it.label} ]
+            </span>
+            <span
+              className="label-micro px-1.5 py-0.5 border"
+              style={{ color: it.color, borderColor: it.color }}
+            >
+              {it.level}
+            </span>
+          </div>
+          <p className="text-sm text-white leading-relaxed">{it.text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RouteMode({ onNavigate }: { onNavigate?: (view: ViewId) => void }) {
+  const routes = [
+    { name: 'M3 VIA UCT', score: 7.8, color: '#00FF85', meta: 'ETA 18 MIN · LIT · CCTV' },
+    { name: 'N2 HIGHWAY', score: 6.2, color: '#FF9500', meta: 'ETA 14 MIN · 1 ALERT' },
+    { name: 'DE WAAL DRIVE', score: 4.1, color: '#FF3B30', meta: 'ETA 16 MIN · 2 INCIDENTS' },
+  ];
+  return (
+    <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-3">
+      <div>
+        <div className="label-micro" style={{ color: '#666' }}>
+          [ CORRIDOR ANALYSIS ]
+        </div>
+        <h2
+          className="text-xl font-bold mt-1"
+          style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+        >
+          ROUTE SHIELD
+        </h2>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="border border-[#1A1A1A] bg-[#0A0A0A] p-3">
+          <div className="label-micro" style={{ color: '#666' }}>FROM</div>
+          <div className="text-sm font-bold mt-1" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00FF85' }}>
+            {userContext.suburb.toUpperCase()}
+          </div>
+        </div>
+        <div className="border border-[#1A1A1A] bg-[#0A0A0A] p-3">
+          <div className="label-micro" style={{ color: '#666' }}>TO</div>
+          <div className="text-sm font-bold mt-1" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00FF85' }}>
+            {userContext.commute.toUpperCase()}
+          </div>
+        </div>
+      </div>
+
+      {routes.map((r, i) => (
+        <button
+          key={r.name}
+          className="w-full text-left border bg-[#0A0A0A] p-3 hover:bg-[#111] transition-colors"
+          style={{ borderColor: '#1A1A1A', borderLeft: `2px solid ${r.color}` }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="label-micro" style={{ color: '#666' }}>OPTION {String(i + 1).padStart(2, '0')}</div>
+              <div className="text-sm font-bold mt-0.5" style={{ fontFamily: 'JetBrains Mono, monospace', color: '#fff' }}>
+                {r.name}
+              </div>
+            </div>
+            <div
+              className="text-2xl font-bold"
+              style={{ fontFamily: 'JetBrains Mono, monospace', color: r.color }}
+            >
+              {r.score.toFixed(1)}
+            </div>
+          </div>
+          <div className="label-micro mt-2" style={{ color: '#666' }}>{r.meta}</div>
+        </button>
+      ))}
+
+      <button
+        onClick={() => onNavigate?.('safe-route')}
+        className="btn-primary w-full mt-2 flex items-center justify-center gap-2"
+      >
+        OPEN ROUTE PLANNER <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
