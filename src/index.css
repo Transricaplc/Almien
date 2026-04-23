@@ -526,3 +526,173 @@
 .animate-neural-breathe { animation: neural-breathe 4s ease-in-out infinite; }
 .animate-pulse-ring      { animation: pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
 .animate-data-stream     { animation: data-stream 2s linear infinite; }
+
+/* ════════════════════════════════════════════════════════════
+   OBSIDIAN TACTICAL — component primitives
+   t-card · sig-badge · btn-* · t-input · sos-ring · label-micro
+   page-animate · score-arc · skeleton (overrides shimmer above)
+   ════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Tactical card — left-bordered tier indicator */
+  .t-card {
+    background: #0A0A0A;
+    border: 0.5px solid #2A2A2A;
+    border-left: 2px solid #00FF85;
+    padding: 14px 16px;
+    transition: background 0.1s ease;
+  }
+  .t-card:active { background: #111; }
+  .t-card.threat { border-left-color: #FF3B30; }
+  .t-card.warn   { border-left-color: #FF9500; }
+  .t-card.intel  { border-left-color: #00B4D8; }
+  .t-card.elite  { border-left-color: #FFD60A; }
+  .t-card.neutral{ border-left-color: #2A2A2A; }
+
+  /* Mono micro-label */
+  .label-micro {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  /* Signal badge */
+  .sig-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border: 0.5px solid currentColor;
+    line-height: 1.2;
+    border-radius: 0;
+  }
+  .sig-badge.safe   { color: #00FF85; background: rgba(0,255,133,0.08); }
+  .sig-badge.threat { color: #FF3B30; background: rgba(255,59,48,0.08); }
+  .sig-badge.warn   { color: #FF9500; background: rgba(255,149,0,0.08); }
+  .sig-badge.intel  { color: #00B4D8; background: rgba(0,180,216,0.08); }
+  .sig-badge.elite  { color: #FFD60A; background: rgba(255,214,10,0.08); }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: #00FF85;
+    color: #000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: background 0.1s ease, transform 0.1s ease;
+    min-height: 50px;
+  }
+  .btn-primary:active { background: #00CC6A; transform: scale(0.99); }
+  .btn-primary:disabled { background: #1A1A1A; color: #555; cursor: not-allowed; }
+
+  .btn-secondary {
+    padding: 12px 20px;
+    background: transparent;
+    color: #fff;
+    border: 0.5px solid #2A2A2A;
+    border-radius: 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 44px;
+    transition: border-color 0.1s ease, background 0.1s ease;
+  }
+  .btn-secondary:hover { border-color: #00FF85; }
+
+  .btn-ghost {
+    padding: 10px 16px;
+    background: transparent;
+    color: #00FF85;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 0;
+  }
+  .btn-ghost:hover { color: #00FF85; opacity: 0.85; }
+
+  /* Tactical input */
+  .t-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: #0A0A0A;
+    border: 0.5px solid #2A2A2A;
+    border-bottom: 1px solid #555;
+    border-radius: 0;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .t-input:focus { border-bottom-color: #00FF85; }
+  .t-input::placeholder { color: #333; }
+
+  /* SOS ring — fixed-position 72px circle, the ONLY round element */
+  .sos-ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #FF3B30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 0 0 rgba(255,59,48,0.4);
+    transition: transform 0.1s ease;
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    border: none;
+  }
+  .sos-ring:active { transform: scale(0.95); }
+  @keyframes sos-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,59,48,0.4); }
+    70%  { box-shadow: 0 0 0 16px rgba(255,59,48,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,59,48,0); }
+  }
+  .sos-ring.active { animation: sos-pulse 1.5s infinite; }
+}
+
+/* Page transition */
+@keyframes page-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.page-animate { animation: page-in 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
+/* Score ring draw */
+@keyframes ring-draw {
+  from { stroke-dashoffset: var(--ring-full, 553); }
+  to   { stroke-dashoffset: var(--ring-offset, 0); }
+}
+.score-arc { animation: ring-draw 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* Override skeleton shimmer with tactical greys */
+.skeleton {
+  background: linear-gradient(90deg, #111 25%, #1A1A1A 50%, #111 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 0;
+}
+
+/* Hide scrollbar utility for horizontal chip rows */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
