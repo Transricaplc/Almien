@@ -1,11 +1,8 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Navigation, MapPin, Clock, Shield, AlertTriangle, ChevronDown, ChevronUp,
-  Footprints, Car, Bus, Bike, Share2, Check, X, Locate, Search
+  Footprints, Car, Bus, Bike, Share2, Check, X, Crosshair, Activity,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import TimeRiskStrip from '../widgets/TimeRiskStrip';
@@ -37,109 +34,114 @@ interface RouteOption {
   isSafest: boolean;
 }
 
-const travelModes: { id: TravelMode; label: string; icon: typeof Footprints }[] = [
-  { id: 'foot', label: 'On Foot', icon: Footprints },
-  { id: 'car', label: 'Private Car', icon: Car },
-  { id: 'taxi', label: 'Taxi / Minibus', icon: Bus },
-  { id: 'cycling', label: 'Cycling', icon: Bike },
+const SIG_GREEN = '#00FF85';
+const SIG_AMBER = '#FF9500';
+const SIG_RED   = '#FF3B30';
+const SIG_BLUE  = '#00B4D8';
+
+const travelModes: { id: TravelMode; label: string; code: string; icon: typeof Footprints }[] = [
+  { id: 'foot',    label: 'On Foot',     code: 'FOOT',  icon: Footprints },
+  { id: 'car',     label: 'Private Car', code: 'CAR',   icon: Car },
+  { id: 'taxi',    label: 'Taxi/Mini',   code: 'TAXI',  icon: Bus },
+  { id: 'cycling', label: 'Cycling',     code: 'CYCLE', icon: Bike },
 ];
 
-const capeTownLocations = [
-  'Cape Town CBD', 'Sea Point', 'Camps Bay', 'Woodstock', 'Observatory',
-  'Claremont', 'Newlands', 'Rondebosch', 'Khayelitsha', 'Mitchells Plain',
-  'Muizenberg', 'Fish Hoek', 'Simon\'s Town', 'Stellenbosch', 'Paarl',
-  'V&A Waterfront', 'Green Point', 'Bellville', 'Tyger Valley', 'Nyanga',
-  'Gugulethu', 'Langa', 'Wynberg', 'Constantia', 'Hout Bay',
-];
-
-function generateMockRoutes(origin: string, destination: string, mode: TravelMode): RouteOption[] {
+function generateMockRoutes(_origin: string, _destination: string, mode: TravelMode): RouteOption[] {
   const baseTimes: Record<TravelMode, number> = { foot: 45, car: 18, taxi: 25, cycling: 30 };
   const base = baseTimes[mode];
-  
-  const routes: RouteOption[] = [
+
+  return [
     {
       id: 'safest',
-      name: 'Safest Route (Recommended)',
+      name: 'TACTICAL // SAFEST',
       travelTime: `${base + 5} min`,
       distanceKm: +(Math.random() * 4 + 3).toFixed(1),
-      safetyScore: +(Math.random() * 2 + 8).toFixed(1) as number,
+      safetyScore: +(Math.random() * 2 + 8).toFixed(1),
       highRiskIntersections: Math.floor(Math.random() * 2),
       activeIncidents: Math.floor(Math.random() * 2),
-      threats: ['Moderate foot traffic area after 20:00'],
+      threats: ['Moderate foot traffic after 20:00 — well-lit corridors'],
       isSafest: true,
     },
     {
       id: 'fastest',
-      name: 'Fastest Route',
+      name: 'DIRECT // FASTEST',
       travelTime: `${base} min`,
       distanceKm: +(Math.random() * 3 + 2).toFixed(1),
-      safetyScore: +(Math.random() * 3 + 4).toFixed(1) as number,
+      safetyScore: +(Math.random() * 3 + 4).toFixed(1),
       highRiskIntersections: Math.floor(Math.random() * 4 + 2),
       activeIncidents: Math.floor(Math.random() * 5 + 1),
       threats: [
-        'Passes through high-incident zone near Long Street',
+        'Passes through high-incident zone near Long St',
         'Limited CCTV coverage on Buitenkant St',
-        `${Math.floor(Math.random() * 3 + 1)} robbery reports in last 4 hours`,
+        `${Math.floor(Math.random() * 3 + 1)} robbery reports in last 4h`,
       ],
       isSafest: false,
     },
     {
       id: 'alternate',
-      name: 'Alternate Route',
+      name: 'BYPASS // ALTERNATE',
       travelTime: `${base + 12} min`,
       distanceKm: +(Math.random() * 5 + 4).toFixed(1),
-      safetyScore: +(Math.random() * 2 + 6).toFixed(1) as number,
+      safetyScore: +(Math.random() * 2 + 6).toFixed(1),
       highRiskIntersections: Math.floor(Math.random() * 3 + 1),
       activeIncidents: Math.floor(Math.random() * 3),
       threats: [
-        'Low street lighting on sections of Main Road',
+        'Low street lighting on sections of Main Rd',
         'Construction detour near Salt River',
       ],
       isSafest: false,
     },
   ];
-
-  return routes;
 }
 
-function scoreColor(score: number) {
-  if (score >= 8) return 'text-safety-green';
-  if (score >= 5) return 'text-safety-yellow';
-  return 'text-safety-red';
+function tacticalScoreColor(s: number) {
+  if (s >= 8) return SIG_GREEN;
+  if (s >= 6) return SIG_AMBER;
+  if (s >= 4) return '#FF6B00';
+  return SIG_RED;
 }
 
-function scoreBg(score: number) {
-  if (score >= 8) return 'bg-safety-green/10 border-safety-green/30';
-  if (score >= 5) return 'bg-safety-yellow/10 border-safety-yellow/30';
-  return 'bg-safety-red/10 border-safety-red/30';
+function tacticalScoreTag(s: number) {
+  if (s >= 8) return 'CLEAR';
+  if (s >= 6) return 'CAUTION';
+  if (s >= 4) return 'ELEVATED';
+  return 'CRITICAL';
 }
+
+/* ───────────────── tactical primitives ───────────────── */
+
+const SectionLabel = ({ children, color = '#00FF85' }: { children: React.ReactNode; color?: string }) => (
+  <div className="flex items-center gap-1.5 mb-2">
+    <span className="w-1 h-1" style={{ background: color }} />
+    <span className="font-mono text-[10px] tracking-[0.2em]" style={{ color }}>{children}</span>
+  </div>
+);
+
+const TacticalPanel = ({ children, accent = '#2A2A2A' }: { children: React.ReactNode; accent?: string }) => (
+  <div className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 p-4" style={{ borderLeftColor: accent }}>
+    {children}
+  </div>
+);
+
+/* ───────────────── component ───────────────── */
 
 const SafeRouteView = memo(({ onNavigate }: Props) => {
-  // Planning state
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [mode, setMode] = useState<TravelMode>('car');
   const [timeOption, setTimeOption] = useState<TimeOption>('now');
   const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
   const [customTime, setCustomTime] = useState('18:00');
-  const [originSuggestions, setOriginSuggestions] = useState<string[]>([]);
-  const [destSuggestions, setDestSuggestions] = useState<string[]>([]);
-  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
-  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
 
-  // Results state
   const [routes, setRoutes] = useState<RouteOption[] | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [expandedRoute, setExpandedRoute] = useState<string | null>(null);
 
-  // Journey sharing state
   const [journeyActive, setJourneyActive] = useState(false);
   const [journeyElapsed, setJourneyElapsed] = useState(0);
-  const [sharingEnabled, setSharingEnabled] = useState(false);
   const [deviationAlert, setDeviationAlert] = useState(false);
   const journeyInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Auto-fill origin with the user's nearest suburb
   const userLoc = useUserLocation();
   useEffect(() => {
     if (userLoc.nearestSuburb && !origin) {
@@ -149,32 +151,9 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
     }
   }, [userLoc.nearestSuburb, userLoc.nearestArea, origin]);
 
-  const filterLocations = (query: string) =>
-    capeTownLocations.filter(l => l.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
-
-  const handleOriginChange = (val: string) => {
-    setOrigin(val);
-    if (val.length > 1) {
-      setOriginSuggestions(filterLocations(val));
-      setShowOriginSuggestions(true);
-    } else {
-      setShowOriginSuggestions(false);
-    }
-  };
-
-  const handleDestChange = (val: string) => {
-    setDestination(val);
-    if (val.length > 1) {
-      setDestSuggestions(filterLocations(val));
-      setShowDestSuggestions(true);
-    } else {
-      setShowDestSuggestions(false);
-    }
-  };
-
   const calculateRoutes = () => {
     if (!origin.trim() || !destination.trim()) {
-      toast.error('Please enter both origin and destination');
+      toast.error('INPUT_ERR · ORIGIN_AND_DESTINATION_REQUIRED');
       return;
     }
     setCalculating(true);
@@ -182,21 +161,19 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
     setTimeout(() => {
       setRoutes(generateMockRoutes(origin, destination, mode));
       setCalculating(false);
-    }, 1500);
+      toast.success('ROUTE_ANALYSIS · COMPLETE');
+    }, 1400);
   };
 
-  const startJourney = useCallback((routeId: string) => {
+  const startJourney = useCallback((_routeId: string) => {
     setJourneyActive(true);
     setJourneyElapsed(0);
-    setSharingEnabled(true);
-    toast.success('Journey started — your Safety Network will be notified');
-
+    toast.success('JOURNEY · ENGAGED · NETWORK_NOTIFIED');
     journeyInterval.current = setInterval(() => {
       setJourneyElapsed(prev => {
-        // Simulate deviation alert after ~50 seconds
         if (prev === 50 && !deviationAlert) {
           setDeviationAlert(true);
-          toast.error('⚠️ Route deviation detected — alert sent to contacts', { duration: 6000 });
+          toast.error('⚠ DEVIATION · ALERT_DISPATCHED', { duration: 6000 });
         }
         return prev + 1;
       });
@@ -206,10 +183,9 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
   const stopJourney = useCallback(() => {
     setJourneyActive(false);
     setJourneyElapsed(0);
-    setSharingEnabled(false);
     setDeviationAlert(false);
     if (journeyInterval.current) clearInterval(journeyInterval.current);
-    toast.success('Journey ended safely');
+    toast.success('JOURNEY · TERMINATED · SAFE');
   }, []);
 
   useEffect(() => {
@@ -221,397 +197,427 @@ const SafeRouteView = memo(({ onNavigate }: Props) => {
   const formatElapsed = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
 
-  // Active journey overlay
+  /* ═══════════ ACTIVE JOURNEY OVERLAY ═══════════ */
   if (journeyActive) {
     const activeRoute = routes?.find(r => r.isSafest) || routes?.[0];
+    const accent = deviationAlert ? SIG_RED : SIG_GREEN;
     return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Journey header */}
-        <div className={cn(
-          "p-5 rounded-xl border",
-          deviationAlert
-            ? "bg-destructive/10 border-destructive/40"
-            : "bg-primary/10 border-primary/30"
-        )}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <Navigation className="w-5 h-5 text-primary" />
-              Journey in Progress
-            </h2>
-            <Badge variant="outline" className="text-xs font-mono">
-              {formatElapsed(journeyElapsed)}
-            </Badge>
+      <div className="space-y-4 animate-fade-in bg-black -mx-4 -my-6 sm:-mx-12 sm:-my-10 min-h-screen p-4 sm:p-8 text-white">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#1A1A1A] pb-2">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 animate-pulse" style={{ background: accent }} />
+            <span className="font-mono text-[10px] tracking-[0.2em]" style={{ color: accent }}>
+              {deviationAlert ? 'DEVIATION_ALERT · ACTIVE' : 'JOURNEY · IN_PROGRESS'}
+            </span>
+          </div>
+          <span className="font-mono text-[12px] tabular-nums tracking-[0.15em] text-white">
+            T+{formatElapsed(journeyElapsed)}
+          </span>
+        </div>
+
+        {/* Route summary */}
+        <TacticalPanel accent={accent}>
+          <div className="grid grid-cols-2 gap-px bg-[#1A1A1A] -m-4 mb-3">
+            <div className="bg-[#0A0A0A] p-3">
+              <div className="font-mono text-[9px] tracking-[0.2em] text-[#555]">ROUTE</div>
+              <div className="font-[family-name:'Space_Grotesk'] text-sm font-bold text-white truncate">
+                {activeRoute?.name || 'TACTICAL'}
+              </div>
+            </div>
+            <div className="bg-[#0A0A0A] p-3">
+              <div className="font-mono text-[9px] tracking-[0.2em] text-[#555]">ETA</div>
+              <div className="font-[family-name:'Space_Grotesk'] text-sm font-bold text-white">
+                {activeRoute?.travelTime || '—'}
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="p-3 rounded-lg bg-card border border-border">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Route</p>
-              <p className="text-sm font-semibold text-foreground">{activeRoute?.name}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-card border border-border">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">ETA</p>
-              <p className="text-sm font-semibold text-foreground">{activeRoute?.travelTime}</p>
-            </div>
-          </div>
-
-          {/* Sharing status */}
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border">
-            <Share2 className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 pt-3 mt-3 border-t border-[#1A1A1A]">
+            <Share2 className="w-3.5 h-3.5 text-[#00FF85]" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-foreground">Live Tracking Shared</p>
-              <p className="text-[10px] text-muted-foreground">3 contacts can see your live position</p>
+              <div className="font-mono text-[10px] tracking-[0.15em] text-white">LIVE_TRACKING · BROADCAST</div>
+              <div className="font-mono text-[9px] tracking-[0.15em] text-[#777]">3 contacts · live position</div>
             </div>
-            <Check className="w-4 h-4 text-safety-green" />
+            <Check className="w-4 h-4 text-[#00FF85]" />
           </div>
 
-          {/* Deviation alert */}
           {deviationAlert && (
-            <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30 animate-fade-in">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-destructive" />
+            <div className="mt-3 p-2.5 bg-[#FF3B30]/8 border border-[#FF3B30]/40 border-l-2 border-l-[#FF3B30] animate-fade-in">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#FF3B30] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs font-bold text-destructive">Route Deviation Detected</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Alert sent to all Safety Network contacts with your last known coordinates.
-                  </p>
+                  <div className="font-mono text-[10px] tracking-[0.15em] text-[#FF3B30] font-bold">
+                    DEVIATION · DETECTED
+                  </div>
+                  <div className="font-mono text-[10px] text-[#999] mt-0.5">
+                    Last-known coordinates dispatched to safety network.
+                  </div>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </TacticalPanel>
 
-        {/* Simulated map area */}
-        <div className="relative rounded-xl border border-border overflow-hidden h-64 bg-secondary/30">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <Navigation className="w-8 h-8 text-primary mx-auto mb-2 animate-pulse" />
-              <p className="text-sm font-medium text-muted-foreground">Live map tracking active</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {origin} → {destination}
-              </p>
-            </div>
+        {/* Live map */}
+        <div className="relative bg-[#0A0A0A] border border-[#2A2A2A] overflow-hidden h-64">
+          <div className="absolute inset-0 opacity-[0.06]" style={{
+            backgroundImage: 'linear-gradient(to right, #00FF85 1px, transparent 1px), linear-gradient(to bottom, #00FF85 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }} />
+          <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
+            <span className="font-mono text-[9px] tracking-[0.2em] text-[#00FF85]">LIVE_MAP</span>
+            <span className="font-mono text-[9px] tracking-[0.2em] text-[#555] truncate ml-2">
+              {origin.toUpperCase()} → {destination.toUpperCase()}
+            </span>
           </div>
-          {/* Route line visualization */}
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 256">
             <path
               d="M 40 200 C 100 180, 150 80, 200 100 S 300 60, 360 56"
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="3"
-              strokeDasharray="8 4"
-              opacity="0.6"
+              fill="none" stroke={accent} strokeWidth="2" strokeDasharray="6 4" opacity="0.8"
             />
             {deviationAlert && (
-              <circle cx="240" cy="90" r="6" fill="hsl(var(--destructive))" className="animate-pulse" />
+              <>
+                <circle cx="240" cy="90" r="6" fill={SIG_RED} className="animate-pulse" />
+                <circle cx="240" cy="90" r="14" fill="none" stroke={SIG_RED} strokeWidth="1" opacity="0.5" className="animate-pulse" />
+              </>
             )}
-            <circle cx="40" cy="200" r="5" fill="hsl(var(--primary))" />
-            <circle cx="360" cy="56" r="5" fill="hsl(var(--safety-green))" />
+            <rect x="36" y="196" width="8" height="8" fill={SIG_GREEN} />
+            <rect x="356" y="52" width="8" height="8" fill={SIG_GREEN} />
           </svg>
+          <div className="absolute bottom-2 left-2 font-mono text-[9px] tracking-[0.2em] text-[#555]">
+            ◉ TRACKING · 1Hz
+          </div>
         </div>
 
-        {/* End journey */}
-        <Button
-          variant="destructive"
-          className="w-full h-12"
+        <button
           onClick={stopJourney}
+          className="w-full h-12 bg-[#FF3B30] text-white font-mono text-[11px] tracking-[0.2em] font-bold hover:bg-[#CC2F27] active:scale-99 transition-all flex items-center justify-center gap-2"
         >
-          <X className="w-4 h-4 mr-2" /> End Journey
-        </Button>
+          <X className="w-4 h-4" /> TERMINATE_JOURNEY
+        </button>
       </div>
     );
   }
 
+  /* ═══════════ PLANNER ═══════════ */
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in bg-black -mx-4 -my-6 sm:-mx-12 sm:-my-10 min-h-screen p-4 sm:p-8 text-white">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-          <Navigation className="w-8 h-8 text-primary" />
-          Plan Safe Route
+      <div className="border-b border-[#1A1A1A] pb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-1.5 h-1.5 bg-[#00FF85] animate-pulse" />
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">ROUTE_LAYER · v2.0</span>
+        </div>
+        <h1 className="font-[family-name:'Space_Grotesk'] text-2xl font-bold tracking-tight text-white">
+          PLAN<span className="text-[#00FF85]">.</span>SAFE_ROUTE
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Find the safest path between two points in the Western Cape
+        <p className="font-mono text-[11px] text-[#999] mt-1">
+          Tactical corridor analysis · Western Cape · Time-aware risk
         </p>
       </div>
 
-      {/* Route planner form */}
-      <div className="p-6 rounded-xl border border-border bg-card space-y-4">
-        {/* Origin — unified suburb search */}
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Origin</label>
-          <SuburbSearchInput
-            placeholder="Current location or search suburb..."
-            initialValue={origin}
-            onSelect={r => setOrigin(r.name)}
-          />
-        </div>
+      {/* Origin / Destination */}
+      <TacticalPanel accent={SIG_GREEN}>
+        <SectionLabel color={SIG_GREEN}>ORIGIN // FROM</SectionLabel>
+        <SuburbSearchInput
+          placeholder="Current location or query suburb…"
+          initialValue={origin}
+          onSelect={r => setOrigin(r.name)}
+        />
+        {origin && (
+          <div className="font-mono text-[10px] tracking-[0.1em] text-[#777] mt-2">
+            ▸ LOCK · {origin.toUpperCase()}
+          </div>
+        )}
+      </TacticalPanel>
 
-        {/* Destination — unified suburb search */}
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Destination</label>
-          <SuburbSearchInput
-            placeholder="Search destination suburb, ward, or area..."
-            initialValue={destination}
-            onSelect={r => setDestination(r.name)}
-          />
-        </div>
+      <TacticalPanel accent={SIG_BLUE}>
+        <SectionLabel color={SIG_BLUE}>DESTINATION // TO</SectionLabel>
+        <SuburbSearchInput
+          placeholder="Query destination suburb, ward or area…"
+          initialValue={destination}
+          onSelect={r => setDestination(r.name)}
+        />
+        {destination && (
+          <div className="font-mono text-[10px] tracking-[0.1em] text-[#777] mt-2">
+            ▸ LOCK · {destination.toUpperCase()}
+          </div>
+        )}
+      </TacticalPanel>
 
-        {/* Travel mode */}
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Travel Mode</label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {travelModes.map(m => (
+      {/* Mode selector */}
+      <TacticalPanel>
+        <SectionLabel>TRAVEL_MODE</SectionLabel>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#1A1A1A]">
+          {travelModes.map(m => {
+            const active = mode === m.id;
+            return (
               <button
                 key={m.id}
                 onClick={() => setMode(m.id)}
                 className={cn(
-                  "p-3 rounded-xl border text-center transition-all",
-                  mode === m.id
-                    ? "bg-primary/10 border-primary/40 text-primary"
-                    : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-border"
+                  'flex flex-col items-center justify-center py-3 transition-colors min-h-[64px]',
+                  active
+                    ? 'bg-[#00FF85] text-black'
+                    : 'bg-[#0A0A0A] text-[#999] hover:text-white hover:bg-[#111]',
                 )}
               >
-                <m.icon className="w-5 h-5 mx-auto mb-1" />
-                <span className="text-xs font-medium">{m.label}</span>
+                <m.icon className="w-4 h-4 mb-1" />
+                <span className="font-mono text-[10px] tracking-[0.15em] font-bold">{m.code}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </TacticalPanel>
 
-        {/* Time of travel */}
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">When</label>
-          <div className="flex gap-2 mb-3">
-            {(['now', 'custom'] as TimeOption[]).map(opt => (
+      {/* When */}
+      <TacticalPanel>
+        <SectionLabel>DEPARTURE_WINDOW</SectionLabel>
+        <div className="flex gap-px bg-[#1A1A1A] mb-3">
+          {(['now', 'custom'] as TimeOption[]).map(opt => {
+            const active = timeOption === opt;
+            return (
               <button
                 key={opt}
                 onClick={() => setTimeOption(opt)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  timeOption === opt
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                  'flex-1 py-2 font-mono text-[10px] tracking-[0.2em] font-bold transition-colors min-h-[36px]',
+                  active
+                    ? 'bg-[#00FF85] text-black'
+                    : 'bg-[#0A0A0A] text-[#999] hover:text-white hover:bg-[#111]',
                 )}
               >
-                {opt === 'now' ? '🕐 Now' : '📅 Custom Time'}
+                {opt === 'now' ? 'NOW' : 'SCHEDULED'}
               </button>
-            ))}
-          </div>
-          {timeOption === 'custom' && (
-            <div className="flex gap-3 items-end animate-fade-in">
-              <div className="flex-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left">
-                      {customDate ? format(customDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={customDate}
-                      onSelect={setCustomDate}
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <Input
-                type="time"
-                value={customTime}
-                onChange={e => setCustomTime(e.target.value)}
-                className="w-32"
-              />
-            </div>
-          )}
+            );
+          })}
         </div>
 
-        {/* Calculate button */}
-        <Button
-          className="w-full h-12 text-sm font-bold"
-          onClick={calculateRoutes}
-          disabled={calculating}
-        >
-          {calculating ? (
-            <><Clock className="w-4 h-4 mr-2 animate-spin" /> Analyzing safety data...</>
-          ) : (
-            <><Shield className="w-4 h-4 mr-2" /> Calculate Safe Routes</>
-          )}
-        </Button>
-      </div>
+        {timeOption === 'custom' && (
+          <div className="grid grid-cols-2 gap-2 animate-fade-in">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="bg-[#0A0A0A] border border-[#2A2A2A] hover:border-[#00FF85] py-2.5 px-3 font-mono text-[11px] tracking-[0.1em] text-white text-left transition-colors min-h-[40px]">
+                  {customDate ? format(customDate, 'yyyy-MM-dd').toUpperCase() : '── PICK_DATE ──'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-[#0A0A0A] border-[#2A2A2A]" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customDate}
+                  onSelect={setCustomDate}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <input
+              type="time"
+              value={customTime}
+              onChange={e => setCustomTime(e.target.value)}
+              className="bg-[#0A0A0A] border border-[#2A2A2A] focus:border-[#00FF85] py-2.5 px-3 font-mono text-[11px] tracking-[0.1em] text-white outline-none transition-colors min-h-[40px]"
+            />
+          </div>
+        )}
+      </TacticalPanel>
 
-      {/* Time-of-day risk context for route planning */}
-      <div className="rounded-xl border border-border bg-card p-4">
+      {/* Time risk strip */}
+      <TacticalPanel accent={SIG_AMBER}>
+        <SectionLabel color={SIG_AMBER}>TIME_RISK // 24H</SectionLabel>
         <TimeRiskStrip variant="compact" />
-        <p className="text-[10px] text-muted-foreground mt-2">Risk levels along your route vary by time of day</p>
-      </div>
+        <p className="font-mono text-[10px] text-[#777] mt-2">
+          ▸ Corridor risk varies by time-of-day. Plan around safe windows.
+        </p>
+      </TacticalPanel>
 
-      {/* Route results */}
+      {/* Calculate */}
+      <button
+        onClick={calculateRoutes}
+        disabled={calculating}
+        className={cn(
+          'w-full min-h-[52px] font-mono text-[11px] tracking-[0.2em] font-bold flex items-center justify-center gap-2 transition-all',
+          calculating
+            ? 'bg-[#1A1A1A] text-[#555] cursor-wait'
+            : 'bg-[#00FF85] text-black hover:bg-[#00CC6A] active:scale-99',
+        )}
+      >
+        {calculating ? (
+          <><Activity className="w-4 h-4 animate-spin" /> ANALYZING_CORRIDORS…</>
+        ) : (
+          <><Shield className="w-4 h-4" /> COMPUTE_SAFE_ROUTES</>
+        )}
+      </button>
+
+      {/* Results */}
       {routes && (
-        <div className="space-y-3 animate-fade-in">
-          <h2 className="text-lg font-bold text-foreground">
-            {routes.length} Routes Found
-          </h2>
+        <div className="space-y-3 animate-fade-in pt-2">
+          <div className="flex items-center justify-between border-b border-[#1A1A1A] pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#00FF85]" />
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">
+                ROUTES // {routes.length}_FOUND
+              </span>
+            </div>
+            <span className="font-mono text-[10px] tracking-[0.15em] text-[#555]">
+              {origin.toUpperCase().slice(0, 14)} → {destination.toUpperCase().slice(0, 14)}
+            </span>
+          </div>
 
-          {/* Simulated map */}
-          <div className="relative rounded-xl border border-border overflow-hidden h-48 bg-secondary/30">
+          {/* Tactical map preview */}
+          <div className="relative bg-[#0A0A0A] border border-[#2A2A2A] overflow-hidden h-48">
+            <div className="absolute inset-0 opacity-[0.06]" style={{
+              backgroundImage: 'linear-gradient(to right, #00FF85 1px, transparent 1px), linear-gradient(to bottom, #00FF85 1px, transparent 1px)',
+              backgroundSize: '32px 32px',
+            }} />
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 192">
-              {/* Safest route - green */}
-              <path
-                d="M 30 160 C 80 140, 120 60, 200 80 S 320 40, 370 32"
-                fill="none"
-                stroke="hsl(var(--safety-green))"
-                strokeWidth="4"
-                opacity="0.8"
-              />
-              {/* Fastest route - red segments */}
-              <path
-                d="M 30 160 C 100 150, 140 100, 200 110 S 300 80, 370 32"
-                fill="none"
-                stroke="hsl(var(--safety-red))"
-                strokeWidth="2.5"
-                strokeDasharray="6 3"
-                opacity="0.6"
-              />
-              {/* Alternate route */}
-              <path
-                d="M 30 160 C 60 120, 100 140, 160 100 S 280 110, 370 32"
-                fill="none"
-                stroke="hsl(var(--safety-yellow))"
-                strokeWidth="2"
-                strokeDasharray="4 4"
-                opacity="0.5"
-              />
-              {/* Warning icons on risky segments */}
-              <circle cx="170" cy="105" r="8" fill="hsl(var(--destructive))" opacity="0.7" />
-              <text x="170" y="109" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">!</text>
-              {/* Origin / destination markers */}
-              <circle cx="30" cy="160" r="6" fill="hsl(var(--primary))" />
-              <circle cx="370" cy="32" r="6" fill="hsl(var(--safety-green))" />
+              <path d="M 30 160 C 80 140, 120 60, 200 80 S 320 40, 370 32"
+                fill="none" stroke={SIG_GREEN} strokeWidth="3" opacity="0.9" />
+              <path d="M 30 160 C 100 150, 140 100, 200 110 S 300 80, 370 32"
+                fill="none" stroke={SIG_RED} strokeWidth="2" strokeDasharray="6 3" opacity="0.7" />
+              <path d="M 30 160 C 60 120, 100 140, 160 100 S 280 110, 370 32"
+                fill="none" stroke={SIG_AMBER} strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
+              <rect x="166" y="101" width="10" height="10" fill={SIG_RED} opacity="0.9" />
+              <text x="171" y="109" textAnchor="middle" fill="#000" fontSize="9" fontWeight="bold">!</text>
+              <rect x="26" y="156" width="8" height="8" fill={SIG_GREEN} />
+              <rect x="366" y="28" width="8" height="8" fill={SIG_GREEN} />
             </svg>
-            <div className="absolute bottom-2 right-2 flex gap-2">
-              <Badge variant="outline" className="text-[9px] bg-card/90 border-safety-green/40 text-safety-green">● Safest</Badge>
-              <Badge variant="outline" className="text-[9px] bg-card/90 border-safety-red/40 text-safety-red">● Fastest</Badge>
-              <Badge variant="outline" className="text-[9px] bg-card/90 border-safety-yellow/40 text-safety-yellow">● Alternate</Badge>
+            <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+              <span className="font-mono text-[9px] tracking-[0.2em] text-[#555]">CORRIDOR_PREVIEW</span>
+              <div className="flex gap-1.5">
+                {[
+                  { l: 'SAFE', c: SIG_GREEN },
+                  { l: 'FAST', c: SIG_RED },
+                  { l: 'ALT',  c: SIG_AMBER },
+                ].map(b => (
+                  <span key={b.l} className="font-mono text-[8px] tracking-[0.15em] flex items-center gap-1" style={{ color: b.c }}>
+                    <span className="w-1.5 h-1.5" style={{ background: b.c }} /> {b.l}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Route cards */}
-          {routes.map(route => (
-            <div
-              key={route.id}
-              className={cn(
-                "p-4 rounded-xl border transition-all",
-                route.isSafest
-                  ? "bg-primary/5 border-primary/30"
-                  : "bg-card border-border hover:border-border"
-              )}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-foreground">{route.name}</h3>
-                    {route.isSafest && (
-                      <Badge className="text-[9px] bg-primary/20 text-primary border-primary/30 hover:bg-primary/20">
-                        SAFEST
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {route.distanceKm} km · {route.travelTime}
-                  </p>
-                </div>
-                {/* Safety score */}
-                <div className={cn("px-3 py-2 rounded-lg border text-center", scoreBg(route.safetyScore))}>
-                  <p className={cn("text-lg font-black", scoreColor(route.safetyScore))}>
-                    {route.safetyScore}
-                  </p>
-                  <p className="text-[9px] text-muted-foreground">/10</p>
-                </div>
-              </div>
-
-              {/* ═══ TIME-SENSITIVE RISK LABEL ═══ */}
-              <div className={cn(
-                "p-2.5 rounded-lg border mb-3 flex items-start gap-2",
-                route.safetyScore >= 7
-                  ? "bg-safety-green/5 border-safety-green/20"
-                  : "bg-safety-orange/5 border-safety-orange/20"
-              )}>
-                <Clock className={cn(
-                  "w-3.5 h-3.5 mt-0.5 shrink-0",
-                  route.safetyScore >= 7 ? "text-safety-green" : "text-safety-orange"
-                )} />
-                <p className="text-[11px] text-foreground leading-relaxed">
-                  {getRouteTimeRiskLabel()}
-                </p>
-              </div>
-
-              {/* Stats row */}
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50">
-                  <AlertTriangle className="w-3.5 h-3.5 text-safety-orange shrink-0" />
-                  <span className="text-xs text-foreground">
-                    <strong>{route.highRiskIntersections}</strong> high-risk intersections
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50">
-                  <MapPin className="w-3.5 h-3.5 text-safety-red shrink-0" />
-                  <span className="text-xs text-foreground">
-                    <strong>{route.activeIncidents}</strong> incidents nearby (4h)
-                  </span>
-                </div>
-              </div>
-
-              {/* Expandable threats */}
-              <button
-                className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setExpandedRoute(expandedRoute === route.id ? null : route.id)}
+          {routes.map(route => {
+            const color = tacticalScoreColor(route.safetyScore);
+            const tag = tacticalScoreTag(route.safetyScore);
+            const expanded = expandedRoute === route.id;
+            return (
+              <div
+                key={route.id}
+                className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 transition-all"
+                style={{ borderLeftColor: color }}
               >
-                {expandedRoute === route.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                Why is this {route.safetyScore < 7 ? 'risky' : 'safe'}?
-              </button>
-              {expandedRoute === route.id && (
-                <div className="mt-2 space-y-1.5 animate-fade-in">
-                  {route.threats.map((t, i) => (
-                    <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-destructive/5 border border-destructive/10">
-                      <AlertTriangle className="w-3.5 h-3.5 text-destructive mt-0.5 shrink-0" />
-                      <span className="text-xs text-foreground">{t}</span>
+                {/* Header strip */}
+                <div className="flex items-stretch border-b border-[#1A1A1A]">
+                  <div className="flex-1 px-3 py-2.5">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-mono text-[9px] tracking-[0.2em]" style={{ color }}>{tag}</span>
+                      {route.isSafest && (
+                        <span className="font-mono text-[9px] tracking-[0.2em] bg-[#00FF85] text-black px-1.5 py-px font-bold">
+                          RECOMMENDED
+                        </span>
+                      )}
                     </div>
-                  ))}
+                    <h3 className="font-[family-name:'Space_Grotesk'] text-sm font-bold text-white">
+                      {route.name}
+                    </h3>
+                    <div className="font-mono text-[10px] tracking-[0.1em] text-[#777] mt-0.5">
+                      {route.distanceKm}KM · {route.travelTime.toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="px-4 py-2.5 border-l border-[#1A1A1A] flex flex-col items-center justify-center min-w-[72px]">
+                    <div className="font-[family-name:'Space_Grotesk'] text-2xl font-bold tabular-nums leading-none" style={{ color }}>
+                      {route.safetyScore.toFixed(1)}
+                    </div>
+                    <div className="font-mono text-[8px] tracking-[0.2em] text-[#555] mt-0.5">SCORE/10</div>
+                  </div>
                 </div>
-              )}
 
-              {/* Navigate button */}
-              <div className="flex gap-2 mt-3">
-                <Button
-                  size="sm"
-                  className={cn("flex-1 text-xs", route.isSafest ? "" : "variant-outline")}
-                  variant={route.isSafest ? "default" : "outline"}
-                  onClick={() => startJourney(route.id)}
+                {/* Time-sensitive label */}
+                <div className="flex items-start gap-2 px-3 py-2 border-b border-[#1A1A1A]">
+                  <Clock className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} />
+                  <p className="font-mono text-[10px] text-[#CCC] leading-relaxed">
+                    {getRouteTimeRiskLabel()}
+                  </p>
+                </div>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-px bg-[#1A1A1A] border-b border-[#1A1A1A]">
+                  <div className="bg-[#0A0A0A] px-3 py-2">
+                    <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">RISK_INTERSECT</div>
+                    <div className="font-[family-name:'Space_Grotesk'] text-base font-bold text-white tabular-nums">
+                      {route.highRiskIntersections}
+                    </div>
+                  </div>
+                  <div className="bg-[#0A0A0A] px-3 py-2">
+                    <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">INC_4H</div>
+                    <div className="font-[family-name:'Space_Grotesk'] text-base font-bold text-white tabular-nums">
+                      {route.activeIncidents}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expandable threats */}
+                <button
+                  onClick={() => setExpandedRoute(expanded ? null : route.id)}
+                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#111] transition-colors border-b border-[#1A1A1A]"
                 >
-                  <Navigation className="w-3.5 h-3.5 mr-1" />
-                  Start Navigation
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-xs"
-                  onClick={() => {
-                    toast.success('Journey sharing link copied', {
-                      description: 'Share this link with anyone to let them track your route.',
-                    });
-                  }}
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                </Button>
+                  <span className="font-mono text-[10px] tracking-[0.15em] text-[#999]">
+                    ▸ {route.safetyScore < 7 ? 'THREAT_DETAILS' : 'CLEAR_FACTORS'}
+                  </span>
+                  {expanded ? <ChevronUp className="w-3 h-3 text-[#555]" /> : <ChevronDown className="w-3 h-3 text-[#555]" />}
+                </button>
+                {expanded && (
+                  <div className="px-3 py-2 space-y-1.5 animate-fade-in border-b border-[#1A1A1A]">
+                    {route.threats.map((t, i) => (
+                      <div key={i} className="flex items-start gap-2 font-mono text-[10px] text-[#CCC]">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} />
+                        <span>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-stretch gap-px bg-[#1A1A1A]">
+                  <button
+                    onClick={() => startJourney(route.id)}
+                    className={cn(
+                      'flex-1 flex items-center justify-center gap-1.5 py-3 font-mono text-[10px] tracking-[0.2em] font-bold transition-colors min-h-[40px]',
+                      route.isSafest
+                        ? 'bg-[#00FF85] text-black hover:bg-[#00CC6A]'
+                        : 'bg-[#0A0A0A] text-white hover:bg-[#111]',
+                    )}
+                  >
+                    <Navigation className="w-3.5 h-3.5" /> ENGAGE
+                  </button>
+                  <button
+                    onClick={() => toast.success('SHARE_LINK · COPIED', { description: 'Live tracking URL on clipboard.' })}
+                    className="px-4 bg-[#0A0A0A] text-[#999] hover:text-[#00FF85] hover:bg-[#111] transition-colors flex items-center justify-center"
+                    aria-label="Share journey"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t border-[#1A1A1A] pt-2 mt-4">
+        <span className="font-mono text-[8px] tracking-[0.2em] text-[#444]">
+          SAPS · MESH · POPIA-COMPLIANT
+        </span>
+        <span className="font-mono text-[8px] tracking-[0.2em] text-[#444]">
+          © ALMIEN {new Date().getFullYear()}
+        </span>
+      </div>
     </div>
   );
 });
