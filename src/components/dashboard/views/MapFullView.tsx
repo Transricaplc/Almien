@@ -1,18 +1,16 @@
 import { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Search, MapPin, Layers, Locate, Plus, Minus, Map, Clock, X, Shield, Flame, Phone, AlertTriangle, Share2, FileWarning, Navigation, WifiOff, Info, LogIn, User, Route } from 'lucide-react';
+import { Search, MapPin, Layers, Locate, Plus, Minus, Map, Clock, X, Shield, Flame, Phone, AlertTriangle, Share2, FileWarning, Navigation, WifiOff, Info, LogIn, User, Route, Crosshair, Activity } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import SuburbSearchInput from '../SuburbSearchInput';
 import type { ViewId } from '../AlmienDashboard';
 import ZoneBottomSheet, { type ZoneData } from '../widgets/ZoneBottomSheet';
 import { getHourlyRisk, getRiskAtSlot, getCurrentSlotIndex, getMapInsightText } from '@/data/timeAnalyticsData';
 import { areasData, type AreaData } from '@/data/emergencyContacts';
-import { getSafetyColor } from '@/lib/utils';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlmienStore } from '@/stores/almienStore';
-import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 interface Props {
@@ -20,20 +18,40 @@ interface Props {
   onNavigate: (view: ViewId) => void;
 }
 
+/* ───────────── Tactical risk palette ───────────── */
+const SIG_GREEN = '#00FF85';
+const SIG_AMBER = '#FF9500';
+const SIG_RED   = '#FF3B30';
+const SIG_BLUE  = '#00B4D8';
+
+function tacticalRiskColor(score: number) {
+  if (score >= 7) return SIG_GREEN;
+  if (score >= 5) return SIG_AMBER;
+  if (score >= 3.5) return '#FF6B00';
+  return SIG_RED;
+}
+
+function tacticalRiskTag(score: number): string {
+  if (score >= 7) return 'CLEAR';
+  if (score >= 5) return 'CAUTION';
+  if (score >= 3.5) return 'ELEVATED';
+  return 'CRITICAL';
+}
+
 const crimeTypes = [
-  { id: 'all', label: 'All' },
-  { id: 'theft', label: 'Theft' },
-  { id: 'robbery', label: 'Robbery' },
-  { id: 'assault', label: 'Assault' },
-  { id: 'gbv', label: 'GBV' },
-  { id: 'drugs', label: 'Drugs' },
-  { id: 'hijacking', label: 'Hijacking' },
+  { id: 'all',       label: 'ALL' },
+  { id: 'theft',     label: 'THEFT' },
+  { id: 'robbery',   label: 'ROBBERY' },
+  { id: 'assault',   label: 'ASSAULT' },
+  { id: 'gbv',       label: 'GBV' },
+  { id: 'drugs',     label: 'DRUGS' },
+  { id: 'hijacking', label: 'HIJACK' },
 ];
 
 const presets = [
-  { label: 'Now', slot: -1 },
-  { label: 'Morning Rush', slot: 14 },
-  { label: 'Evening Risk', slot: 34 },
+  { label: 'NOW',     slot: -1 },
+  { label: 'AM_RUSH', slot: 14 },
+  { label: 'PM_RISK', slot: 34 },
 ];
 
 const mockZones: ZoneData[] = [
@@ -41,9 +59,9 @@ const mockZones: ZoneData[] = [
     id: 'z1', name: 'Sea Point', precinct: 'Atlantic Seaboard',
     riskLevel: 'elevated',
     topCrimes: [
-      { type: 'Theft', icon: '🔵', count: 34 },
-      { type: 'Robbery', icon: '🔴', count: 18 },
-      { type: 'Vehicle Crime', icon: '🟠', count: 12 },
+      { type: 'Theft', icon: '◆', count: 34 },
+      { type: 'Robbery', icon: '●', count: 18 },
+      { type: 'Vehicle Crime', icon: '▲', count: 12 },
     ],
     peakWindow: '17:00–21:00',
   },
@@ -51,9 +69,9 @@ const mockZones: ZoneData[] = [
     id: 'z2', name: 'Cape Town CBD', precinct: 'City Centre',
     riskLevel: 'high',
     topCrimes: [
-      { type: 'Robbery', icon: '🔴', count: 52 },
-      { type: 'Theft', icon: '🔵', count: 41 },
-      { type: 'Assault', icon: '🟡', count: 28 },
+      { type: 'Robbery', icon: '●', count: 52 },
+      { type: 'Theft', icon: '◆', count: 41 },
+      { type: 'Assault', icon: '■', count: 28 },
     ],
     peakWindow: '18:00–22:00',
   },
@@ -61,64 +79,51 @@ const mockZones: ZoneData[] = [
     id: 'z3', name: 'Camps Bay', precinct: 'Atlantic Seaboard',
     riskLevel: 'low',
     topCrimes: [
-      { type: 'Theft', icon: '🔵', count: 8 },
-      { type: 'Vehicle Crime', icon: '🟠', count: 4 },
-      { type: 'Property', icon: '⚫', count: 3 },
+      { type: 'Theft', icon: '◆', count: 8 },
+      { type: 'Vehicle Crime', icon: '▲', count: 4 },
+      { type: 'Property', icon: '□', count: 3 },
     ],
     peakWindow: '20:00–23:00',
   },
 ];
 
 const zoneRiskFill: Record<string, string> = {
-  low: 'bg-safety-green/10 border-safety-green/30',
-  elevated: 'bg-safety-yellow/10 border-safety-yellow/30',
-  high: 'bg-safety-orange/10 border-safety-orange/30',
-  critical: 'bg-safety-red/20 border-safety-red/40',
+  low:      'border-[color:var(--sig-green,#00FF85)] bg-[color:rgba(0,255,133,0.06)]',
+  elevated: 'border-[color:var(--sig-amber,#FF9500)] bg-[color:rgba(255,149,0,0.06)]',
+  high:     'border-[color:var(--sig-red,#FF6B00)] bg-[color:rgba(255,107,0,0.06)]',
+  critical: 'border-[color:var(--sig-red,#FF3B30)] bg-[color:rgba(255,59,48,0.10)]',
 };
 
-function scoreColor(s: number) {
-  if (s >= 7) return 'text-safety-green';
-  if (s >= 5) return 'text-safety-yellow';
-  return 'text-safety-red';
-}
-
 /* ═══════════════════════════════════════════
-   FIRST VISIT MODAL
+   FIRST VISIT — tactical boot card
    ═══════════════════════════════════════════ */
 const FirstVisitModal = memo(({ onClose }: { onClose: () => void }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-    <div className="bg-[hsl(var(--surface-01))] border border-border-subtle rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-accent-safe/20 flex items-center justify-center">
-          <Shield className="w-6 h-6 text-accent-safe" />
-        </div>
-        <div>
-          <h2 className="text-lg font-black text-foreground">Welcome to Almien</h2>
-          <p className="text-xs text-muted-foreground">Urban Safety Intelligence</p>
-        </div>
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+    <div className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 border-l-[#00FF85] max-w-sm w-full p-6 shadow-2xl">
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">SYS_BOOT // MAP_LAYER</span>
+        <span className="font-mono text-[10px] tracking-[0.2em] text-[#555]">v2.0</span>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-        Almien helps you navigate safer in South African cities — powered by 
-        <span className="text-foreground font-semibold"> SAPS crime statistics</span> and 
-        <span className="text-foreground font-semibold"> verified community reports</span>.
+      <h2 className="font-[family-name:'Space_Grotesk'] text-2xl font-bold text-white tracking-tight mb-1">
+        ALMIEN<span className="text-[#00FF85]">.</span>MAP
+      </h2>
+      <p className="font-mono text-[11px] text-[#999] mb-5 leading-relaxed">
+        Tactical overlay for South African urban risk. SAPS feed + verified citizen mesh.
       </p>
-      <div className="space-y-2 mb-5">
+      <div className="space-y-2 mb-5 border-t border-[#1A1A1A] pt-3">
         {[
-          { icon: MapPin, text: 'Real-time safety scores for any suburb' },
-          { icon: AlertTriangle, text: 'One-tap SOS emergency calls' },
-          { icon: Navigation, text: 'Safe route planning & live alerts' },
-        ].map((item, i) => (
-          <div key={i} className="flex items-center gap-2.5 text-xs text-foreground">
-            <item.icon className="w-4 h-4 text-accent-safe shrink-0" />
-            <span>{item.text}</span>
+          { tag: 'SCORE', text: 'Real-time suburb safety score' },
+          { tag: 'SOS',   text: 'One-tap SAPS / EMS / Fire' },
+          { tag: 'ROUTE', text: 'Time-aware safe path planner' },
+        ].map((item) => (
+          <div key={item.tag} className="flex items-baseline gap-3 font-mono text-[11px]">
+            <span className="text-[#00FF85] tracking-[0.15em] w-12 shrink-0">{item.tag}</span>
+            <span className="text-[#CCC]">{item.text}</span>
           </div>
         ))}
       </div>
-      <button
-        onClick={onClose}
-        className="w-full py-3 rounded-xl bg-accent-safe text-text-inverse font-bold text-sm active:scale-95 transition-transform min-h-[48px]"
-      >
-        Get Started
+      <button onClick={onClose} className="btn-primary uppercase tracking-[0.1em]">
+        ACKNOWLEDGE → ENGAGE
       </button>
     </div>
   </div>
@@ -126,53 +131,53 @@ const FirstVisitModal = memo(({ onClose }: { onClose: () => void }) => (
 FirstVisitModal.displayName = 'FirstVisitModal';
 
 /* ═══════════════════════════════════════════
-   LOADING SKELETON
+   LOADING — boot sequence
    ═══════════════════════════════════════════ */
 const MapLoadingSkeleton = memo(() => (
-  <div className="absolute inset-0 z-40 bg-background/80 backdrop-blur flex flex-col items-center justify-center gap-4 animate-fade-in">
-    <div className="space-y-3 w-64">
-      <Skeleton className="h-4 w-48 mx-auto" />
-      <Skeleton className="h-32 w-full rounded-xl" />
-      <div className="flex gap-2">
-        <Skeleton className="h-8 flex-1 rounded-lg" />
-        <Skeleton className="h-8 flex-1 rounded-lg" />
-        <Skeleton className="h-8 flex-1 rounded-lg" />
-      </div>
-      <Skeleton className="h-3 w-40 mx-auto" />
+  <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center gap-4 animate-fade-in">
+    <div className="font-mono text-[10px] tracking-[0.25em] text-[#00FF85] animate-pulse">
+      ◉ ACQUIRING_TILES
     </div>
-    <p className="text-xs text-muted-foreground font-mono animate-pulse">Loading safety data…</p>
+    <div className="w-48 h-px bg-[#1A1A1A] overflow-hidden">
+      <div className="h-full bg-[#00FF85] animate-[data-stream_1.4s_linear_infinite]" style={{ width: '40%' }} />
+    </div>
+    <div className="font-mono text-[9px] tracking-[0.2em] text-[#555]">
+      SAPS · CITIZEN · WEATHER · LOAD-SHED
+    </div>
   </div>
 ));
 MapLoadingSkeleton.displayName = 'MapLoadingSkeleton';
 
 /* ═══════════════════════════════════════════
-   OFFLINE BANNER
+   OFFLINE STATUS LINE
    ═══════════════════════════════════════════ */
 const OfflineBanner = memo(() => (
-  <div className="absolute top-16 left-3 right-3 z-35 animate-fade-in">
-    <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-safety-orange/20 border border-safety-orange/40 backdrop-blur-xl">
-      <WifiOff className="w-4 h-4 text-safety-orange shrink-0" />
-      <span className="text-xs font-semibold text-foreground">You're offline — showing cached data</span>
+  <div className="absolute top-[60px] left-3 right-3 z-[35] animate-fade-in">
+    <div className="flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] border border-[#FF9500]/40 border-l-2 border-l-[#FF9500]">
+      <WifiOff className="w-3.5 h-3.5 text-[#FF9500]" />
+      <span className="font-mono text-[10px] tracking-[0.15em] text-[#FF9500]">
+        OFFLINE_MODE · SHOWING_CACHED_TILES
+      </span>
     </div>
   </div>
 ));
 OfflineBanner.displayName = 'OfflineBanner';
 
 /* ═══════════════════════════════════════════
-   GUEST LOGIN BAR
+   GUEST STATUS LINE
    ═══════════════════════════════════════════ */
 const GuestBar = memo(({ onLogin }: { onLogin: () => void }) => (
-  <div className="absolute top-[68px] left-3 right-3 z-25 animate-fade-in">
-    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[hsl(var(--surface-01))]/90 backdrop-blur-xl border border-border-subtle">
+  <div className="absolute top-[60px] left-3 right-3 z-[25] animate-fade-in">
+    <div className="flex items-center justify-between px-3 py-2 bg-[#0A0A0A]/95 backdrop-blur border border-[#2A2A2A]">
       <div className="flex items-center gap-2">
-        <User className="w-4 h-4 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">Guest mode — limited features</span>
+        <span className="w-1.5 h-1.5 bg-[#555]" />
+        <span className="font-mono text-[10px] tracking-[0.15em] text-[#777]">GUEST · LIMITED_FEED</span>
       </div>
       <button
         onClick={onLogin}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-safe text-text-inverse text-xs font-bold min-h-[32px] active:scale-95 transition-transform"
+        className="flex items-center gap-1.5 px-2.5 py-1 bg-[#00FF85] text-black font-mono text-[10px] tracking-[0.15em] font-bold hover:bg-[#00CC6A] transition-colors min-h-[28px]"
       >
-        <LogIn className="w-3 h-3" /> Sign In
+        <LogIn className="w-3 h-3" /> AUTH
       </button>
     </div>
   </div>
@@ -180,280 +185,101 @@ const GuestBar = memo(({ onLogin }: { onLogin: () => void }) => (
 GuestBar.displayName = 'GuestBar';
 
 /* ═══════════════════════════════════════════
-   LOCATE ME RISK POPUP
+   LOCATE-ME RISK READOUT
    ═══════════════════════════════════════════ */
-const RiskPopup = memo(({ area, onClose }: { area: AreaData; onClose: () => void }) => (
-  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 animate-fade-in">
-    <div className="bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-2xl p-4 w-64">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Locate className="w-4 h-4 text-accent-safe" />
-          <span className="text-xs font-bold text-foreground uppercase tracking-wider">Your Location</span>
+const RiskPopup = memo(({ area, onClose }: { area: AreaData; onClose: () => void }) => {
+  const score10 = area.safetyScore / 10;
+  const color = tacticalRiskColor(score10);
+  const tag = tacticalRiskTag(score10);
+  return (
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 animate-fade-in">
+      <div className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 w-72 p-4" style={{ borderLeftColor: color }}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Crosshair className="w-3.5 h-3.5" style={{ color }} />
+            <span className="font-mono text-[10px] tracking-[0.2em] text-white">FIX // YOU_ARE_HERE</span>
+          </div>
+          <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#777] hover:text-white">
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
-        <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-02 min-w-[28px] min-h-[28px] flex items-center justify-center">
-          <X className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      </div>
-      <div className="text-center py-3">
-        <div className="text-4xl font-black tabular-nums mb-1" style={{ color: getSafetyColor(area.safetyScore) }}>
-          {area.safetyScore}
+        <div className="flex items-baseline gap-3 mb-3">
+          <div className="font-[family-name:'Space_Grotesk'] text-5xl font-bold tabular-nums leading-none" style={{ color }}>
+            {area.safetyScore}
+          </div>
+          <div>
+            <div className="font-mono text-[10px] tracking-[0.15em]" style={{ color }}>{tag}</div>
+            <div className="text-sm font-bold text-white">{area.name}</div>
+          </div>
         </div>
-        <div className="text-sm font-bold text-foreground">{area.name}</div>
-        <div className="text-xs text-muted-foreground mt-0.5">
-          {area.riskLevel === 'critical' ? '⚠️ High risk — stay alert' :
-           area.riskLevel === 'high' ? '⚠️ Elevated risk area' :
-           area.riskLevel === 'moderate' ? 'Moderate — normal caution' :
-           '✅ Low risk area'}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-xs mt-1">
-        <div className="bg-surface-02 rounded-lg p-2 text-center">
-          <div className="text-muted-foreground">Incidents</div>
-          <div className="font-bold text-foreground">{area.incidents24h}</div>
-        </div>
-        <div className="bg-surface-02 rounded-lg p-2 text-center">
-          <div className="text-muted-foreground">CCTV</div>
-          <div className="font-bold text-foreground">{area.camerasCoverage}%</div>
+        <div className="grid grid-cols-2 gap-px bg-[#1A1A1A]">
+          <div className="bg-[#0A0A0A] p-2.5">
+            <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">INCIDENTS_24H</div>
+            <div className="font-[family-name:'Space_Grotesk'] text-lg font-bold text-white tabular-nums">{area.incidents24h}</div>
+          </div>
+          <div className="bg-[#0A0A0A] p-2.5">
+            <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">CCTV_COV</div>
+            <div className="font-[family-name:'Space_Grotesk'] text-lg font-bold text-white tabular-nums">{area.camerasCoverage}<span className="text-xs text-[#555]">%</span></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-));
+  );
+});
 RiskPopup.displayName = 'RiskPopup';
 
 /* ═══════════════════════════════════════════
-   ENHANCED SOS DOCK
-   ═══════════════════════════════════════════ */
-const enhancedSosButtons = [
-  { label: 'SAPS', number: '10111', display: '10111', color: 'bg-blue-600', icon: Shield, action: 'call' as const },
-  { label: 'FIRE', number: '0214807700', display: '021 480 7700', color: 'bg-red-600', icon: Flame, action: 'call' as const },
-  { label: 'AMBULANCE', number: '10177', display: '10177', color: 'bg-emerald-600', icon: Phone, action: 'call' as const },
-] as const;
-
-const MapSOSDock = memo(({ onReport, onSafeRoute }: { onReport: () => void; onSafeRoute: () => void }) => {
-  const isMobile = useIsMobile();
-
-  const handleShareLocation = useCallback(() => {
-    navigator.vibrate?.([50]);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const url = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
-          if (navigator.share) {
-            navigator.share({ title: 'My Live Location — Almien SOS', url });
-          } else {
-            navigator.clipboard.writeText(url);
-            toast.success('Location link copied to clipboard');
-          }
-        },
-        () => toast.error('Could not get location')
-      );
-    }
-  }, []);
-
-  return (
-    <div className={cn(
-      "absolute z-30 left-1/2 -translate-x-1/2 pointer-events-auto",
-      "bottom-[270px] md:bottom-[240px]"
-    )}>
-      <div className={cn(
-        "flex flex-col items-center gap-2 px-3 py-3 rounded-2xl",
-        "bg-gradient-to-b from-red-600/95 via-orange-600/95 to-red-700/95",
-        "backdrop-blur-xl border border-white/20 shadow-[0_0_30px_rgba(239,68,68,0.4)]",
-        "animate-pulse-subtle"
-      )}>
-        {/* SOS label */}
-        <div className="flex items-center gap-2 w-full justify-center border-b border-white/15 pb-1.5">
-          <AlertTriangle className="w-4 h-4 text-white" />
-          <span className="text-[10px] font-black text-white tracking-[0.2em]">SOS EMERGENCY</span>
-        </div>
-
-        {/* Call buttons row */}
-        <div className="flex items-center gap-2">
-          {enhancedSosButtons.map(btn => {
-            const Icon = btn.icon;
-            return (
-              <a
-                key={btn.label}
-                href={`tel:${btn.number}`}
-                className={cn(
-                  "flex flex-col items-center justify-center rounded-xl transition-transform active:scale-90",
-                  btn.color,
-                  isMobile ? "min-w-[68px] min-h-[60px] px-2.5 py-2" : "min-w-[60px] min-h-[50px] px-2 py-1.5"
-                )}
-                aria-label={`Call ${btn.label} at ${btn.display}`}
-                onClick={() => navigator.vibrate?.([100, 50, 200])}
-              >
-                <Icon className="w-4 h-4 text-white mb-0.5" strokeWidth={2.5} />
-                <span className="text-[9px] font-black text-white tracking-wide">{btn.label}</span>
-                <span className="text-[7px] font-mono text-white/80">{btn.display}</span>
-              </a>
-            );
-          })}
-        </div>
-
-        {/* Action buttons row */}
-        <div className="flex items-center gap-1.5 w-full">
-          <button
-            onClick={handleShareLocation}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/15 border border-white/20 active:scale-95 transition-transform min-h-[40px]"
-          >
-            <Share2 className="w-3.5 h-3.5 text-white" />
-            <span className="text-[9px] font-bold text-white">Share Location</span>
-          </button>
-          <button
-            onClick={() => { navigator.vibrate?.([15]); onReport(); }}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/15 border border-white/20 active:scale-95 transition-transform min-h-[40px]"
-          >
-            <FileWarning className="w-3.5 h-3.5 text-white" />
-            <span className="text-[9px] font-bold text-white">Report</span>
-          </button>
-          <button
-            onClick={() => { navigator.vibrate?.([15]); onSafeRoute(); }}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/15 border border-white/20 active:scale-95 transition-transform min-h-[40px]"
-          >
-            <Navigation className="w-3.5 h-3.5 text-white" />
-            <span className="text-[9px] font-bold text-white">Safe Route</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-});
-MapSOSDock.displayName = 'MapSOSDock';
-
-/* ═══════════════════════════════════════════
-   MAP SEARCH — functional suburb autocomplete
-   ═══════════════════════════════════════════ */
-const MapSearchBar = memo(({ onSelectArea }: { onSelectArea: (area: AreaData) => void }) => {
-  const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
-
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    return areasData.filter(a =>
-      a.name.toLowerCase().includes(q) || a.id.includes(q)
-    ).slice(0, 6);
-  }, [query]);
-
-  const handleSelect = useCallback((area: AreaData) => {
-    onSelectArea(area);
-    setQuery(area.name);
-    setFocused(false);
-  }, [onSelectArea]);
-
-  return (
-    <div className="absolute top-3 left-3 right-3 z-30">
-      <div className={cn(
-        "relative rounded-2xl transition-all duration-200",
-        "bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border",
-        focused ? "border-accent-safe shadow-lg shadow-accent-safe/10" : "border-border-subtle"
-      )}>
-        <div className="flex items-center px-4 h-12 md:h-11">
-          <MapPin className={cn(
-            "w-5 h-5 mr-3 shrink-0 transition-colors",
-            focused ? "text-accent-safe" : "text-muted-foreground"
-          )} />
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setTimeout(() => setFocused(false), 200)}
-            placeholder="Search suburb, area, address or landmark..."
-            className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm font-medium"
-          />
-          {query && (
-            <button
-              onClick={() => { setQuery(''); setFocused(true); }}
-              className="p-1.5 rounded-lg hover:bg-surface-02 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Autocomplete dropdown */}
-      {focused && results.length > 0 && (
-        <div className="mt-2 rounded-2xl bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border border-border-subtle shadow-2xl overflow-hidden animate-fade-in max-h-[50vh] overflow-y-auto">
-          {results.map(area => (
-            <button
-              key={area.id}
-              onClick={() => handleSelect(area)}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-02 transition-colors text-left min-h-[52px]"
-            >
-              <div className="w-8 h-8 rounded-lg bg-surface-02 flex items-center justify-center shrink-0">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-foreground text-sm truncate">{area.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {area.incidents24h} incidents today · {area.camerasCoverage}% CCTV
-                </div>
-              </div>
-              <div
-                className="text-lg font-black tabular-nums shrink-0"
-                style={{ color: getSafetyColor(area.safetyScore) }}
-              >
-                {area.safetyScore}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* No results */}
-      {focused && query.length > 1 && results.length === 0 && (
-        <div className="mt-2 rounded-2xl bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border border-border-subtle shadow-2xl p-4 text-center animate-fade-in">
-          <MapPin className="w-6 h-6 text-muted-foreground mx-auto mb-1.5" />
-          <div className="text-sm text-muted-foreground">No areas found for "{query}"</div>
-        </div>
-      )}
-    </div>
-  );
-});
-MapSearchBar.displayName = 'MapSearchBar';
-
-/* ═══════════════════════════════════════════
-   SELECTED AREA CARD — compact safety summary with trend
+   SELECTED AREA — tactical readout strip
    ═══════════════════════════════════════════ */
 const SelectedAreaOverlay = memo(({ area, onClose }: { area: AreaData; onClose: () => void }) => {
-  // Mock trend data
-  const trend = area.safetyScore > 60 ? 'improving' : area.safetyScore > 40 ? 'stable' : 'worsening';
-  const trendArrow = trend === 'improving' ? '↑' : trend === 'worsening' ? '↓' : '→';
-  const trendColor = trend === 'improving' ? 'text-safety-green' : trend === 'worsening' ? 'text-safety-red' : 'text-safety-yellow';
+  const score10 = area.safetyScore / 10;
+  const color = tacticalRiskColor(score10);
+  const tag = tacticalRiskTag(score10);
+  const trend = area.safetyScore > 60 ? '↑' : area.safetyScore > 40 ? '→' : '↓';
+  const trendLabel = area.safetyScore > 60 ? 'IMPROVING' : area.safetyScore > 40 ? 'STABLE' : 'DEGRADING';
 
   return (
-    <div className="absolute top-[68px] left-3 right-3 z-25 animate-fade-in">
-      <div className="rounded-2xl bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border border-border-subtle shadow-2xl p-3">
-        <div className="flex items-center justify-between mb-2">
+    <div className="absolute top-[60px] left-3 right-3 z-[25] animate-fade-in">
+      <div className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2" style={{ borderLeftColor: color }}>
+        <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5 border-b border-[#1A1A1A]">
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-accent-safe" />
-            <span className="font-bold text-foreground text-sm">{area.name}</span>
+            <span className="font-mono text-[9px] tracking-[0.2em]" style={{ color }}>{tag}</span>
+            <span className="font-[family-name:'Space_Grotesk'] text-sm font-bold text-white">{area.name}</span>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-02 min-w-[32px] min-h-[32px] flex items-center justify-center">
-            <X className="w-4 h-4 text-muted-foreground" />
+          <button onClick={onClose} className="w-6 h-6 flex items-center justify-center text-[#777] hover:text-white">
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-black tabular-nums" style={{ color: getSafetyColor(area.safetyScore) }}>
+        <div className="flex items-stretch">
+          <div className="px-4 py-2.5 border-r border-[#1A1A1A] flex flex-col items-center justify-center min-w-[80px]">
+            <div className="font-[family-name:'Space_Grotesk'] text-3xl font-bold tabular-nums leading-none" style={{ color }}>
               {area.safetyScore}
             </div>
-            <div className={cn("text-xs font-bold", trendColor)}>
-              {trendArrow} {trend}
+            <div className="font-mono text-[9px] tracking-[0.15em] text-[#555] mt-1">SCORE/100</div>
+          </div>
+          <div className="flex-1 grid grid-cols-2 gap-px bg-[#1A1A1A]">
+            <div className="bg-[#0A0A0A] px-3 py-2">
+              <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">INC_24H</div>
+              <div className="font-[family-name:'Space_Grotesk'] text-base font-bold text-white tabular-nums">{area.incidents24h}</div>
+            </div>
+            <div className="bg-[#0A0A0A] px-3 py-2">
+              <div className="font-mono text-[9px] tracking-[0.15em] text-[#555]">TREND</div>
+              <div className="font-[family-name:'Space_Grotesk'] text-base font-bold tabular-nums" style={{ color }}>
+                {trend} <span className="text-[10px] font-mono">{trendLabel}</span>
+              </div>
             </div>
           </div>
-          <div className="flex-1 grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-muted-foreground">Incidents:</span> <span className="font-bold text-foreground">{area.incidents24h}</span></div>
-            <div><span className="text-muted-foreground">CCTV:</span> <span className="font-bold text-foreground">{area.camerasCoverage}%</span></div>
-            <a href={`tel:${area.policeNumber.replace(/\s/g, '')}`} className="text-accent-safe font-mono font-bold truncate col-span-2 min-h-[32px] flex items-center">
-              🛡 {area.policeStation} — {area.policeNumber}
-            </a>
-          </div>
         </div>
+        <a
+          href={`tel:${area.policeNumber.replace(/\s/g, '')}`}
+          className="flex items-center justify-between px-3 py-2 border-t border-[#1A1A1A] hover:bg-[#111] transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Shield className="w-3 h-3 text-[#00B4D8]" />
+            <span className="font-mono text-[10px] tracking-[0.15em] text-[#999]">{area.policeStation}</span>
+          </div>
+          <span className="font-mono text-[10px] tracking-[0.15em] text-[#00FF85] font-bold">→ {area.policeNumber}</span>
+        </a>
       </div>
     </div>
   );
@@ -461,17 +287,34 @@ const SelectedAreaOverlay = memo(({ area, onClose }: { area: AreaData; onClose: 
 SelectedAreaOverlay.displayName = 'SelectedAreaOverlay';
 
 /* ═══════════════════════════════════════════
-   DATA SOURCES FOOTER
+   SCANLINE / GRID OVERLAY
    ═══════════════════════════════════════════ */
-const DataSourcesFooter = memo(() => (
-  <div className="flex items-center justify-center gap-1.5 py-1.5 px-3">
-    <Info className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-    <span className="text-[8px] text-muted-foreground/60 font-mono">
-      Data: SAPS crime stats + verified community reports | Privacy protected | © Almien {new Date().getFullYear()}
-    </span>
+const TacticalGrid = memo(() => (
+  <div className="absolute inset-0 pointer-events-none z-[5]" aria-hidden>
+    {/* grid */}
+    <div
+      className="absolute inset-0 opacity-[0.06]"
+      style={{
+        backgroundImage:
+          'linear-gradient(to right, #00FF85 1px, transparent 1px), linear-gradient(to bottom, #00FF85 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+      }}
+    />
+    {/* scanline */}
+    <div
+      className="absolute inset-0 opacity-[0.04]"
+      style={{
+        backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 2px, #00FF85 2px, #00FF85 3px)',
+      }}
+    />
+    {/* corner crosshairs */}
+    <div className="absolute top-2 left-2 w-3 h-3 border-l border-t border-[#00FF85]/40" />
+    <div className="absolute top-2 right-2 w-3 h-3 border-r border-t border-[#00FF85]/40" />
+    <div className="absolute bottom-2 left-2 w-3 h-3 border-l border-b border-[#00FF85]/40" />
+    <div className="absolute bottom-2 right-2 w-3 h-3 border-r border-b border-[#00FF85]/40" />
   </div>
 ));
-DataSourcesFooter.displayName = 'DataSourcesFooter';
+TacticalGrid.displayName = 'TacticalGrid';
 
 /* ═══════════════════════════════════════════
    MAIN VIEW
@@ -495,13 +338,11 @@ const MapFullView = memo(({ onNavigate }: Props) => {
     return !localStorage.getItem('almien-map-visited');
   });
 
-  // Simulate map data loading
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 1200);
+    const t = setTimeout(() => setIsLoading(false), 1100);
     return () => clearTimeout(t);
   }, []);
 
-  // Online/offline detection
   useEffect(() => {
     const onOnline = () => setIsOffline(false);
     const onOffline = () => setIsOffline(true);
@@ -520,7 +361,7 @@ const MapFullView = memo(({ onNavigate }: Props) => {
   }, []);
 
   const handleSaveZone = useCallback((zone: ZoneData) => {
-    toast.success(`${zone.name} saved to your areas`);
+    toast.success(`${zone.name} → SAVED`);
   }, []);
 
   const handleSelectArea = useCallback((area: AreaData) => {
@@ -540,27 +381,26 @@ const MapFullView = memo(({ onNavigate }: Props) => {
         risk_type: area.riskLevel,
       }
     });
-    toast.success(`Viewing ${area.name} — Safety ${area.safetyScore}/100`);
+    toast.success(`LOCK · ${area.name} · ${area.safetyScore}/100`);
   }, [selectEntity]);
 
   const handleLocateMe = useCallback(() => {
     navigator.vibrate?.([20]);
     if (!navigator.geolocation) {
-      toast.error('Geolocation not supported');
+      toast.error('GEO_API · UNAVAILABLE');
       return;
     }
-    toast.loading('Detecting location…');
+    toast.loading('ACQUIRING_FIX…');
     navigator.geolocation.getCurrentPosition(
       () => {
         toast.dismiss();
-        // Find nearest area (mock: pick based on random for demo, or first moderate+)
         const nearest = areasData.find(a => a.riskLevel === 'moderate') || areasData[0];
         setRiskPopupArea(nearest);
-        toast.success(`Located near ${nearest.name}`);
+        toast.success(`FIX · ${nearest.name}`);
       },
       () => {
         toast.dismiss();
-        toast.error('Could not detect location');
+        toast.error('FIX · FAILED');
       },
       { timeout: 8000 }
     );
@@ -572,82 +412,114 @@ const MapFullView = memo(({ onNavigate }: Props) => {
   }, []);
 
   return (
-    <div className="relative -mx-4 -my-6 sm:-mx-12 sm:-my-10" style={{ height: 'calc(100vh - 100px)' }}>
-      {/* First visit modal */}
+    <div className="relative -mx-4 -my-6 sm:-mx-12 sm:-my-10 bg-black text-white" style={{ height: 'calc(100vh - 100px)' }}>
       {showFirstVisit && <FirstVisitModal onClose={handleCloseFirstVisit} />}
-
-      {/* Loading skeleton */}
       {isLoading && <MapLoadingSkeleton />}
 
-      {/* Map background with heatmap overlay */}
-      <div className="absolute inset-0 bg-secondary/30 flex items-center justify-center">
-        <div className="absolute inset-0 opacity-10" style={{
-          background: 'radial-gradient(circle at 45% 45%, hsl(var(--primary) / 0.4), transparent 50%)'
-        }} />
-        {/* Dynamic heatmap gradient based on time */}
-        <div className="absolute inset-0 opacity-20 transition-all duration-300" style={{
-          background: riskAtSlot.score < 5
-            ? 'radial-gradient(circle at 50% 45%, hsl(var(--safety-red) / 0.5), transparent 55%)'
-            : riskAtSlot.score < 7
-              ? 'radial-gradient(circle at 50% 45%, hsl(var(--safety-yellow) / 0.4), transparent 55%)'
-              : 'radial-gradient(circle at 50% 45%, hsl(var(--safety-green) / 0.3), transparent 55%)'
-        }} />
-
-        {/* Safety heatmap grid overlay — placeholder zones */}
+      {/* ═══ MAP CANVAS — true black with gradient threat zones ═══ */}
+      <div className="absolute inset-0 bg-black overflow-hidden">
+        {/* Heatmap zones */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Red zone — high risk */}
-          <div className="absolute rounded-full opacity-25 bg-safety-red blur-2xl" style={{ top: '20%', left: '30%', width: '20%', height: '20%' }} />
-          {/* Yellow zone — moderate */}
-          <div className="absolute rounded-full opacity-20 bg-safety-yellow blur-2xl" style={{ top: '40%', left: '55%', width: '25%', height: '18%' }} />
-          {/* Green zone — safe */}
-          <div className="absolute rounded-full opacity-15 bg-safety-green blur-2xl" style={{ top: '60%', left: '20%', width: '22%', height: '22%' }} />
-          {/* Another red zone */}
-          <div className="absolute rounded-full opacity-20 bg-safety-red blur-3xl" style={{ top: '55%', right: '10%', width: '18%', height: '15%' }} />
+          <div
+            className="absolute transition-all duration-500"
+            style={{
+              top: '20%', left: '28%', width: '24%', height: '22%',
+              background: `radial-gradient(circle, ${SIG_RED}40 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+            }}
+          />
+          <div
+            className="absolute transition-all duration-500"
+            style={{
+              top: '40%', left: '52%', width: '28%', height: '20%',
+              background: `radial-gradient(circle, ${SIG_AMBER}30 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+            }}
+          />
+          <div
+            className="absolute transition-all duration-500"
+            style={{
+              top: '58%', left: '18%', width: '24%', height: '24%',
+              background: `radial-gradient(circle, ${SIG_GREEN}25 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+            }}
+          />
+          <div
+            className="absolute transition-all duration-500"
+            style={{
+              top: '52%', right: '8%', width: '20%', height: '18%',
+              background: `radial-gradient(circle, ${SIG_RED}30 0%, transparent 70%)`,
+              filter: 'blur(24px)',
+            }}
+          />
         </div>
 
-        {/* Zone polygon overlays */}
+        <TacticalGrid />
+
+        {/* Zone polygon overlays — sharp, square */}
         {showZones && (
-          <div className="absolute inset-0 pointer-events-auto">
-            <button
-              onClick={() => setSelectedZone(mockZones[0])}
-              className={cn("absolute rounded-xl border-2 transition-all cursor-pointer hover:opacity-80", zoneRiskFill[mockZones[0].riskLevel])}
-              style={{ top: '25%', left: '15%', width: '28%', height: '30%' }}
-              title={mockZones[0].name}
-            >
-              <span className="absolute top-1 left-2 text-[9px] font-bold text-foreground/60">{mockZones[0].name}</span>
-            </button>
-            <button
-              onClick={() => setSelectedZone(mockZones[1])}
-              className={cn("absolute rounded-xl border-2 transition-all cursor-pointer hover:opacity-80", zoneRiskFill[mockZones[1].riskLevel])}
-              style={{ top: '20%', left: '45%', width: '30%', height: '35%' }}
-              title={mockZones[1].name}
-            >
-              <span className="absolute top-1 left-2 text-[9px] font-bold text-foreground/60">{mockZones[1].name}</span>
-            </button>
-            <button
-              onClick={() => setSelectedZone(mockZones[2])}
-              className={cn("absolute rounded-xl border-2 transition-all cursor-pointer hover:opacity-80", zoneRiskFill[mockZones[2].riskLevel])}
-              style={{ top: '55%', left: '10%', width: '25%', height: '25%' }}
-              title={mockZones[2].name}
-            >
-              <span className="absolute top-1 left-2 text-[9px] font-bold text-foreground/60">{mockZones[2].name}</span>
-            </button>
+          <div className="absolute inset-0 pointer-events-auto z-10">
+            {[
+              { z: mockZones[0], top: '24%', left: '14%', w: '28%', h: '30%' },
+              { z: mockZones[1], top: '20%', left: '46%', w: '30%', h: '34%' },
+              { z: mockZones[2], top: '56%', left: '10%', w: '24%', h: '26%' },
+            ].map(({ z, top, left, w, h }) => (
+              <button
+                key={z.id}
+                onClick={() => setSelectedZone(z)}
+                className={cn(
+                  'absolute border transition-all hover:opacity-90 group',
+                  zoneRiskFill[z.riskLevel],
+                )}
+                style={{ top, left, width: w, height: h }}
+              >
+                <span className="absolute top-1.5 left-2 font-mono text-[9px] tracking-[0.15em] text-white/80">
+                  {z.name.toUpperCase()}
+                </span>
+                <span className="absolute bottom-1.5 right-2 font-mono text-[9px] tracking-[0.15em] text-white/60">
+                  {z.peakWindow}
+                </span>
+              </button>
+            ))}
           </div>
         )}
 
-        <div className="text-center z-10 pointer-events-none">
-          <Map className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Full-screen crime map</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {showZones ? 'Tap a zone for details' : 'Heatmap updates with time slider below'}
-          </p>
+        {/* Center crosshair when no overlays */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[6] pointer-events-none flex flex-col items-center">
+          <div className="relative w-10 h-10">
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-[#00FF85]/50" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-[#00FF85]/50" />
+            <div className="absolute inset-0 border border-[#00FF85]/40" />
+          </div>
+          <div className="mt-2 font-mono text-[9px] tracking-[0.2em] text-[#00FF85]/60">
+            MAP_LAYER · LIVE
+          </div>
         </div>
       </div>
 
-      {/* ═══ SEARCH BAR ═══ */}
-      <div className="absolute top-3 left-3 right-3 z-30">
+      {/* ═══ TOP TACTICAL HEADER ═══ */}
+      <div className="absolute top-0 left-0 right-0 z-[26] flex items-center justify-between px-3 py-1.5 bg-black/80 backdrop-blur border-b border-[#1A1A1A]">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 bg-[#00FF85] animate-pulse" />
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">MAP_LAYER</span>
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#555]">·</span>
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#999]">{riskAtSlot.label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] tracking-[0.15em] text-[#555]">RISK</span>
+          <span
+            className="font-mono text-[10px] tracking-[0.15em] font-bold tabular-nums"
+            style={{ color: tacticalRiskColor(riskAtSlot.score) }}
+          >
+            {riskAtSlot.score.toFixed(1)}/10
+          </span>
+        </div>
+      </div>
+
+      {/* ═══ SEARCH (under header) ═══ */}
+      <div className="absolute top-[28px] left-3 right-3 z-[27] mt-1">
         <SuburbSearchInput
-          placeholder="Search suburb, ward or area..."
+          placeholder="QUERY: suburb // ward // address …"
           onSelect={(r) => {
             const matched = areasData.find(a => a.name.toLowerCase() === r.name.toLowerCase());
             if (matched) handleSelectArea(matched);
@@ -656,122 +528,107 @@ const MapFullView = memo(({ onNavigate }: Props) => {
         />
       </div>
 
-      {/* ═══ OFFLINE BANNER ═══ */}
       {isOffline && <OfflineBanner />}
-
-      {/* ═══ GUEST BAR (no auth) ═══ */}
       {!user && !selectedArea && !isOffline && !isLoading && (
         <GuestBar onLogin={() => onNavigate('settings')} />
       )}
+      {selectedArea && <SelectedAreaOverlay area={selectedArea} onClose={() => setSelectedArea(null)} />}
+      {riskPopupArea && <RiskPopup area={riskPopupArea} onClose={() => setRiskPopupArea(null)} />}
 
-      {/* ═══ SELECTED AREA OVERLAY ═══ */}
-      {selectedArea && (
-        <SelectedAreaOverlay area={selectedArea} onClose={() => setSelectedArea(null)} />
-      )}
-
-      {/* ═══ RISK POPUP (locate me) ═══ */}
-      {riskPopupArea && (
-        <RiskPopup area={riskPopupArea} onClose={() => setRiskPopupArea(null)} />
-      )}
-
-      {/* Map controls — zoom/locate */}
-      <div className="absolute top-16 right-3 z-20 flex flex-col gap-2">
-        <button className="w-10 h-10 rounded-xl bg-[hsl(var(--surface-01))]/90 backdrop-blur border border-border-subtle flex items-center justify-center hover:bg-surface-02 transition-colors">
-          <Plus className="w-4 h-4 text-foreground" />
+      {/* ═══ HUD CONTROLS — square tactical buttons (right rail) ═══ */}
+      <div className="absolute top-[100px] right-3 z-20 flex flex-col">
+        <button
+          className="w-9 h-9 bg-[#0A0A0A]/95 backdrop-blur border border-[#2A2A2A] flex items-center justify-center hover:border-[#00FF85] active:bg-[#111] transition-colors"
+          aria-label="Zoom in"
+        >
+          <Plus className="w-3.5 h-3.5 text-white" />
         </button>
-        <button className="w-10 h-10 rounded-xl bg-[hsl(var(--surface-01))]/90 backdrop-blur border border-border-subtle flex items-center justify-center hover:bg-surface-02 transition-colors">
-          <Minus className="w-4 h-4 text-foreground" />
+        <button
+          className="w-9 h-9 bg-[#0A0A0A]/95 backdrop-blur border border-[#2A2A2A] border-t-0 flex items-center justify-center hover:border-[#00FF85] active:bg-[#111] transition-colors"
+          aria-label="Zoom out"
+        >
+          <Minus className="w-3.5 h-3.5 text-white" />
         </button>
         <button
           onClick={handleLocateMe}
-          className="w-10 h-10 rounded-xl bg-[hsl(var(--surface-01))]/90 backdrop-blur border border-accent-safe/40 flex items-center justify-center hover:bg-surface-02 transition-colors active:scale-90"
-          aria-label="Detect my location"
+          className="w-9 h-9 bg-[#0A0A0A]/95 backdrop-blur border border-[#00FF85]/50 border-t-0 flex items-center justify-center hover:bg-[#00FF85]/10 active:scale-95 transition-all mt-1"
+          aria-label="Locate me"
         >
-          <Locate className="w-4 h-4 text-accent-safe" />
+          <Crosshair className="w-3.5 h-3.5 text-[#00FF85]" />
         </button>
-        {/* Road Safety Mode toggle — opt-in, ward-level historical heatmap (no aggressive predictions) */}
         <button
           onClick={() => {
             toggleRoadSafetyMode();
-            toast.success(roadSafetyMode ? 'Road Safety Mode off' : 'Road Safety Mode on — showing historical risk patterns');
+            toast.success(roadSafetyMode ? 'ROAD_SAFETY · OFF' : 'ROAD_SAFETY · ON');
           }}
           className={cn(
-            "w-10 h-10 rounded-xl backdrop-blur border flex items-center justify-center active:scale-90 transition-colors",
+            'w-9 h-9 backdrop-blur border flex items-center justify-center active:scale-95 transition-all mt-1',
             roadSafetyMode
-              ? "bg-accent-warning/25 border-accent-warning/50"
-              : "bg-[hsl(var(--surface-01))]/90 border-border-subtle hover:bg-surface-02"
+              ? 'bg-[#FF9500]/15 border-[#FF9500]/60'
+              : 'bg-[#0A0A0A]/95 border-[#2A2A2A] hover:border-[#FF9500]/50',
           )}
-          aria-label={roadSafetyMode ? 'Disable Road Safety Mode' : 'Enable Road Safety Mode'}
-          title={roadSafetyMode ? 'Road Safety Mode ON — historical patterns visible' : 'Road Safety Mode OFF — tap to show ward-level risk patterns'}
+          aria-label="Road safety mode"
         >
-          <Route className={cn("w-4 h-4", roadSafetyMode ? "text-accent-warning" : "text-foreground")} />
+          <Route className={cn('w-3.5 h-3.5', roadSafetyMode ? 'text-[#FF9500]' : 'text-white')} />
+        </button>
+        <button
+          onClick={() => setShowLegend(!showLegend)}
+          className={cn(
+            'w-9 h-9 backdrop-blur border flex items-center justify-center active:scale-95 transition-all mt-1',
+            showLegend
+              ? 'bg-[#00B4D8]/15 border-[#00B4D8]/60'
+              : 'bg-[#0A0A0A]/95 border-[#2A2A2A] hover:border-[#00B4D8]/50',
+          )}
+          aria-label="Toggle legend"
+        >
+          <Layers className={cn('w-3.5 h-3.5', showLegend ? 'text-[#00B4D8]' : 'text-white')} />
         </button>
       </div>
 
-      {/* Road Safety Mode heatmap overlay — gentle, ward-level historical patterns only */}
+      {/* Road Safety Mode HUD overlay */}
       {roadSafetyMode && (
-        <div className="absolute inset-0 z-10 pointer-events-none animate-fade-in" aria-hidden>
+        <div className="absolute inset-0 z-[8] pointer-events-none animate-fade-in" aria-hidden>
           <div
-            className="absolute inset-0 mix-blend-overlay opacity-60"
+            className="absolute inset-0 mix-blend-screen opacity-50"
             style={{
               background: `
-                radial-gradient(circle at 28% 42%, hsl(var(--safety-red) / 0.45) 0%, transparent 18%),
-                radial-gradient(circle at 64% 38%, hsl(var(--safety-orange) / 0.35) 0%, transparent 22%),
-                radial-gradient(circle at 48% 62%, hsl(var(--safety-yellow) / 0.30) 0%, transparent 25%),
-                radial-gradient(circle at 78% 70%, hsl(var(--safety-orange) / 0.30) 0%, transparent 20%),
-                radial-gradient(circle at 22% 78%, hsl(var(--safety-red) / 0.40) 0%, transparent 18%)
+                radial-gradient(circle at 28% 42%, ${SIG_RED}50 0%, transparent 18%),
+                radial-gradient(circle at 64% 38%, ${SIG_AMBER}40 0%, transparent 22%),
+                radial-gradient(circle at 48% 62%, ${SIG_AMBER}30 0%, transparent 25%),
+                radial-gradient(circle at 78% 70%, ${SIG_AMBER}30 0%, transparent 20%),
+                radial-gradient(circle at 22% 78%, ${SIG_RED}40 0%, transparent 18%)
               `,
             }}
           />
-          <div className="absolute top-16 left-3 z-20 px-2.5 py-1 rounded-full bg-accent-warning/20 border border-accent-warning/40 backdrop-blur text-[10px] font-bold text-accent-warning flex items-center gap-1.5 pointer-events-auto">
-            <Route className="w-3 h-3" /> ROAD SAFETY MODE · HISTORICAL
+          <div className="absolute top-[100px] left-3 px-2 py-1 bg-[#0A0A0A]/95 border border-[#FF9500]/60 border-l-2 border-l-[#FF9500] backdrop-blur font-mono text-[9px] tracking-[0.2em] text-[#FF9500] flex items-center gap-1.5 pointer-events-auto">
+            <Activity className="w-3 h-3" /> ROAD_SAFETY · HISTORICAL
           </div>
         </div>
       )}
 
-      {/* v5.1 — Map overlay cleanup:
-          SOS is handled by the global <PanicButton /> (bottom-left)
-          and incident reporting by <WitnessReportButton /> (bottom-right).
-          Both render in AlmienDashboard.tsx and overlay every view consistently,
-          so we no longer duplicate them inside the map panel. */}
-
-      {/* Legend pill */}
-      <button
-        onClick={() => setShowLegend(!showLegend)}
-        className={cn(
-          "absolute left-3 z-20 px-3 py-1.5 rounded-full bg-[hsl(var(--surface-01))]/90 backdrop-blur border border-border-subtle text-xs font-medium text-foreground hover:bg-surface-02 transition-colors",
-          selectedZone ? "bottom-[400px]" : "bottom-[280px]"
-        )}
-      >
-        <MapPin className="w-3 h-3 inline mr-1.5" />
-        Crime Types
-      </button>
-
+      {/* Legend — tactical card */}
       {showLegend && (
-        <div className={cn(
-          "absolute left-3 z-20 p-3 rounded-xl bg-[hsl(var(--surface-01))]/95 backdrop-blur border border-border-subtle animate-fade-in w-48",
-          selectedZone ? "bottom-[430px]" : "bottom-[310px]"
-        )}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Legend</p>
+        <div className="absolute right-14 top-[100px] z-20 p-3 bg-[#0A0A0A]/95 backdrop-blur border border-[#2A2A2A] border-l-2 border-l-[#00B4D8] w-44 animate-fade-in">
+          <p className="font-mono text-[9px] tracking-[0.2em] text-[#00B4D8] mb-2">LEGEND // CRIMES</p>
           <div className="space-y-1.5">
             {[
-              { label: 'Theft', color: 'bg-safety-yellow' },
-              { label: 'Robbery', color: 'bg-safety-orange' },
-              { label: 'Assault', color: 'bg-safety-red' },
-              { label: 'GBV', color: 'bg-[hsl(270,95%,75%)]' },
-              { label: 'Drugs', color: 'bg-muted-foreground' },
-              { label: 'Hijacking', color: 'bg-destructive' },
+              { label: 'THEFT',     color: SIG_AMBER },
+              { label: 'ROBBERY',   color: '#FF6B00' },
+              { label: 'ASSAULT',   color: SIG_RED },
+              { label: 'GBV',       color: '#C77DFF' },
+              { label: 'DRUGS',     color: '#777' },
+              { label: 'HIJACKING', color: '#FF1744' },
             ].map(item => (
-              <div key={item.label} className="flex items-center gap-2">
-                <div className={cn("w-2.5 h-2.5 rounded-full", item.color)} />
-                <span className="text-xs text-foreground">{item.label}</span>
+              <div key={item.label} className="flex items-center gap-2 font-mono text-[10px] tracking-[0.1em] text-[#CCC]">
+                <div className="w-2 h-2" style={{ background: item.color }} />
+                <span>{item.label}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Bottom panel — time scrubber + filters + footer */}
+      {/* ═══ BOTTOM CONTROL DOCK ═══ */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
         {selectedZone && (
           <ZoneBottomSheet
@@ -782,82 +639,93 @@ const MapFullView = memo(({ onNavigate }: Props) => {
           />
         )}
 
-        <div className="bg-[hsl(var(--surface-01))]/95 backdrop-blur-xl border-t border-border-subtle rounded-t-2xl px-4 pt-3 pb-2 space-y-3">
-          <div className="w-10 h-1 rounded-full bg-border-subtle mx-auto" />
-
+        <div className="bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-[#1A1A1A] px-4 pt-3 pb-2 space-y-3">
           {/* Time scrubber */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-accent-safe" />
-                <span className="text-xs font-bold text-foreground">Time Scrubber</span>
+                <Clock className="w-3 h-3 text-[#00FF85]" />
+                <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">TIME_SCRUB</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold tabular-nums text-foreground">{riskAtSlot.label}</span>
-                <span className={cn("text-xs font-bold tabular-nums", scoreColor(riskAtSlot.score))}>
-                  {riskAtSlot.score}/10
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] tracking-[0.15em] text-white tabular-nums">{riskAtSlot.label}</span>
+                <span
+                  className="font-mono text-[10px] tracking-[0.15em] font-bold tabular-nums"
+                  style={{ color: tacticalRiskColor(riskAtSlot.score) }}
+                >
+                  {riskAtSlot.score.toFixed(1)}/10
                 </span>
               </div>
             </div>
 
+            {/* Segmented hour bar — sharp blocks */}
             <div className="relative mb-1">
-              <div className="flex h-4 gap-px rounded overflow-hidden">
+              <div className="flex h-3 gap-px">
                 {hourlyRisk.map((h, i) => (
                   <div
                     key={i}
                     className={cn(
-                      "flex-1 transition-opacity duration-150",
-                      i === currentSlot ? "opacity-100" : "opacity-40",
-                      h.score >= 7 ? "bg-safety-green" :
-                      h.score >= 5 ? "bg-safety-yellow" :
-                      h.score >= 3.5 ? "bg-safety-orange" : "bg-safety-red"
+                      'flex-1 transition-opacity duration-150',
+                      i === currentSlot ? 'opacity-100' : 'opacity-30',
                     )}
+                    style={{ background: tacticalRiskColor(h.score) }}
                   />
                 ))}
+              </div>
+              {/* Current position marker */}
+              <div
+                className="absolute top-0 bottom-0 w-px bg-white pointer-events-none"
+                style={{ left: `${(currentSlot / 47) * 100}%` }}
+              >
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white" />
               </div>
             </div>
 
             <Slider value={sliderValue} onValueChange={setSliderValue} min={0} max={47} step={1} className="w-full" />
 
-            <div className="flex justify-between text-[9px] text-muted-foreground mt-1 tabular-nums">
+            <div className="flex justify-between font-mono text-[8px] tracking-[0.15em] text-[#555] mt-1 tabular-nums">
               <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:30</span>
             </div>
 
-            <div className="flex gap-2 mt-2">
-              {presets.map(p => (
-                <button
-                  key={p.label}
-                  onClick={() => handlePreset(p.slot)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors min-h-[32px]",
-                    (p.slot === -1 && currentSlot === getCurrentSlotIndex()) ||
-                    (p.slot !== -1 && currentSlot === p.slot)
-                      ? "bg-accent-safe text-text-inverse"
-                      : "bg-surface-02 text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
+            <div className="flex gap-1.5 mt-2">
+              {presets.map(p => {
+                const active =
+                  (p.slot === -1 && currentSlot === getCurrentSlotIndex()) ||
+                  (p.slot !== -1 && currentSlot === p.slot);
+                return (
+                  <button
+                    key={p.label}
+                    onClick={() => handlePreset(p.slot)}
+                    className={cn(
+                      'px-2.5 py-1 font-mono text-[10px] tracking-[0.15em] font-bold border min-h-[28px] transition-colors',
+                      active
+                        ? 'bg-[#00FF85] text-black border-[#00FF85]'
+                        : 'bg-transparent text-[#999] border-[#2A2A2A] hover:border-[#00FF85] hover:text-white',
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
             </div>
 
-            <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-              <span className={cn("font-semibold", scoreColor(riskAtSlot.score))}>●</span>{' '}
-              {insightText}
+            <p className="font-mono text-[10px] text-[#999] mt-2 leading-relaxed flex items-start gap-1.5">
+              <span style={{ color: tacticalRiskColor(riskAtSlot.score) }} className="mt-0.5">▸</span>
+              <span>{insightText}</span>
             </p>
           </div>
 
-          {/* Crime type + Zones filter pills */}
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          {/* Filter pills — tactical squared */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
             {crimeTypes.map(f => (
               <button
                 key={f.id}
                 onClick={() => setActiveFilter(f.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 min-h-[32px]",
+                  'px-2.5 py-1 font-mono text-[10px] tracking-[0.15em] font-bold whitespace-nowrap shrink-0 border min-h-[28px] transition-colors',
                   activeFilter === f.id
-                    ? "bg-accent-safe text-text-inverse"
-                    : "bg-surface-02 text-muted-foreground hover:text-foreground"
+                    ? 'bg-[#00FF85] text-black border-[#00FF85]'
+                    : 'bg-transparent text-[#999] border-[#2A2A2A] hover:border-[#00FF85] hover:text-white',
                 )}
               >
                 {f.label}
@@ -866,18 +734,25 @@ const MapFullView = memo(({ onNavigate }: Props) => {
             <button
               onClick={() => { setShowZones(!showZones); if (showZones) setSelectedZone(null); }}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 border min-h-[32px]",
+                'px-2.5 py-1 font-mono text-[10px] tracking-[0.15em] font-bold whitespace-nowrap shrink-0 border min-h-[28px] transition-colors flex items-center gap-1',
                 showZones
-                  ? "bg-accent-safe text-text-inverse border-accent-safe"
-                  : "bg-surface-02 text-muted-foreground hover:text-foreground border-border-subtle"
+                  ? 'bg-[#00B4D8] text-black border-[#00B4D8]'
+                  : 'bg-transparent text-[#999] border-[#2A2A2A] hover:border-[#00B4D8] hover:text-white',
               )}
             >
-              Zones
+              <Layers className="w-3 h-3" /> ZONES
             </button>
           </div>
 
-          {/* Data sources footer */}
-          <DataSourcesFooter />
+          {/* Footer */}
+          <div className="flex items-center justify-between border-t border-[#1A1A1A] pt-1.5">
+            <span className="font-mono text-[8px] tracking-[0.2em] text-[#444]">
+              SAPS · MESH · POPIA-COMPLIANT
+            </span>
+            <span className="font-mono text-[8px] tracking-[0.2em] text-[#444]">
+              © ALMIEN {new Date().getFullYear()}
+            </span>
+          </div>
         </div>
       </div>
     </div>
