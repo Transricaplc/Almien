@@ -48,6 +48,7 @@ import ApiHubView from './views/ApiHubView';
 import SACrimeLayerView from './views/SACrimeLayerView';
 import SafetyNetworkView from './views/SafetyNetworkView';
 import SafeRouteView from './views/SafeRouteView';
+import CorridorIntelView from './views/CorridorIntelView';
 import SafeSpaceView from './views/SafeSpaceView';
 import DarknessWindowView from './views/DarknessWindowView';
 import VehicleCrimeView from './views/VehicleCrimeView';
