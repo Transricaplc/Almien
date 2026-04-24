@@ -57,8 +57,19 @@ const railLines = [
 const statusLabel = (s: string) => s === 'flowing' ? '🟢 FLOWING' : s === 'moderate' ? '🟡 MODERATE' : '🟠 HEAVY TRAFFIC';
 
 const TrafficTransportView = memo(({ onUpgrade }: Props) => {
+  const currentHour = new Date().getHours();
+  const tips = useMemo(() => {
+    const t: { icon: typeof Shield; color: string; text: string }[] = [];
+    if (currentHour >= 6 && currentHour <= 9) t.push({ icon: RouteIcon, color: '#FF9500', text: 'Morning peak — check your route before leaving' });
+    if (currentHour >= 16 && currentHour <= 19) t.push({ icon: Shield, color: '#FF3B30', text: 'Evening peak — share route with guardian' });
+    if (currentHour >= 20 || currentHour <= 5) t.push({ icon: Moon, color: '#00B4D8', text: 'After dark — SOS guardian active, hold 2s if unsafe' });
+    t.push({ icon: Zap, color: '#FF9500', text: 'Avoid unlit routes during load-shedding' });
+    t.push({ icon: Shield, color: '#00FF85', text: 'Scan your corridor before every trip' });
+    return t.slice(0, 5);
+  }, [currentHour]);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -68,12 +79,145 @@ const TrafficTransportView = memo(({ onUpgrade }: Props) => {
         <p className="text-xs text-muted-foreground mt-0.5">Last updated: 3 minutes ago</p>
       </div>
 
+      {/* WHY IT MATTERS */}
+      <div className="bg-[#0A0A0A] border border-[#1F1F1F] border-l-2 border-l-[#00FF85] p-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Info className="w-3 h-3 text-[#00FF85]" />
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">WHY TRAFFIC & TRANSPORT</span>
+        </div>
+        <p className="text-[13px] text-[#999] leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          Crime spikes during peak commute hours. Load-shedding disables traffic lights. This tab gives you real-time context to make safer travel decisions.
+        </p>
+      </div>
+
+      {/* CRIME-BY-HOUR CHART */}
+      <div className="bg-[#0A0A0A] border border-[#1F1F1F] p-4">
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[#555] mb-2">
+          CRIME RISK BY HOUR · CAPE TOWN
+        </div>
+        <div style={{ width: '100%', height: 120 }}>
+          <ResponsiveContainer>
+            <BarChart data={HOURLY_CRIME_INDEX} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+              <XAxis
+                dataKey="h"
+                tick={{ fontFamily: 'JetBrains Mono', fontSize: 9, fill: '#555' }}
+                axisLine={false}
+                tickLine={false}
+                ticks={['00', '06', '12', '18', '23']}
+              />
+              <YAxis hide />
+              <Tooltip
+                cursor={{ fill: '#FFFFFF08' }}
+                contentStyle={{
+                  background: '#0A0A0A',
+                  border: '1px solid #2A2A2A',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 11,
+                  color: '#fff',
+                }}
+                labelFormatter={(v) => `${v}:00`}
+                formatter={(v: number) => [v, 'risk index']}
+              />
+              <Bar dataKey="v" radius={0}>
+                {HOURLY_CRIME_INDEX.map((d, i) => (
+                  <Cell
+                    key={i}
+                    fill={d.v >= 65 ? '#FF3B30' : d.v >= 50 ? '#FF9500' : '#2A2A2A'}
+                    stroke={String(currentHour).padStart(2, '0') === d.h ? '#00FF85' : 'none'}
+                    strokeWidth={String(currentHour).padStart(2, '0') === d.h ? 2 : 0}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="font-mono text-[10px] text-[#555] tracking-[0.1em] mt-2">
+          ▸ Now: {String(currentHour).padStart(2, '0')}:00 · Peak risk windows shown in red/amber
+        </div>
+      </div>
+
+      {/* TRANSPORT DISRUPTIONS */}
+      <div>
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[#555] mb-2">
+          TRANSPORT DISRUPTIONS
+        </div>
+        <div className="flex flex-col gap-px bg-[#1A1A1A] mb-2">
+          {TRANSPORT_ALERTS.map((a, i) => (
+            <div key={i} className="flex items-center gap-3 bg-[#0A0A0A] px-3 py-3" style={{ minHeight: 56 }}>
+              <span
+                className="px-2 py-1 shrink-0"
+                style={{
+                  background: '#00243A',
+                  color: '#00B4D8',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                }}
+              >
+                {a.route}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-white text-[13px] truncate" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {a.desc}
+                </div>
+                <div className="font-mono text-[9px] text-[#555] tracking-[0.1em] mt-0.5">
+                  {a.time}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <a
+          href="https://myciti.org.za/en/service-disruptions/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block tap"
+          style={{
+            background: 'transparent',
+            border: '1px solid #2A2A2A',
+            color: '#00FF85',
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 10,
+            letterSpacing: '0.15em',
+            padding: '10px 14px',
+          }}
+        >
+          CONNECT REAL-TIME FEED ↗
+        </a>
+      </div>
+
+      {/* SAFE TRAVEL TIPS */}
+      <div>
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[#555] mb-2">
+          SAFE TRAVEL TIPS
+        </div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+          {tips.map((tip, i) => {
+            const Icon = tip.icon;
+            return (
+              <div
+                key={i}
+                className="shrink-0 flex items-center gap-2.5 bg-[#0A0A0A] border border-[#1F1F1F] px-4 py-3"
+                style={{ maxWidth: 280 }}
+              >
+                <Icon className="w-3 h-3 shrink-0" style={{ color: tip.color }} strokeWidth={2} />
+                <span className="text-white text-[13px]" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                  {tip.text}
+                </span>
+                <ChevronRight className="w-3 h-3 text-[#555] shrink-0" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Live Traffic Status */}
       <Card>
         <CardContent className="p-5">
           <h2 className="text-lg font-semibold text-foreground mb-1">Live Traffic Status</h2>
           <p className="text-foreground font-medium">Cape Town Overall: <span className="text-safety-yellow">🟡 MODERATE CONGESTION</span></p>
-          <p className="text-sm text-muted-foreground">Incidents: 8 active &middot; Avg delay: 12 minutes</p>
+          <p className="text-sm text-muted-foreground">Incidents: 8 active · Avg delay: 12 minutes</p>
         </CardContent>
       </Card>
 
