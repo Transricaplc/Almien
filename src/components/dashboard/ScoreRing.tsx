@@ -7,6 +7,7 @@ interface Props {
   onChangeLocation?: () => void;
 }
 
+const SIZE = 200;
 const RADIUS = 88;
 const CIRC = 2 * Math.PI * RADIUS; // ≈ 553
 
@@ -30,19 +31,77 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
   }, []);
 
   return (
-    <div className="flex flex-col items-center mt-4 relative" style={{ minHeight: 240 }}>
-      {/* Ring outer labels */}
-      <div className="relative" style={{ width: 200, height: 200 }}>
-        <span className="label-micro absolute -top-1 right-0 text-[9px]">GUARDIAN</span>
-        <span className="label-micro absolute -bottom-1 right-0 text-[9px]">DARK ZONE</span>
-        <span className="label-micro absolute -bottom-1 left-0 text-[9px]">COMMUNITY</span>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginTop: 16,
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          width: SIZE,
+          height: SIZE,
+          flex: '0 0 auto',
+        }}
+      >
+        {/* Ring outer labels */}
+        <span
+          style={{
+            position: 'absolute',
+            top: -4,
+            right: 0,
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 9,
+            color: '#555',
+            letterSpacing: '0.2em',
+          }}
+        >
+          GUARDIAN
+        </span>
+        <span
+          style={{
+            position: 'absolute',
+            bottom: -4,
+            right: 0,
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 9,
+            color: '#555',
+            letterSpacing: '0.2em',
+          }}
+        >
+          DARK ZONE
+        </span>
+        <span
+          style={{
+            position: 'absolute',
+            bottom: -4,
+            left: 0,
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 9,
+            color: '#555',
+            letterSpacing: '0.2em',
+          }}
+        >
+          COMMUNITY
+        </span>
 
-        <svg width="200" height="200" viewBox="0 0 200 200" style={{ display: 'block' }}>
+        <svg
+          width={SIZE}
+          height={SIZE}
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          style={{ display: 'block', position: 'absolute', inset: 0 }}
+        >
           {/* Track */}
           <circle cx="100" cy="100" r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
           {/* Progress arc */}
           <circle
-            cx="100" cy="100" r={RADIUS}
+            cx="100"
+            cy="100"
+            r={RADIUS}
             stroke={color}
             strokeWidth="6"
             fill="none"
@@ -50,26 +109,49 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
             strokeDasharray={CIRC}
             strokeDashoffset={animate ? offset : CIRC}
             transform="rotate(-90 100 100)"
-            style={{
-              transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
+            style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
           />
         </svg>
 
         {/* Inner content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="flex items-baseline">
-            <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700 }} className="text-[52px] leading-none text-white tabular-nums">
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline' }}>
+            <span
+              style={{
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontWeight: 700,
+                fontSize: 52,
+                lineHeight: 1,
+                color: '#fff',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
               {value}
             </span>
-            <span className="ml-1 text-[13px] text-[#555]">/ 100</span>
+            <span style={{ marginLeft: 4, fontSize: 13, color: '#555' }}>/ 100</span>
           </div>
           <span
-            style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, color }}
-            className="mt-2 text-[11px] uppercase"
-            // letter-spacing inline since arbitrary tracking is fine here
+            style={{
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontWeight: 700,
+              color,
+              marginTop: 8,
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+            }}
           >
-            <span style={{ letterSpacing: '0.15em' }}>{label}</span>
+            {label}
           </span>
         </div>
       </div>
@@ -77,7 +159,14 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
       {/* Location pill */}
       <button
         onClick={onChangeLocation}
-        className="mt-3 text-[12px] text-[#555] hover:text-white transition-colors"
+        style={{
+          marginTop: 12,
+          fontSize: 12,
+          color: '#555',
+          background: 'transparent',
+          border: 'none',
+          cursor: onChangeLocation ? 'pointer' : 'default',
+        }}
       >
         {location}
       </button>
