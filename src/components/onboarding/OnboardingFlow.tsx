@@ -117,7 +117,7 @@ const OnboardingFlow = memo(({ onComplete }: OnboardingFlowProps) => {
         <label className="label-micro block" style={{ color: '#666' }}>[ SUBURB ]</label>
         <input
           className="t-input w-full"
-          placeholder="RONDEBOSCH · KHAYELITSHA · STELLENBOSCH"
+          placeholder="e.g. RONDEBOSCH"
           value={suburb}
           onChange={(e) => setSuburb(e.target.value)}
         />

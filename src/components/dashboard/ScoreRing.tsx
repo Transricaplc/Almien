@@ -2,19 +2,20 @@ import { memo, useEffect, useState } from 'react';
 import { useCountUp } from '@/hooks/useCountUp';
 
 interface Props {
-  score: number;       // 0-100
-  location?: string;   // e.g. "Cape Town Central · Ward 57"
+  score: number;
+  location?: string;
   onChangeLocation?: () => void;
 }
 
+const SIZE = 200;
 const RADIUS = 88;
-const CIRC = 2 * Math.PI * RADIUS; // ≈ 553
+const CIRC = 2 * Math.PI * RADIUS;
 
 function tier(score: number) {
-  if (score >= 80) return { label: 'SECURE',    color: '#00FF85' };
-  if (score >= 60) return { label: 'MODERATE',  color: '#FF9500' };
-  if (score >= 40) return { label: 'ELEVATED',  color: '#FF9500' };
-  return              { label: 'HIGH RISK', color: '#FF3B30' };
+  if (score >= 80) return { label: 'SECURE', color: '#00FF85' };
+  if (score >= 60) return { label: 'MODERATE', color: '#FF9500' };
+  if (score >= 40) return { label: 'ELEVATED', color: '#FF9500' };
+  return { label: 'HIGH RISK', color: '#FF3B30' };
 }
 
 const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onChangeLocation }: Props) => {
@@ -22,7 +23,6 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
   const { label, color } = tier(score);
   const offset = CIRC - (score / 100) * CIRC;
 
-  // Trigger draw animation after mount
   const [animate, setAnimate] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setAnimate(true), 80);
@@ -30,54 +30,72 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
   }, []);
 
   return (
-    <div className="flex flex-col items-center mt-4 relative" style={{ minHeight: 240 }}>
-      {/* Ring outer labels */}
-      <div className="relative" style={{ width: 200, height: 200 }}>
-        <span className="label-micro absolute -top-1 right-0 text-[9px]">GUARDIAN</span>
-        <span className="label-micro absolute -bottom-1 right-0 text-[9px]">DARK ZONE</span>
-        <span className="label-micro absolute -bottom-1 left-0 text-[9px]">COMMUNITY</span>
-
-        <svg width="200" height="200" viewBox="0 0 200 200" style={{ display: 'block' }}>
-          {/* Track */}
-          <circle cx="100" cy="100" r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
-          {/* Progress arc */}
+    <div style={{ width: '100%', padding: '16px 0', textAlign: 'center' }}>
+      <div style={{ width: SIZE, height: SIZE, margin: '0 auto', position: 'relative' }}>
+        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg">
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
           <circle
-            cx="100" cy="100" r={RADIUS}
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
             stroke={color}
             strokeWidth="6"
             fill="none"
             strokeLinecap="round"
             strokeDasharray={CIRC}
             strokeDashoffset={animate ? offset : CIRC}
-            transform="rotate(-90 100 100)"
-            style={{
-              transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
+            transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
+            style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
           />
-        </svg>
-
-        {/* Inner content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="flex items-baseline">
-            <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700 }} className="text-[52px] leading-none text-white tabular-nums">
-              {value}
-            </span>
-            <span className="ml-1 text-[13px] text-[#555]">/ 100</span>
-          </div>
-          <span
-            style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, color }}
-            className="mt-2 text-[11px] uppercase"
-            // letter-spacing inline since arbitrary tracking is fine here
+          <text
+            x="50%"
+            y="48%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#ffffff"
+            style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: 52 }}
           >
-            <span style={{ letterSpacing: '0.15em' }}>{label}</span>
-          </span>
-        </div>
+            {value}
+          </text>
+          <text
+            x="50%"
+            y="68%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={color}
+            style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '0.15em' }}
+          >
+            {label}
+          </text>
+        </svg>
       </div>
 
-      {/* Location pill */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: SIZE,
+          margin: '8px auto 0',
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 9,
+          color: '#555',
+          letterSpacing: '0.2em',
+        }}
+      >
+        <span>COMMUNITY</span>
+        <span>GUARDIAN</span>
+      </div>
+
       <button
         onClick={onChangeLocation}
-        className="mt-3 text-[12px] text-[#555] hover:text-white transition-colors"
+        style={{
+          marginTop: 12,
+          fontSize: 12,
+          color: '#555',
+          background: 'transparent',
+          border: 'none',
+          cursor: onChangeLocation ? 'pointer' : 'default',
+        }}
       >
         {location}
       </button>

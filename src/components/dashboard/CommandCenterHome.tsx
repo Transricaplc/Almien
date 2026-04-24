@@ -70,18 +70,20 @@ const CommandCenterHome = memo(({ onNavigate, onOpenSafi }: Props) => {
           <span className="label-micro">LIVE THREATS</span>
           <button onClick={() => onNavigate('alerts')} className="btn-ghost p-0">VIEW ALL ↗</button>
         </div>
-        <div className="px-5 flex gap-2 overflow-x-auto scrollbar-none">
+        <div className="px-5 flex gap-2 overflow-x-auto scrollbar-none" style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
           {liveThreats.map((t, i) => (
             <div
               key={i}
               className="inline-flex items-center gap-2 py-2 px-3 whitespace-nowrap shrink-0"
-              style={{ background: '#0A0A0A', border: '0.5px solid #2A2A2A' }}
+              style={{ background: '#0A0A0A', border: '0.5px solid #2A2A2A', scrollSnapAlign: 'start' }}
             >
               <span style={{ width: 6, height: 6, background: t.tone, borderRadius: '50%' }} aria-hidden />
               <span className="text-[12px] text-white">{t.text}</span>
               <span className="mono text-[10px] text-[#555]">{t.time}</span>
             </div>
           ))}
+          {/* Edge spacer so last pill clears the right padding cleanly */}
+          <div aria-hidden style={{ width: 8, flexShrink: 0 }} />
         </div>
       </section>
 
