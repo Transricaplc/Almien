@@ -59,6 +59,14 @@ const statusLabel = (s: string) => s === 'flowing' ? '🟢 FLOWING' : s === 'mod
 
 const TrafficTransportView = memo(({ onUpgrade }: Props) => {
   const currentHour = new Date().getHours();
+  const { status: lsStatus, currentStage, isActive: lsActive, loading: lsLoading } = useLoadshedding();
+  const lsColor = getStageColor(currentStage);
+  const fmtTime = (iso: string | null) => {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } catch { return '—'; }
+  };
   const tips = useMemo(() => {
     const t: { icon: typeof Shield; color: string; text: string }[] = [];
     if (currentHour >= 6 && currentHour <= 9) t.push({ icon: RouteIcon, color: '#FF9500', text: 'Morning peak — check your route before leaving' });
