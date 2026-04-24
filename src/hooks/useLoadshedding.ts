@@ -1,16 +1,24 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+
+// Cape Town area slug from beyarkay/eskom-calendar
+const AREA_SLUG = 'western-cape-16-capetown';
+const ESKOM_CAL_URL = `https://raw.githubusercontent.com/beyarkay/eskom-calendar/main/docs/loadshedding-area-${AREA_SLUG}.json`;
 
 export interface LoadsheddingStatus {
-  id: string;
   stage: number;
-  suburb: string | null;
-  area_code: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  is_active: boolean;
+  activeUntil: string | null;
+  nextStart: string | null;
+  nextStage: number | null;
   source: string;
+  is_active: boolean;
   last_updated: string;
+}
+
+interface EskomEvent {
+  start: string;
+  finsh: string;
+  stage: number;
+  source?: string;
 }
 
 interface UseLoadsheddingReturn {
@@ -19,51 +27,46 @@ interface UseLoadsheddingReturn {
   error: string | null;
   currentStage: number;
   isActive: boolean;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
 }
 
 export const useLoadshedding = (): UseLoadsheddingReturn => {
-  const [status, setStatus] = useState<LoadsheddingStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['loadshedding', AREA_SLUG],
+    queryFn: async (): Promise<LoadsheddingStatus> => {
+      const res = await fetch(ESKOM_CAL_URL);
+      if (!res.ok) throw new Error('Load shedding data unavailable');
+      const data = await res.json();
+      const events: EskomEvent[] = data.events || [];
+      const now = new Date();
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+      const active = events.find(
+        (e) => new Date(e.start) <= now && new Date(e.finsh) >= now
+      );
+      const next = events.find((e) => new Date(e.start) > now);
 
-      const { data, error: fetchError } = await supabase
-        .from('loadshedding_status')
-        .select('*')
-        .order('last_updated', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      setStatus(data as LoadsheddingStatus || null);
-    } catch (err) {
-      console.error('Error fetching loadshedding status:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch loadshedding data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+      return {
+        stage: active ? active.stage : 0,
+        activeUntil: active?.finsh || null,
+        nextStart: next?.start || null,
+        nextStage: next?.stage || null,
+        source: 'eskom-calendar',
+        is_active: !!active,
+        last_updated: new Date().toISOString(),
+      };
+    },
+    staleTime: 15 * 60 * 1000, // 15 min cache — bandwidth-friendly
+    refetchInterval: 15 * 60 * 1000,
+    retry: 1,
+  });
 
   return {
-    status,
-    loading,
-    error,
-    currentStage: status?.stage || 0,
-    isActive: status?.is_active || false,
-    refetch: fetchData,
+    status: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    currentStage: query.data?.stage ?? 0,
+    isActive: query.data?.is_active ?? false,
+    refetch: query.refetch,
   };
 };
 
