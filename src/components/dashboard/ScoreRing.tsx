@@ -38,6 +38,8 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
         alignItems: 'center',
         marginTop: 16,
         position: 'relative',
+        background: 'rgba(255,0,255,0.15)', // DEBUG
+        zIndex: 1,
       }}
     >
       <div
@@ -46,6 +48,7 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
           width: SIZE,
           height: SIZE,
           flex: '0 0 auto',
+          background: 'rgba(0,255,255,0.15)', // DEBUG
         }}
       >
         {/* Ring outer labels */}
