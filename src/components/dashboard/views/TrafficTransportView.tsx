@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { TrafficCone, AlertTriangle, TrainFront, Bus, Lock, Info, Shield, Zap, Moon, Route as RouteIcon, ChevronRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useLoadshedding, getStageColor } from '@/hooks/useLoadshedding';
 import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
