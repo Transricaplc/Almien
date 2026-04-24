@@ -1,14 +1,30 @@
-import { memo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { TrafficCone, AlertTriangle, TrainFront, Bus, Clock, Lock } from 'lucide-react';
+import { TrafficCone, AlertTriangle, TrainFront, Bus, Lock, Info, Shield, Zap, Moon, Route as RouteIcon, ChevronRight } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
   onUpgrade: (trigger?: string) => void;
   onNavigate: (view: ViewId) => void;
 }
+
+const HOURLY_CRIME_INDEX = [
+  { h: '00', v: 45 }, { h: '01', v: 38 }, { h: '02', v: 42 }, { h: '03', v: 35 },
+  { h: '04', v: 28 }, { h: '05', v: 22 }, { h: '06', v: 30 }, { h: '07', v: 55 },
+  { h: '08', v: 62 }, { h: '09', v: 58 }, { h: '10', v: 45 }, { h: '11', v: 40 },
+  { h: '12', v: 48 }, { h: '13', v: 44 }, { h: '14', v: 42 }, { h: '15', v: 50 },
+  { h: '16', v: 68 }, { h: '17', v: 75 }, { h: '18', v: 72 }, { h: '19', v: 65 },
+  { h: '20', v: 58 }, { h: '21', v: 52 }, { h: '22', v: 55 }, { h: '23', v: 48 },
+];
+
+const TRANSPORT_ALERTS = [
+  { route: 'T01', desc: 'Civic Centre → Airport delays 15min', time: 'Updated 14:32' },
+  { route: 'T02', desc: 'Bellville terminus closed — use T03', time: 'Updated 13:15' },
+  { route: 'METRORAIL', desc: 'Cape Flats line: no service today', time: 'Updated 09:00' },
+];
 
 const routes = [
   { id: 'n1-north', name: 'N1 Northbound', status: 'flowing', color: 'text-safety-green', speed: 85, normal: 100, travel: 18, normalTravel: 15, incidents: 0 },
