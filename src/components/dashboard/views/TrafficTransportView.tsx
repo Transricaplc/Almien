@@ -230,7 +230,36 @@ const TrafficTransportView = memo(({ onUpgrade }: Props) => {
         </CardContent>
       </Card>
 
-      {/* Major Routes */}
+      {/* LIVE LOAD-SHEDDING (Cape Town · eskom-calendar) */}
+      <div className="bg-[#0A0A0A] border border-[#1F1F1F] p-4" style={{ borderLeft: `2px solid ${lsColor}` }}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <Zap className="w-3 h-3" style={{ color: lsColor }} />
+            <span className="font-mono text-[10px] tracking-[0.2em]" style={{ color: lsColor }}>
+              LOAD-SHEDDING · CAPE TOWN
+            </span>
+          </div>
+          <span className="font-mono text-[9px] text-[#555] tracking-[0.1em]">
+            {lsLoading ? 'SYNCING…' : 'LIVE · eskom-calendar'}
+          </span>
+        </div>
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-[32px] leading-none" style={{ color: lsColor, fontWeight: 700 }}>
+            STAGE {currentStage}
+          </span>
+          <span className="text-[13px] text-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+            {lsActive ? `Active until ${fmtTime(lsStatus?.activeUntil ?? null)}` : 'No active outage'}
+          </span>
+        </div>
+        {lsStatus?.nextStart && (
+          <div className="font-mono text-[10px] text-[#999] tracking-[0.1em] mt-2">
+            ▸ NEXT: STAGE {lsStatus.nextStage} at {fmtTime(lsStatus.nextStart)}
+          </div>
+        )}
+        <div className="font-mono text-[9px] text-[#555] tracking-[0.1em] mt-2">
+          Traffic lights may be offline during outages — drive with caution.
+        </div>
+      </div>
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3">Major Routes</h2>
         <Accordion type="multiple" className="space-y-2">
