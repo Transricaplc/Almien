@@ -30,16 +30,16 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
   }, []);
 
   return (
-    <div className="flex flex-col items-center mt-4 relative">
+    <div className="flex flex-col items-center mt-4 relative" style={{ minHeight: 240 }}>
       {/* Ring outer labels */}
-      <div className="relative w-[200px] h-[200px]">
+      <div className="relative" style={{ width: 200, height: 200 }}>
         <span className="label-micro absolute -top-1 right-0 text-[9px]">GUARDIAN</span>
         <span className="label-micro absolute -bottom-1 right-0 text-[9px]">DARK ZONE</span>
         <span className="label-micro absolute -bottom-1 left-0 text-[9px]">COMMUNITY</span>
 
-        <svg className="w-full h-full" viewBox="0 0 200 200">
+        <svg width="200" height="200" viewBox="0 0 200 200" style={{ display: 'block' }}>
           {/* Track */}
-          <circle cx="100" cy="100" r={RADIUS} stroke="#111" strokeWidth="6" fill="none" />
+          <circle cx="100" cy="100" r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
           {/* Progress arc */}
           <circle
             cx="100" cy="100" r={RADIUS}
