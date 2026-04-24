@@ -31,20 +31,8 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
 
   return (
     <div style={{ width: '100%', padding: '16px 0', textAlign: 'center' }}>
-      <div
-        style={{
-          width: SIZE,
-          height: SIZE,
-          margin: '0 auto',
-          position: 'relative',
-        }}
-      >
-        <svg
-          width={SIZE}
-          height={SIZE}
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          xmlns="http://www.w3.org/2000/svg"
-        >
+      <div style={{ width: SIZE, height: SIZE, margin: '0 auto', position: 'relative' }}>
+        <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} xmlns="http://www.w3.org/2000/svg">
           <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
           <circle
             cx={SIZE / 2}
@@ -59,7 +47,6 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
             transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
           />
-          {/* Score number rendered IN-SVG so no flexbox / overlay can hide it */}
           <text
             x="50%"
             y="48%"
@@ -85,7 +72,6 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
 
       <div
         style={{
-          marginTop: 8,
           display: 'flex',
           justifyContent: 'space-between',
           width: SIZE,
