@@ -96,10 +96,10 @@ const ScoreRing = memo(({ score, location = 'Cape Town Central · Ward 57', onCh
           width={SIZE}
           height={SIZE}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          style={{ display: 'block', position: 'absolute', inset: 0 }}
+          style={{ display: 'block', position: 'absolute', inset: 0, background: 'rgba(255,255,0,0.2)' }}
         >
           {/* Track */}
-          <circle cx="100" cy="100" r={RADIUS} stroke="#1F1F1F" strokeWidth="6" fill="none" />
+          <circle cx="100" cy="100" r={RADIUS} stroke="#FF00FF" strokeWidth="6" fill="none" />
           {/* Progress arc */}
           <circle
             cx="100"
