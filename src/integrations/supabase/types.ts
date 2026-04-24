@@ -1579,6 +1579,56 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_services: {
+        Row: {
+          address: string | null
+          created_at: string
+          emergency_phone: string | null
+          id: number
+          is_24h: boolean | null
+          lat: number
+          lng: number
+          name: string
+          phone: string | null
+          type: string
+          ward_number: number | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          emergency_phone?: string | null
+          id?: number
+          is_24h?: boolean | null
+          lat: number
+          lng: number
+          name: string
+          phone?: string | null
+          type: string
+          ward_number?: number | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          emergency_phone?: string | null
+          id?: number
+          is_24h?: boolean | null
+          lat?: number
+          lng?: number
+          name?: string
+          phone?: string | null
+          type?: string
+          ward_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_services_ward_number_fkey"
+            columns: ["ward_number"]
+            isOneToOne: false
+            referencedRelation: "wards"
+            referencedColumns: ["ward_number"]
+          },
+        ]
+      }
       suburb_intelligence: {
         Row: {
           area_code: string
@@ -1850,6 +1900,48 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      wards: {
+        Row: {
+          created_at: string
+          district: string | null
+          geojson: Json | null
+          id: number
+          incident_count: number | null
+          lat: number | null
+          lng: number | null
+          safety_score: number | null
+          suburb: string | null
+          ward_name: string | null
+          ward_number: number
+        }
+        Insert: {
+          created_at?: string
+          district?: string | null
+          geojson?: Json | null
+          id?: number
+          incident_count?: number | null
+          lat?: number | null
+          lng?: number | null
+          safety_score?: number | null
+          suburb?: string | null
+          ward_name?: string | null
+          ward_number: number
+        }
+        Update: {
+          created_at?: string
+          district?: string | null
+          geojson?: Json | null
+          id?: number
+          incident_count?: number | null
+          lat?: number | null
+          lng?: number | null
+          safety_score?: number | null
+          suburb?: string | null
+          ward_name?: string | null
+          ward_number?: number
+        }
+        Relationships: []
       }
       water_outages: {
         Row: {

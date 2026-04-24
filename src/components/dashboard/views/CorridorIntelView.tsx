@@ -1,5 +1,9 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { MapPin, Target, ArrowUpRight, Share2, ChevronRight } from 'lucide-react';
+import { memo, useEffect, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Drawer } from 'vaul';
+import { ArrowUpRight, Search, Phone, X, Crosshair } from 'lucide-react';
+import { useWards, type Ward } from '@/hooks/useWards';
+import { useRouteScanner } from '@/hooks/useRouteScanner';
 import type { ViewId } from '../AlmienDashboard';
 
 interface Props {
@@ -7,355 +11,410 @@ interface Props {
   onNavigate?: (view: ViewId) => void;
 }
 
-type Risk = 'safe' | 'caution' | 'threat';
-interface Segment { risk: Risk; weight: number }
-interface Corridor {
-  id: string;
-  name: string;
-  path: string;
-  etaMin: number;
-  riskBand: Risk;
-  segments: Segment[];
-  distanceKm: number;
-  incidents: number;
-  lighting: string;
-  trustScore: number;
-}
-interface DarkZone {
-  id: string;
-  location: string;
-  distanceM: number;
-  incidentType: string;
-  lastReported: string;
-}
+const RISK_COLOR = { safe: '#00FF85', warn: '#FF9500', threat: '#FF3B30' } as const;
+const wardColor = (score: number) =>
+  score >= 70 ? RISK_COLOR.safe : score >= 50 ? RISK_COLOR.warn : RISK_COLOR.threat;
 
-const RISK_COLOR: Record<Risk, string> = {
-  safe: '#00FF85',
-  caution: '#FF9500',
-  threat: '#FF3B30',
-};
-const RISK_LABEL: Record<Risk, string> = {
-  safe: 'CLEAR',
-  caution: 'CAUTION',
-  threat: 'AVOID',
-};
+const CorridorIntelView = memo(({ onNavigate }: Props) => {
+  const location = useLocation();
+  const { data: wards } = useWards();
+  const { scanRoute, scanning, result, error, reset } = useRouteScanner();
 
-const MOCK_CORRIDORS: Corridor[] = [
-  {
-    id: 'r1',
-    name: 'Long Street Corridor',
-    path: 'CBD → Gardens via Long St',
-    etaMin: 18,
-    riskBand: 'caution',
-    segments: [
-      { risk: 'safe', weight: 30 },
-      { risk: 'caution', weight: 40 },
-      { risk: 'safe', weight: 20 },
-      { risk: 'threat', weight: 10 },
-    ],
-    distanceKm: 2.4,
-    incidents: 3,
-    lighting: 'GOOD',
-    trustScore: 78,
-  },
-  {
-    id: 'r2',
-    name: 'Sea Point Promenade',
-    path: 'Sea Point → V&A Waterfront',
-    etaMin: 24,
-    riskBand: 'safe',
-    segments: [
-      { risk: 'safe', weight: 60 },
-      { risk: 'safe', weight: 30 },
-      { risk: 'caution', weight: 10 },
-    ],
-    distanceKm: 3.1,
-    incidents: 0,
-    lighting: 'EXCELLENT',
-    trustScore: 92,
-  },
-  {
-    id: 'r3',
-    name: 'Main Road Express',
-    path: 'Woodstock → Observatory',
-    etaMin: 12,
-    riskBand: 'threat',
-    segments: [
-      { risk: 'threat', weight: 35 },
-      { risk: 'caution', weight: 25 },
-      { risk: 'threat', weight: 25 },
-      { risk: 'caution', weight: 15 },
-    ],
-    distanceKm: 1.8,
-    incidents: 7,
-    lighting: 'POOR',
-    trustScore: 41,
-  },
-];
+  const [fromLabel, setFromLabel] = useState('');
+  const [fromLat, setFromLat] = useState<number | null>(null);
+  const [fromLng, setFromLng] = useState<number | null>(null);
+  const [toLabel, setToLabel] = useState('');
+  const [toLat, setToLat] = useState<number | null>(null);
+  const [toLng, setToLng] = useState<number | null>(null);
 
-const MOCK_DARK_ZONES: DarkZone[] = [
-  { id: 'd1', location: 'Strand Street Underpass', distanceM: 320, incidentType: 'Robbery', lastReported: '14m ago' },
-  { id: 'd2', location: 'Adderley Lower Bridge', distanceM: 580, incidentType: 'Mugging', lastReported: '1h ago' },
-  { id: 'd3', location: 'Castle Square Lane', distanceM: 740, incidentType: 'Assault', lastReported: '3h ago' },
-];
+  const [pickerSide, setPickerSide] = useState<'from' | 'to' | null>(null);
+  const [wardSearch, setWardSearch] = useState('');
 
-/* ─── Toggle ─────────────────────────────── */
-const TacticalToggle = memo(({ active, onToggle }: { active: boolean; onToggle: () => void }) => (
-  <button
-    onClick={onToggle}
-    className="relative shrink-0 transition-colors"
-    style={{
-      width: 32,
-      height: 18,
-      background: active ? '#00FF85' : '#1A1A1A',
-      border: '0.5px solid #2A2A2A',
-    }}
-    aria-pressed={active}
-    aria-label="Toggle Commute Shield"
-  >
-    <span
-      className="absolute top-[1px] transition-all"
-      style={{
-        left: active ? 16 : 1,
-        width: 14,
-        height: 14,
-        background: active ? '#000' : '#555',
-      }}
-    />
-  </button>
-));
-TacticalToggle.displayName = 'TacticalToggle';
+  // Auto-fill FROM with GPS
+  useEffect(() => {
+    if (!navigator.geolocation || fromLat) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setFromLat(pos.coords.latitude);
+        setFromLng(pos.coords.longitude);
+        setFromLabel('My location');
+      },
+      () => {
+        // Fallback: CBD
+        setFromLat(-33.9249);
+        setFromLng(18.4241);
+        setFromLabel('Cape Town CBD (default)');
+      },
+      { timeout: 3000 },
+    );
+  }, [fromLat]);
 
-/* ─── Risk gradient bar ─────────────────── */
-const RiskBar = memo(({ segments }: { segments: Segment[] }) => {
-  const total = segments.reduce((sum, s) => sum + s.weight, 0);
-  return (
-    <div className="flex w-full" style={{ height: 6 }}>
-      {segments.map((seg, i) => (
-        <div
-          key={i}
-          style={{
-            flex: `${(seg.weight / total) * 100} 0 0`,
-            background: RISK_COLOR[seg.risk],
-          }}
-        />
-      ))}
-    </div>
-  );
-});
-RiskBar.displayName = 'RiskBar';
+  // Pre-fill TO from map ward navigation
+  useEffect(() => {
+    const w = (location.state as { toWard?: Ward } | null)?.toWard;
+    if (w) {
+      setToLabel(`Ward ${w.ward_number} · ${w.suburb}`);
+      setToLat(Number(w.lat));
+      setToLng(Number(w.lng));
+    }
+  }, [location.state]);
 
-/* ─── Corridor card ─────────────────────── */
-const CorridorCard = memo(({ route }: { route: Corridor }) => {
-  const riskColor = RISK_COLOR[route.riskBand];
-  return (
-    <div className="mx-5 mb-3 transition-transform duration-100 active:scale-[0.99]"
-      style={{ background: '#0A0A0A', border: '0.5px solid #1F1F1F' }}>
-      {/* TOP ROW */}
-      <div className="flex items-start justify-between p-4 pb-3">
-        <div className="min-w-0 flex-1 pr-3">
-          <h3 className="text-white truncate"
-            style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 16, fontWeight: 600 }}>
-            {route.name}
-          </h3>
-          <p className="text-[#555] truncate mt-0.5"
-            style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, maxWidth: 200 }}>
-            {route.path}
-          </p>
-        </div>
-        <div className="text-right shrink-0">
-          <div style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 13, fontWeight: 600, color: riskColor, letterSpacing: '0.02em',
-          }}>
-            ~{route.etaMin} MIN
-          </div>
-          <div className="mt-0.5"
-            style={{
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 9, color: riskColor, letterSpacing: '0.1em',
-            }}>
-            {RISK_LABEL[route.riskBand]}
-          </div>
-        </div>
-      </div>
+  const filteredWards = useMemo(() => {
+    if (!wards) return [];
+    const q = wardSearch.trim().toLowerCase();
+    if (!q) return wards;
+    return wards.filter(
+      (w) =>
+        w.suburb?.toLowerCase().includes(q) ||
+        w.district?.toLowerCase().includes(q) ||
+        String(w.ward_number).includes(q),
+    );
+  }, [wards, wardSearch]);
 
-      {/* RISK GRADIENT BAR */}
-      <RiskBar segments={route.segments} />
+  const pickWard = (w: Ward) => {
+    if (pickerSide === 'from') {
+      setFromLabel(`Ward ${w.ward_number} · ${w.suburb}`);
+      setFromLat(Number(w.lat));
+      setFromLng(Number(w.lng));
+    } else if (pickerSide === 'to') {
+      setToLabel(`Ward ${w.ward_number} · ${w.suburb}`);
+      setToLat(Number(w.lat));
+      setToLng(Number(w.lng));
+    }
+    setPickerSide(null);
+    setWardSearch('');
+  };
 
-      {/* STATS ROW */}
-      <div className="grid grid-cols-4 gap-2 px-4 py-3" style={{ borderTop: '1px solid #111' }}>
-        {[
-          { v: `${route.distanceKm}KM`, l: 'DISTANCE' },
-          { v: String(route.incidents), l: 'INCIDENTS' },
-          { v: route.lighting, l: 'LIGHTING' },
-          { v: `${route.trustScore}`, l: 'TRUST' },
-        ].map((s) => (
-          <div key={s.l} className="flex flex-col items-center">
-            <div className="text-white tabular-nums truncate max-w-full"
-              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600 }}>
-              {s.v}
-            </div>
-            <div className="mt-0.5"
-              style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 9, color: '#555', letterSpacing: '0.08em' }}>
-              {s.l}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ACTION ROW */}
-      <div className="flex items-center justify-between px-4 pb-3"
-        style={{ borderTop: '1px solid #111', paddingTop: 10 }}>
-        <button className="btn-ghost flex items-center gap-1" style={{ color: '#00FF85', padding: '8px 0' }}>
-          NAVIGATE <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
-        </button>
-        <button className="btn-ghost flex items-center gap-1" style={{ color: '#555', padding: '8px 0' }}>
-          <Share2 className="w-3 h-3" strokeWidth={2} /> SHARE ROUTE
-        </button>
-      </div>
-    </div>
-  );
-});
-CorridorCard.displayName = 'CorridorCard';
-
-/* ─── Dark zone row ─────────────────────── */
-const DarkZoneRow = memo(({ zone }: { zone: DarkZone }) => (
-  <div className="t-card threat mx-5 transition-transform duration-100 active:scale-[0.99]"
-    style={{ marginBottom: 1, borderLeftColor: '#FF3B30' }}>
-    <div className="flex items-center justify-between">
-      <div className="min-w-0 flex-1 pr-3">
-        <div className="text-white truncate"
-          style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 500 }}>
-          {zone.location}
-        </div>
-        <div className="text-[#555] truncate mt-0.5"
-          style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12 }}>
-          {zone.incidentType} · {zone.lastReported}
-        </div>
-      </div>
-      <div className="shrink-0 tabular-nums"
-        style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#FF3B30' }}>
-        {zone.distanceM}m
-      </div>
-    </div>
-  </div>
-));
-DarkZoneRow.displayName = 'DarkZoneRow';
-
-/* ─── Main view ─────────────────────────── */
-const CorridorIntelView = memo(({ }: Props) => {
-  const [shieldActive, setShieldActive] = useState(true);
-  const [origin, setOrigin] = useState('Current location');
-  const [destination, setDestination] = useState('');
-  const [routes, setRoutes] = useState<Corridor[]>(MOCK_CORRIDORS);
-  const [scanning, setScanning] = useState(false);
-
-  const handleScan = useCallback(() => {
-    if (!destination.trim()) return;
-    setScanning(true);
-    setTimeout(() => {
-      setRoutes(MOCK_CORRIDORS);
-      setScanning(false);
-    }, 600);
-  }, [destination]);
-
-  const routeCount = useMemo(() => routes.length, [routes]);
+  const canScan = fromLat != null && toLat != null && !scanning;
+  const handleScan = () => {
+    if (!canScan) return;
+    scanRoute(fromLabel, fromLat!, fromLng!, toLabel, toLat!, toLng!);
+  };
 
   return (
-    <div className="page-animate min-h-dvh bg-black" style={{ paddingBottom: 136 }}>
-      {/* ── HEADER ─────────────────────────── */}
-      <div
-        className="sticky top-0 z-20 px-5 pb-3 bg-black"
-        style={{
-          paddingTop: 'max(env(safe-area-inset-top), 16px)',
-          borderBottom: '1px solid #1A1A1A',
-          ...(shieldActive ? { borderTop: '1px solid #00FF85' } : {}),
-        }}
-      >
-        <h1 className="text-white"
-          style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 700, letterSpacing: '-0.01em' }}>
-          CORRIDORS
-        </h1>
-        <p className="text-[#555] mt-0.5"
-          style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12 }}>
-          Safe routes · Commute Shield · Dark Zones
-        </p>
-
-        {/* Commute Shield */}
-        <div className="mt-3 flex items-center justify-between">
-          <span className="label-micro">COMMUTE SHIELD</span>
-          <TacticalToggle active={shieldActive} onToggle={() => setShieldActive((v) => !v)} />
-        </div>
-      </div>
-
-      {/* ── ROUTE INPUTS ──────────────────── */}
-      <div className="mx-5 mt-4 relative">
-        {/* Vertical connector */}
-        <div className="absolute left-[18px] top-[28px] bottom-[28px] w-px"
-          style={{ background: '#1A1A1A', zIndex: 0 }} />
-        <div className="absolute left-[14px] top-[42px] w-[10px] h-[10px]"
-          style={{ background: '#0A0A0A', border: '1px solid #2A2A2A', zIndex: 1 }} />
-
-        {/* FROM */}
-        <div className="relative flex items-center gap-3 mb-[1px]"
-          style={{ background: '#0A0A0A', border: '0.5px solid #2A2A2A', borderBottom: '1px solid #555', padding: '14px 16px' }}>
-          <MapPin className="w-[18px] h-[18px] text-[#00FF85] shrink-0" strokeWidth={1.5} />
-          <input
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
-            placeholder="From"
-            className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-[#333]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
-          />
-        </div>
-
-        {/* TO */}
-        <div className="relative flex items-center gap-3"
-          style={{ background: '#0A0A0A', border: '0.5px solid #2A2A2A', borderBottom: '1px solid #555', padding: '14px 16px' }}>
-          <Target className="w-[18px] h-[18px] text-[#FF3B30] shrink-0" strokeWidth={1.5} />
-          <input
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="Enter destination..."
-            className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-[#333]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
-          />
-        </div>
-
-        <button
-          onClick={handleScan}
-          disabled={scanning}
-          className="btn-primary mt-3 flex items-center justify-center gap-2"
-        >
-          {scanning ? 'SCANNING...' : <>SCAN ROUTE <ArrowUpRight className="w-4 h-4" strokeWidth={2.5} /></>}
-        </button>
-      </div>
-
-      {/* ── SCANNED CORRIDORS ─────────────── */}
-      <div className="mt-5">
-        <div className="px-5 mb-3 flex items-center justify-between">
-          <span className="label-micro">SCANNED CORRIDORS</span>
-          <span className="tabular-nums"
-            style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#555' }}>
-            {String(routeCount).padStart(2, '0')} ROUTES
+    <div className="bg-black text-white min-h-screen page-content -mx-4 -my-6 sm:-mx-12 sm:-my-10 px-4 sm:px-8 pt-4">
+      {/* Header */}
+      <div className="border-b border-[#1A1A1A] pb-3 mb-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-1.5 h-1.5 bg-[#00FF85] animate-pulse" />
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]">
+            CORRIDOR_SCAN · v3.0
           </span>
         </div>
-        {routes.map((r) => (
-          <CorridorCard key={r.id} route={r} />
-        ))}
+        <h1
+          className="text-white"
+          style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 24, fontWeight: 700 }}
+        >
+          PLAN<span className="text-[#00FF85]">.</span>SAFE_ROUTE
+        </h1>
+        <p className="font-mono text-[11px] text-[#777] mt-1">
+          Ward-aware risk · {wards?.length ?? 0} wards loaded
+        </p>
       </div>
 
-      {/* ── DARK ZONES ────────────────────── */}
-      <div className="mt-5 mb-6">
-        <div className="px-5 mb-3 flex items-center justify-between">
-          <span className="label-micro">DARK ZONES NEARBY</span>
-          <ChevronRight className="w-3.5 h-3.5 text-[#555]" />
+      {/* FROM */}
+      <button
+        onClick={() => setPickerSide('from')}
+        className="w-full text-left bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 border-l-[#00FF85] p-4 mb-2 tap"
+      >
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85] mb-1.5">
+          ORIGIN // FROM
         </div>
-        {MOCK_DARK_ZONES.map((z) => (
-          <DarkZoneRow key={z.id} zone={z} />
-        ))}
-      </div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div
+              className="truncate"
+              style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 14,
+                color: fromLabel ? '#fff' : '#555',
+              }}
+            >
+              {fromLabel || 'Select origin ward...'}
+            </div>
+            {fromLat != null && (
+              <div className="font-mono text-[10px] text-[#555] tracking-[0.1em] mt-0.5">
+                ▸ {fromLat.toFixed(4)}, {fromLng?.toFixed(4)}
+              </div>
+            )}
+          </div>
+          <Crosshair className="w-4 h-4 text-[#555]" strokeWidth={1.5} />
+        </div>
+      </button>
+
+      {/* TO */}
+      <button
+        onClick={() => setPickerSide('to')}
+        className="w-full text-left bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 border-l-[#00B4D8] p-4 mb-3 tap"
+      >
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[#00B4D8] mb-1.5">
+          DESTINATION // TO
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div
+              className="truncate"
+              style={{
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: 14,
+                color: toLabel ? '#fff' : '#555',
+              }}
+            >
+              {toLabel || 'Select destination ward...'}
+            </div>
+            {toLat != null && (
+              <div className="font-mono text-[10px] text-[#555] tracking-[0.1em] mt-0.5">
+                ▸ {toLat.toFixed(4)}, {toLng?.toFixed(4)}
+              </div>
+            )}
+          </div>
+          <Search className="w-4 h-4 text-[#555]" strokeWidth={1.5} />
+        </div>
+      </button>
+
+      {/* SCAN button */}
+      <button
+        onClick={handleScan}
+        disabled={!canScan}
+        className="w-full tap"
+        style={{
+          background: canScan ? '#00FF85' : '#1A1A1A',
+          color: canScan ? '#000' : '#444',
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: '0.2em',
+          minHeight: 48,
+        }}
+      >
+        {scanning ? 'SCANNING CORRIDOR…' : 'SCAN ROUTE ↗'}
+      </button>
+
+      {error && (
+        <div className="mt-3 p-3 border border-[#FF3B30]/40 bg-[#FF3B30]/8">
+          <div className="font-mono text-[10px] tracking-[0.2em] text-[#FF3B30]">SCAN_ERROR</div>
+          <div className="font-mono text-[11px] text-[#FF6B6B] mt-1">{error}</div>
+        </div>
+      )}
+
+      {/* RESULT */}
+      {result && (
+        <div className="mt-4 animate-fade-in">
+          <div
+            className="bg-[#0A0A0A] border border-[#2A2A2A] border-l-2 p-4"
+            style={{ borderLeftColor: RISK_COLOR[result.risk_level] }}
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0 flex-1">
+                <div
+                  className="text-white truncate"
+                  style={{
+                    fontFamily: 'Space Grotesk, sans-serif',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}
+                >
+                  {result.from_ward} → {result.to_ward}
+                </div>
+                <div className="font-mono text-[11px] text-[#777] tracking-[0.1em] mt-1">
+                  {result.distance_km}KM · ~{result.eta_minutes}MIN · SCORE {result.risk_score}
+                </div>
+              </div>
+              <div
+                className="px-2 py-1 shrink-0"
+                style={{
+                  background: `${RISK_COLOR[result.risk_level]}20`,
+                  color: RISK_COLOR[result.risk_level],
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.15em',
+                }}
+              >
+                {result.risk_level.toUpperCase()}
+              </div>
+            </div>
+
+            {/* Risk gradient bar */}
+            <div className="flex h-2 mb-2 bg-[#0A0A0A]">
+              {result.risk_segments.map((seg, i) => (
+                <div
+                  key={i}
+                  style={{ flex: seg.weight, background: RISK_COLOR[seg.risk] }}
+                />
+              ))}
+            </div>
+            <div className="flex justify-between mb-3">
+              {result.risk_segments.map((seg, i) => (
+                <div
+                  key={i}
+                  className="font-mono text-[9px] tracking-[0.1em] text-[#777] truncate"
+                  style={{ flex: seg.weight }}
+                >
+                  {seg.label}
+                </div>
+              ))}
+            </div>
+
+            {/* Services along */}
+            {result.services_along.length > 0 && (
+              <div className="border-t border-[#1A1A1A] pt-3">
+                <div className="font-mono text-[10px] tracking-[0.2em] text-[#555] mb-2">
+                  SERVICES ALONG ROUTE
+                </div>
+                <div className="flex flex-col gap-px bg-[#1A1A1A]">
+                  {result.services_along.slice(0, 3).map((s) => (
+                    <a
+                      key={s.id}
+                      href={`tel:${s.emergency_phone || s.phone}`}
+                      className="flex items-center justify-between gap-2 bg-[#070707] px-3 py-2.5 tap"
+                      style={{ minHeight: 48 }}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="text-white truncate"
+                          style={{
+                            fontFamily: 'DM Sans, sans-serif',
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {s.name}
+                        </div>
+                        <div className="font-mono text-[9px] text-[#555] tracking-[0.1em]">
+                          {s.type.toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Phone className="w-3 h-3 text-[#00B4D8]" strokeWidth={2} />
+                        <span
+                          className="font-mono text-[11px] text-[#00B4D8]"
+                        >
+                          CALL
+                        </span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={reset}
+                className="flex-1 tap"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #2A2A2A',
+                  color: '#999',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 11,
+                  letterSpacing: '0.15em',
+                  minHeight: 40,
+                }}
+              >
+                NEW SCAN
+              </button>
+              <button
+                onClick={() => onNavigate?.('map-full')}
+                className="flex-1 tap"
+                style={{
+                  background: '#00FF85',
+                  color: '#000',
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.15em',
+                  minHeight: 40,
+                }}
+              >
+                VIEW ON MAP ↗
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WARD PICKER SHEET */}
+      <Drawer.Root open={!!pickerSide} onOpenChange={(open) => !open && setPickerSide(null)}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-[200] bg-black/60" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[201] bg-[#0A0A0A] border-t border-[#2A2A2A] outline-none flex flex-col max-h-[85vh]">
+            <Drawer.Title className="sr-only">Select ward</Drawer.Title>
+            <div className="flex justify-center pt-2 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-[#2A2A2A]" />
+            </div>
+            <div className="px-5 py-3 border-b border-[#1A1A1A] flex items-center justify-between shrink-0">
+              <div
+                className="font-mono text-[10px] tracking-[0.2em] text-[#00FF85]"
+              >
+                {pickerSide === 'from' ? 'SELECT ORIGIN WARD' : 'SELECT DESTINATION WARD'}
+              </div>
+              <button onClick={() => setPickerSide(null)} className="tap text-[#555]" style={{ minWidth: 32, minHeight: 32 }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-3 shrink-0">
+              <div className="flex items-center gap-2 bg-[#070707] border border-[#2A2A2A] px-3" style={{ minHeight: 44 }}>
+                <Search className="w-4 h-4 text-[#555]" strokeWidth={1.5} />
+                <input
+                  value={wardSearch}
+                  onChange={(e) => setWardSearch(e.target.value)}
+                  placeholder="Search ward, suburb, district..."
+                  autoFocus
+                  className="flex-1 bg-transparent outline-none text-white"
+                  style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14 }}
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 pb-5">
+              <div className="flex flex-col gap-px bg-[#1A1A1A]">
+                {filteredWards.map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => pickWard(w)}
+                    className="flex items-center justify-between gap-3 bg-[#0A0A0A] px-3 py-3 tap text-left"
+                    style={{ minHeight: 56 }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="text-white truncate"
+                        style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600 }}
+                      >
+                        {w.suburb}
+                      </div>
+                      <div
+                        className="font-mono text-[10px] text-[#555] tracking-[0.1em] mt-0.5 truncate"
+                      >
+                        WARD {w.ward_number} · {w.district}
+                      </div>
+                    </div>
+                    <div
+                      className="tabular-nums shrink-0"
+                      style={{
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: wardColor(w.safety_score),
+                      }}
+                    >
+                      {w.safety_score}
+                    </div>
+                  </button>
+                ))}
+                {filteredWards.length === 0 && (
+                  <div
+                    className="bg-[#0A0A0A] px-3 py-6 text-center"
+                    style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#555' }}
+                  >
+                    No wards match "{wardSearch}"
+                  </div>
+                )}
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   );
 });
