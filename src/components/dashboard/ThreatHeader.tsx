@@ -224,8 +224,26 @@ const ThreatHeader = memo(({
         )}
       </div>
 
-      {/* Right side — Safi · connection · incidents · time */}
+      {/* Right side — Traveler · Safi · connection · incidents · time */}
       <div className="flex items-center gap-2 shrink-0">
+        {onToggleTravelerMode && (
+          <button
+            onClick={onToggleTravelerMode}
+            aria-label={isTravelerMode ? 'Exit traveler mode' : 'Enter traveler mode'}
+            aria-pressed={isTravelerMode}
+            title={isTravelerMode ? 'Exit traveler mode' : 'Traveler mode (simplified emergency view)'}
+            className={cn(
+              'flex items-center gap-1 h-7 px-2 rounded-full font-mono text-[9px] font-bold tracking-system transition-colors border',
+              isTravelerMode
+                ? 'bg-accent-threat/20 text-accent-threat border-accent-threat/60 animate-pulse'
+                : 'bg-surface-02 text-foreground border-border-subtle hover:border-accent-safe/60 hover:text-accent-safe'
+            )}
+          >
+            <Plane className="w-3 h-3" />
+            <span className="hidden sm:inline">{isTravelerMode ? 'EXIT' : 'TRAVELER'}</span>
+          </button>
+        )}
+
         {onSafiEmergency && (
           <button
             onClick={onSafiEmergency}
