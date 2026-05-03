@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, MapPin, Plus, Menu, Locate, Wifi, WifiOff, Activity } from 'lucide-react';
+import { ChevronDown, MapPin, Plus, Menu, Locate, Wifi, WifiOff, Activity, Plane } from 'lucide-react';
 import { useUserLocation } from '@/hooks/useUserLocation';
 
 type ConnectionStatus = 'live' | 'syncing' | 'offline';
@@ -22,6 +22,8 @@ interface ThreatHeaderProps {
   onBrowseAllAreas?: () => void;
   onMenuOpen?: () => void;
   onSafiEmergency?: () => void;
+  isTravelerMode?: boolean;
+  onToggleTravelerMode?: () => void;
 }
 
 const levelConfig: Record<ThreatLevel, { label: string; pillBg: string; pillText: string; headerBg: string; barColor: string; pulse?: boolean }> = {
@@ -70,6 +72,8 @@ const ThreatHeader = memo(({
   onBrowseAllAreas,
   onMenuOpen,
   onSafiEmergency,
+  isTravelerMode = false,
+  onToggleTravelerMode,
 }: ThreatHeaderProps) => {
   const userLoc = useUserLocation();
   const detectedSuburb =
