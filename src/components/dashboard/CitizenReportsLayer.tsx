@@ -1,8 +1,12 @@
 import { Marker, Popup, useMap } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import { useCitizenReports } from '@/hooks/useCitizenReports';
 import { formatDistanceToNow } from 'date-fns';
 import { Phone, Clock, AlertTriangle } from 'lucide-react';
+import { createTacticalClusterIcon } from '@/components/map/clusterIcon';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 interface CitizenReportsLayerProps {
   visible: boolean;
@@ -107,7 +111,13 @@ const CitizenReportsLayer = ({ visible, reportTypes }: CitizenReportsLayerProps)
     : mappableReports;
 
   return (
-    <>
+    <MarkerClusterGroup
+      chunkedLoading
+      iconCreateFunction={createTacticalClusterIcon}
+      maxClusterRadius={50}
+      showCoverageOnHover={false}
+      spiderfyOnMaxZoom
+    >
       {filteredReports.map((report) => (
         <Marker
           key={report.id}
@@ -157,7 +167,7 @@ const CitizenReportsLayer = ({ visible, reportTypes }: CitizenReportsLayerProps)
           </Popup>
         </Marker>
       ))}
-    </>
+    </MarkerClusterGroup>
   );
 };
 

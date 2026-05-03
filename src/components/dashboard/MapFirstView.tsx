@@ -22,6 +22,7 @@ import CrimeHeatmapLayer from './CrimeHeatmapLayer';
 import CitizenReportsLayer from './CitizenReportsLayer';
 import ZoomLevelIndicator from './ZoomLevelIndicator';
 import AreaInfoCard from './AreaInfoCard';
+import { BASE_TILE_URL, BASE_TILE_ATTRIBUTION, BASE_TILE_SUBDOMAINS, BASE_TILE_MAX_ZOOM } from '@/components/map/tileConfig';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -323,8 +324,10 @@ const MapFirstView = ({ fullHeight = true, onMapInteraction }: MapFirstViewProps
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution={BASE_TILE_ATTRIBUTION}
+            url={BASE_TILE_URL}
+            subdomains={BASE_TILE_SUBDOMAINS}
+            maxZoom={BASE_TILE_MAX_ZOOM}
           />
           
           {/* Zoom Tracker */}

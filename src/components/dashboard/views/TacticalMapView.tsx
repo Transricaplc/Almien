@@ -6,6 +6,7 @@ import { Drawer } from 'vaul';
 import { useNavigate } from 'react-router-dom';
 import { useWards, type Ward } from '@/hooks/useWards';
 import { useSafetyServices, type SafetyService, type ServiceType } from '@/hooks/useSafetyServices';
+import { BASE_TILE_URL, BASE_TILE_ATTRIBUTION, BASE_TILE_SUBDOMAINS, BASE_TILE_MAX_ZOOM } from '@/components/map/tileConfig';
 import 'leaflet/dist/leaflet.css';
 import type { ViewId } from '../AlmienDashboard';
 
@@ -130,9 +131,10 @@ const TacticalMapView = memo(({ onNavigate }: Props) => {
         style={{ position: 'absolute', inset: 0, background: '#000' }}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; OpenStreetMap &copy; CARTO'
-          subdomains={['a', 'b', 'c', 'd']}
+          url={BASE_TILE_URL}
+          attribution={BASE_TILE_ATTRIBUTION}
+          subdomains={BASE_TILE_SUBDOMAINS}
+          maxZoom={BASE_TILE_MAX_ZOOM}
         />
         <MapWiring onMove={(lat, lng) => setCoords({ lat, lng })} />
 
