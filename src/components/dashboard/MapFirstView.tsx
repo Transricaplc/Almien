@@ -23,6 +23,7 @@ import CitizenReportsLayer from './CitizenReportsLayer';
 import ZoomLevelIndicator from './ZoomLevelIndicator';
 import AreaInfoCard from './AreaInfoCard';
 import { BASE_TILE_URL, BASE_TILE_ATTRIBUTION, BASE_TILE_SUBDOMAINS, BASE_TILE_MAX_ZOOM } from '@/components/map/tileConfig';
+import MapSearchOverlay from '@/components/map/MapSearchOverlay';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -111,21 +112,24 @@ const MapControls = ({ onMapInteraction }: { onMapInteraction?: () => void }) =>
 
   return (
     <div className="absolute right-3 top-3 z-[1000] flex flex-col gap-1.5">
-      <button 
+      <button
         onClick={() => { map.zoomIn(); onMapInteraction?.(); }}
-        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Zoom in"
+        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <ZoomIn className="w-4 h-4" />
       </button>
-      <button 
+      <button
         onClick={() => { map.zoomOut(); onMapInteraction?.(); }}
-        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Zoom out"
+        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <ZoomOut className="w-4 h-4" />
       </button>
-      <button 
+      <button
         onClick={() => { map.setView(MAP_CENTER, MAP_ZOOM); onMapInteraction?.(); }}
-        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Recenter map on Cape Town"
+        className="p-2 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <Locate className="w-4 h-4" />
       </button>
