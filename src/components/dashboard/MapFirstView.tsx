@@ -333,7 +333,10 @@ const MapFirstView = ({ fullHeight = true, onMapInteraction }: MapFirstViewProps
             subdomains={BASE_TILE_SUBDOMAINS}
             maxZoom={BASE_TILE_MAX_ZOOM}
           />
-          
+
+          {/* Floating tactical search overlay */}
+          <MapSearchOverlay />
+
           {/* Zoom Tracker */}
           <ZoomTracker onZoomChange={setZoom} />
           
