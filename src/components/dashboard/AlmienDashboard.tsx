@@ -62,9 +62,11 @@ import ProfileView from './views/ProfileView';
 import NeuralMeView from './views/NeuralMeView';
 import { RegionProvider } from '@/contexts/RegionContext';
 import { SAPSCrimeProvider } from '@/contexts/SAPSCrimeContext';
+import { useDashboard } from '@/contexts/DashboardContext';
 import PanicButton from './PanicButton';
 import WitnessReportButton from './WitnessReportButton';
 import CommandPill from './CommandPill';
+import TravelerModeView from './TravelerModeView';
 
 export type ViewId =
   | 'dashboard'
@@ -138,6 +140,7 @@ const TAB_TO_PATH: Record<TacticalTab, string> = {
 
 const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProps) => {
   const isMobile = useIsMobile();
+  const { isTravelerMode, setTravelerMode } = useDashboard();
   const location = useLocation();
   const routerNavigate = useNavigate();
   const [activeView, setActiveView] = useState<ViewId>(initialView);
@@ -335,9 +338,15 @@ const AlmienDashboard = memo(({ initialView = 'dashboard' }: AlmienDashboardProp
             onBrowseAllAreas={() => setShowZoneDirectory(true)}
             onMenuOpen={isMobile ? () => setSidebarOpen(true) : undefined}
             onSafiEmergency={() => openSafi('emergency')}
+            isTravelerMode={isTravelerMode}
+            onToggleTravelerMode={() => setTravelerMode(!isTravelerMode)}
           />
 
-          {!isMobile && activeView !== 'map-full' ? (
+          {isTravelerMode ? (
+            <ScrollArea className="flex-1">
+              <TravelerModeView />
+            </ScrollArea>
+          ) : !isMobile && activeView !== 'map-full' ? (
             /* Desktop two-column split */
             <div className="flex-1 min-h-0 flex">
               <div className="w-[60%] min-w-0 border-r border-border-subtle relative overflow-hidden">
