@@ -21,6 +21,7 @@ import SafeZonesLayer from './SafeZonesLayer';
 import CrimeHeatmapLayer from './CrimeHeatmapLayer';
 import CitizenReportsLayer from './CitizenReportsLayer';
 import { BASE_TILE_URL, BASE_TILE_ATTRIBUTION, BASE_TILE_SUBDOMAINS, BASE_TILE_MAX_ZOOM } from '@/components/map/tileConfig';
+import MapSearchOverlay from '@/components/map/MapSearchOverlay';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers
@@ -103,21 +104,24 @@ const MapControls = () => {
 
   return (
     <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
-      <button 
+      <button
         onClick={() => map.zoomIn()}
-        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Zoom in"
+        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <ZoomIn className="w-4 h-4" />
       </button>
-      <button 
+      <button
         onClick={() => map.zoomOut()}
-        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Zoom out"
+        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <ZoomOut className="w-4 h-4" />
       </button>
-      <button 
+      <button
         onClick={() => map.setView(MAP_CENTER, MAP_ZOOM)}
-        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50"
+        aria-label="Recenter map on Cape Town"
+        className="p-2.5 bg-card/90 backdrop-blur-sm rounded-lg border border-border shadow-lg hover:bg-card transition-colors hover:border-primary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85] focus-visible:ring-offset-1 focus-visible:ring-offset-black"
       >
         <Locate className="w-4 h-4" />
       </button>
@@ -408,6 +412,10 @@ const InteractiveMap = ({ fullHeight = false }: InteractiveMapProps) => {
             subdomains={BASE_TILE_SUBDOMAINS}
             maxZoom={BASE_TILE_MAX_ZOOM}
           />
+
+          {/* Floating tactical search overlay */}
+          <MapSearchOverlay />
+
 
            {/* Citizen Reports Layer */}
            <CitizenReportsLayer visible={!!showReports} />

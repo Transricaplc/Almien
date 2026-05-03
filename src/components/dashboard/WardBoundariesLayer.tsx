@@ -338,6 +338,31 @@ const WardBoundariesLayer = ({
       </div>
     `);
 
+    // Lightweight hover tooltip (no click required) — Stripe Data Clarity
+    const scoreColor = stats
+      ? stats.safetyScore >= 7.5 ? '#00FF85'
+        : stats.safetyScore >= 5.5 ? '#FFB800'
+        : '#FF3B30'
+      : '#8A8A8A';
+    layer.bindTooltip(
+      `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;">
+        <div style="color:#00FF85;letter-spacing:0.1em;font-weight:600;">WARD ${wardNumber ?? '—'}</div>
+        ${stats ? `
+          <div style="color:#fff;margin-top:2px;">
+            <span style="color:${scoreColor};font-weight:700;">${stats.safetyScore.toFixed(1)}</span>
+            <span style="color:#8A8A8A;"> · ${(stats.cctvCount).toString()} CCTV</span>
+          </div>
+        ` : '<div style="color:#8A8A8A;">No stats</div>'}
+      </div>`,
+      {
+        sticky: true,
+        direction: 'top',
+        offset: [0, -4],
+        opacity: 0.95,
+        className: 'tactical-ward-tooltip',
+      }
+    );
+
     layer.on({
       mouseover: () => setHoveredWard(wardNumber),
       mouseout: () => setHoveredWard(null),

@@ -793,3 +793,20 @@ html, body, #root {
 input, textarea, select {
   font-size: max(16px, 1rem);
 }
+
+/* Tactical Leaflet tooltip — Obsidian Tactical theme */
+.leaflet-tooltip.tactical-ward-tooltip {
+  background: #000;
+  border: 1px solid #00FF85;
+  border-radius: 0;
+  color: #fff;
+  padding: 6px 8px;
+  box-shadow: 0 0 0 2px rgba(0,255,133,0.10);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.leaflet-tooltip.tactical-ward-tooltip::before { display: none; }
+
+/* Tactical cluster — minor polish */
+.tactical-cluster { background: transparent !important; }
+.marker-cluster { background: transparent !important; }
+.marker-cluster div { background: transparent !important; }
