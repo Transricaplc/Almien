@@ -210,6 +210,12 @@ const MapFirstLayout = () => {
 
                 <MapFirstView fullHeight onMapInteraction={() => {}} />
 
+                {/* Drawing toolbar — left edge */}
+                <DrawingToolbar />
+
+                {/* Time scrubber — bottom-center */}
+                <TimeSlider />
+
                 {/* Mini-map — bottom-right */}
                 <MiniMap bottom={64} right={16} />
 
@@ -243,19 +249,7 @@ const MapFirstLayout = () => {
                     <ScrollArea className="flex-1">
                       <div className="p-3">
                         {selectedEntity && selectedEntity.type !== 'area' ? (
-                          <div>
-                            <div className="flex items-center justify-end mb-3">
-                              <button
-                                onClick={clearSelection}
-                                className="text-[10px] font-mono text-primary hover:underline"
-                              >
-                                ← Back to feed
-                              </button>
-                            </div>
-                            <Suspense fallback={null}>
-                              <IntelligenceSidebar />
-                            </Suspense>
-                          </div>
+                          <EntityDetailPanel />
                         ) : (
                           <AlertsFeed />
                         )}
