@@ -99,149 +99,170 @@ const MapFirstLayout = () => {
         connectionStatus="connected"
       />
 
-      {/* MAIN CONTENT — flex layout */}
-      <div className="flex-1 overflow-hidden flex gap-0 relative">
-        
-        {/* LEFT PANEL — 30% width, persistent nav + controls */}
-        {showLeftSidebar && (
-          <aside className={cn(
-            "relative z-30 flex flex-col bg-card/95 backdrop-blur-xl border-r border-border/30",
-            "transition-all duration-300 ease-out overflow-hidden shrink-0",
-            leftCollapsed ? "w-12" : "w-[280px] xl:w-[320px]"
-          )}>
-            {/* Collapse toggle */}
-            <button
-              onClick={() => setLeftCollapsed(!leftCollapsed)}
-              className="absolute top-2 right-1.5 z-10 p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
-              aria-label={leftCollapsed ? "Expand left panel" : "Collapse left panel"}
-            >
-              {leftCollapsed 
-                ? <PanelLeftOpen className="w-3.5 h-3.5 text-muted-foreground" /> 
-                : <PanelLeftClose className="w-3.5 h-3.5 text-muted-foreground" />
-              }
-            </button>
+      {/* MAIN CONTENT — resizable 3-panel layout (desktop) / stacked (mobile) */}
+      <div className="flex-1 overflow-hidden relative">
 
-            {leftCollapsed ? (
-              <div className="flex flex-col items-center gap-2 pt-10 p-1.5">
-                <button
-                  onClick={() => setLeftCollapsed(false)}
-                  className="p-2 rounded-lg bg-muted/30 hover:bg-primary/10 border border-border/30 transition-colors"
-                  title="Controls"
-                >
-                  <Shield className="w-4 h-4 text-primary" />
-                </button>
-              </div>
-            ) : (
-              <ScrollArea className="flex-1 pt-8">
-                <div className="p-3 space-y-3">
-                  {/* Control Hub — Layers, Filters, Search */}
-                  <ControlHub
-                    layers={layers}
-                    onToggleLayer={handleToggleLayer}
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    timeRange={timeRange}
-                    onTimeRangeChange={setTimeRange}
-                    severity={severity}
-                    onSeverityChange={setSeverity}
-                    isExpanded={true}
-                    onToggleExpand={() => {}}
-                    onCollapseAll={() => {}}
-                    className="relative static w-full"
-                  />
-                </div>
-              </ScrollArea>
+        {/* MOBILE / TRAVELER: full-bleed map only */}
+        {(isMobile || isTravelerMode) && (
+          <main className="absolute inset-0 overflow-hidden">
+            <MapFirstView fullHeight onMapInteraction={() => {}} />
+
+            {/* Mobile floating control hub */}
+            {isMobile && !isTravelerMode && (
+              <ControlHub
+                layers={layers}
+                onToggleLayer={handleToggleLayer}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                timeRange={timeRange}
+                onTimeRangeChange={setTimeRange}
+                severity={severity}
+                onSeverityChange={setSeverity}
+                isExpanded={false}
+                onToggleExpand={() => {}}
+                onCollapseAll={() => {}}
+              />
             )}
-          </aside>
+
+            {!isTravelerMode && <ModuleTabBar />}
+          </main>
         )}
 
-        {/* CENTER — Map canvas + bottom module tabs */}
-        <main className="flex-1 relative overflow-hidden">
-          {/* Map */}
-          <div className="absolute inset-0">
-            <MapFirstView fullHeight onMapInteraction={() => {}} />
-          </div>
+        {/* DESKTOP: resizable 3-panel system */}
+        {!isMobile && !isTravelerMode && (
+          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
 
-          {/* Mobile: floating control hub */}
-          {isMobile && !isTravelerMode && (
-            <ControlHub
-              layers={layers}
-              onToggleLayer={handleToggleLayer}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              severity={severity}
-              onSeverityChange={setSeverity}
-              isExpanded={false}
-              onToggleExpand={() => {}}
-              onCollapseAll={() => {}}
-            />
-          )}
-
-          {/* Bottom Module Tab Bar */}
-          {!isTravelerMode && (
-            <ModuleTabBar />
-          )}
-        </main>
-
-        {/* RIGHT PANEL — 20% width, contextual */}
-        {showRightSidebar && (
-          <aside className={cn(
-            "relative z-20 flex flex-col bg-card/95 backdrop-blur-xl border-l border-border/30",
-            "transition-all duration-300 ease-out overflow-hidden shrink-0",
-            rightCollapsed ? "w-12" : "w-[260px] xl:w-[300px]"
-          )}>
-            {/* Collapse toggle */}
-            <button
-              onClick={() => setRightCollapsed(!rightCollapsed)}
-              className="absolute top-2 left-1.5 z-10 p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
-              aria-label={rightCollapsed ? "Expand right panel" : "Collapse right panel"}
-            >
-              {rightCollapsed 
-                ? <PanelRightOpen className="w-3.5 h-3.5 text-muted-foreground" />
-                : <PanelRightClose className="w-3.5 h-3.5 text-muted-foreground" />
-              }
-            </button>
-
-            {rightCollapsed ? (
-              <div className="flex flex-col items-center gap-2 pt-10 p-1.5">
-                <button
-                  onClick={() => setRightCollapsed(false)}
-                  className="p-2 rounded-lg bg-muted/30 hover:bg-primary/10 border border-border/30 transition-colors"
-                  title="Alerts"
+            {/* LEFT — controls / filters / search */}
+            {!leftCollapsed && (
+              <>
+                <ResizablePanel
+                  defaultSize={22}
+                  minSize={16}
+                  maxSize={34}
+                  className="bg-card/95 backdrop-blur-xl border-r border-border/30"
                 >
-                  <Bell className="w-4 h-4 text-primary" />
-                </button>
-              </div>
-            ) : (
-              <ScrollArea className="flex-1 pt-8">
-                <div className="p-3">
-                  {/* Show entity details when selected, otherwise alerts feed */}
-                  {selectedEntity && selectedEntity.type !== 'area' ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold">
-                          Entity Detail
-                        </h3>
-                        <button
-                          onClick={clearSelection}
-                          className="text-[10px] font-mono text-primary hover:underline"
-                        >
-                          ← Back to feed
-                        </button>
-                      </div>
-                      <Suspense fallback={null}>
-                        <IntelligenceSidebar />
-                      </Suspense>
+                  <div className="relative h-full flex flex-col">
+                    <div className="flex items-center justify-between px-2 pt-2 pb-1">
+                      <span className="font-mono text-[9px] tracking-[0.25em] text-[#00FF85]/80">CONTROL_HUB</span>
+                      <button
+                        onClick={() => setLeftCollapsed(true)}
+                        className="p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                        aria-label="Collapse left panel"
+                      >
+                        <PanelLeftClose className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
                     </div>
-                  ) : (
-                    <AlertsFeed />
-                  )}
-                </div>
-              </ScrollArea>
+                    <ScrollArea className="flex-1">
+                      <div className="p-3 space-y-3">
+                        <MapFilterBar />
+                        <ControlHub
+                          layers={layers}
+                          onToggleLayer={handleToggleLayer}
+                          searchQuery={searchQuery}
+                          onSearchChange={setSearchQuery}
+                          timeRange={timeRange}
+                          onTimeRangeChange={setTimeRange}
+                          severity={severity}
+                          onSeverityChange={setSeverity}
+                          isExpanded={true}
+                          onToggleExpand={() => {}}
+                          onCollapseAll={() => {}}
+                          className="relative static w-full"
+                        />
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+              </>
             )}
-          </aside>
+
+            {/* CENTER — map */}
+            <ResizablePanel defaultSize={leftCollapsed && rightCollapsed ? 100 : leftCollapsed || rightCollapsed ? 78 : 56} minSize={40}>
+              <main className="relative h-full overflow-hidden">
+                {/* Collapsed-rail expanders */}
+                {leftCollapsed && (
+                  <button
+                    onClick={() => setLeftCollapsed(false)}
+                    aria-label="Expand left panel"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-[1100] p-2 bg-black/85 border border-[#1A1A1A] hover:border-[#00FF85]/50 transition-colors"
+                  >
+                    <PanelLeftOpen className="w-4 h-4 text-[#00FF85]" />
+                  </button>
+                )}
+                {rightCollapsed && (
+                  <button
+                    onClick={() => setRightCollapsed(false)}
+                    aria-label="Expand right panel"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-[1100] p-2 bg-black/85 border border-[#1A1A1A] hover:border-[#00FF85]/50 transition-colors"
+                  >
+                    <PanelRightOpen className="w-4 h-4 text-[#00FF85]" />
+                  </button>
+                )}
+
+                {/* Live mode toggle — top-right cluster */}
+                <div className="absolute top-3 right-3 z-[1100]">
+                  <LiveModeToggle />
+                </div>
+
+                <MapFirstView fullHeight onMapInteraction={() => {}} />
+
+                {/* Mini-map — bottom-right */}
+                <MiniMap bottom={64} right={16} />
+
+                <ModuleTabBar />
+              </main>
+            </ResizablePanel>
+
+            {/* RIGHT — alerts / entity detail */}
+            {!rightCollapsed && (
+              <>
+                <ResizableHandle withHandle />
+                <ResizablePanel
+                  defaultSize={22}
+                  minSize={16}
+                  maxSize={34}
+                  className="bg-card/95 backdrop-blur-xl border-l border-border/30"
+                >
+                  <div className="relative h-full flex flex-col">
+                    <div className="flex items-center justify-between px-2 pt-2 pb-1">
+                      <span className="font-mono text-[9px] tracking-[0.25em] text-[#00FF85]/80">
+                        {selectedEntity && selectedEntity.type !== 'area' ? 'ENTITY_DETAIL' : 'LIVE_FEED'}
+                      </span>
+                      <button
+                        onClick={() => setRightCollapsed(true)}
+                        className="p-1 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                        aria-label="Collapse right panel"
+                      >
+                        <PanelRightClose className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    </div>
+                    <ScrollArea className="flex-1">
+                      <div className="p-3">
+                        {selectedEntity && selectedEntity.type !== 'area' ? (
+                          <div>
+                            <div className="flex items-center justify-end mb-3">
+                              <button
+                                onClick={clearSelection}
+                                className="text-[10px] font-mono text-primary hover:underline"
+                              >
+                                ← Back to feed
+                              </button>
+                            </div>
+                            <Suspense fallback={null}>
+                              <IntelligenceSidebar />
+                            </Suspense>
+                          </div>
+                        ) : (
+                          <AlertsFeed />
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
         )}
 
         {/* MOBILE: Bottom Sheet for intelligence */}
@@ -260,7 +281,7 @@ const MapFirstLayout = () => {
           </Suspense>
         )}
 
-        {/* CONTEXT DRAWER — non-area entities (mobile or overlay) */}
+        {/* CONTEXT DRAWER — non-area entities (mobile only) */}
         {selectedEntity && selectedEntity.type !== 'area' && isMobile && (
           <ContextDrawer
             entity={selectedEntity}
