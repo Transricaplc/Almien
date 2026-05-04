@@ -19,6 +19,9 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import MiniMap from '@/components/map/MiniMap';
 import LiveModeToggle from '@/components/map/LiveModeToggle';
 import MapFilterBar from '@/components/map/MapFilterBar';
+import TimeSlider from '@/components/map/TimeSlider';
+import DrawingToolbar from '@/components/map/DrawingToolbar';
+import EntityDetailPanel from '@/components/map/EntityDetailPanel';
 
 // Lazy-load non-critical panels
 const IntelligenceSidebar = lazy(() => import('./IntelligenceSidebar'));
